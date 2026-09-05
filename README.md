@@ -12,7 +12,7 @@
 
 **LocalBlast** es una interfaz gráfica web para el motor BLAST+ que permite a investigadores y estudiantes ejecutar alineamientos de secuencias sin depender de la línea de comandos ni de la carga de la interfaz oficial de NCBI. Con un mismo formulario, el usuario elige si el alineamiento se corre localmente (contra bases de datos alojadas por el laboratorio) o de forma remota (contra NCBI vía `-remote`), configura los parámetros del algoritmo, y aplica filtros a los resultados antes de descargarlos. Un rol de administrador puede además cargar y mantener las bases de datos locales del laboratorio.
 
-Para el detalle completo — visión, alcance, requerimientos funcionales, casos de uso, historias de usuario, modelo de dominio y atributos de calidad — ver el SRS:
+Para el detalle completo — visión, alcance, requerimientos funcionales, casos de uso, historias de usuario y modelo de dominio — ver el SRS:
 
 👉 [`docs/requirements/srs.md`](docs/requirements/srs.md)
 
@@ -21,7 +21,7 @@ Documentos adicionales del SRS:
 - [Diagrama de contexto (DFD N0 y N1)](docs/architecture/contexto-inicial.md)
 - [Modelo de dominio conceptual](docs/requirements/modelo-dominio.md)
 - [Casos de uso (Cockburn)](docs/requirements/casos-de-uso.md)
-- [Historias de usuario con criterios Given-When-Then](docs/requirements/historias-usuario.md)
+- [Historias de usuario con escenarios de aceptación](docs/requirements/historias-usuario.md)
 - [Bitácora de uso de IA](docs/uso-ia.md)
 
 ---

@@ -56,9 +56,9 @@ classDiagram
 
 **ModoEjecucion** — la elección entre correr BLAST localmente (contra un índice del catálogo del laboratorio) o remotamente (contra los servidores de NCBI, usando la opción `-remote` del BLAST+).
 
-**BaseDeDatos** — una base BLAST utilizable para una búsqueda. En modo local es un índice construido por `makeblastdb` (ya sea a partir de una base pública como SwissProt, o de secuencias propias del laboratorio); en modo remoto es una base ofrecida por NCBI.
+**BaseDeDatos** — una base de datos BLAST utilizable para una búsqueda. En modo local es un índice construido por `makeblastdb` (ya sea a partir de una base de datos pública como SwissProt, o de secuencias propias del laboratorio); en modo remoto es una base de datos ofrecida por NCBI.
 
-**Alineamiento** — cada uno de los "hits" que devuelve BLAST: la comparación entre la query y una secuencia de la base, con sus métricas asociadas (score, E-value, % identidad, cobertura, etc.).
+**Alineamiento** — cada uno de los "hits" que devuelve BLAST: la comparación entre la query y una secuencia de la base de datos, con sus métricas asociadas (score, E-value, % identidad, cobertura, etc.).
 
 **Reporte** — la salida entregable al usuario: la lista de alineamientos filtrados, en un formato descargable determinado.
 
