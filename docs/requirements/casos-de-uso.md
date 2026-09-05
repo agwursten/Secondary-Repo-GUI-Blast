@@ -2,9 +2,10 @@
 
 Los casos de uso se redactan en **formato textual estructurado (Cockburn)** — actor, objetivo, precondición, flujo principal, postcondición — según pide el TP1, y **no** como diagrama gráfico (Mermaid no incluye un tipo de diagrama de casos de uso nativo).
 
-> El grupo maneja igualmente la notación UML de casos de uso —actor, elipse, límite del sistema, relaciones `<<include>>` / `<<extend>>`, generalización de actores— y puede dibujarla a mano si el docente lo solicita en la presentación.
+> El grupo maneja igualmente la notación UML de casos de uso —actor, elipse, límite del sistema, relaciones `<<include>>` / `<<extend>>`, generalización de actores— y puede dibujarla a mano si el docente lo solicita en la presentación.Ej:
 
-<img width="2400" height="1440" alt="casos-de-uso-localblast (1)" src="https://github.com/user-attachments/assets/7bb38886-7752-4689-b4dd-022196921637" />
+<img width="2400" height="1440" alt="casos-de-uso-localblast (3)" src="https://github.com/user-attachments/assets/f585918d-d291-4d89-9012-a77d93b6459a" />
+
 
 
 Cada caso de uso declara qué requerimientos funcionales realiza (trazabilidad **RF → CU → slice → HU**). Los slices secundarios se **nombran** en este TP; su detalle como historias de usuario está en [`historias-usuario.md`](historias-usuario.md).
