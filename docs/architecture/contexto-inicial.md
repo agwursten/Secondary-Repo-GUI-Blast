@@ -56,7 +56,7 @@ flowchart TD
     D2[(D2 · Búsquedas y<br/>resultados históricos)]
 
     %% Flujos externos — Investigador
-    INV -->|secuencia query, programa,<br/>modo, base de datos,<br/>parámetros y filtros| P1
+    INV -->|secuencia query, programa,<br/>modo, id base de datos,<br/>parámetros y filtros| P1
     P2 -->|tabla de resultados<br/>y archivo descargable| INV
 
     %% Flujos externos — Administrador
