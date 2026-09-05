@@ -36,7 +36,7 @@ Ninguna de las dos permite hoy, con una sola herramienta: correr BLAST **local o
 
 LocalBlast es una **interfaz web para BLAST+** que resuelve las tres carencias:
 
-- El **investigador** decide con un botón si el alineamiento se corre localmente (contra bases de datos del laboratorio) o remotamente (contra NCBI, usando la opción `-remote` del BLAST+).
+- El **investigador** decide con un botón si el alineamiento se corre localmente (contra bases de datos del laboratorio) o remotamente. En ambos casos el sistema invoca a BLAST+; en modo remoto le pasa la flag `-remote` y es BLAST+ quien se comunica con NCBI del otro lado.
 - El **administrador** puede subir archivos FASTA para dejarlos disponibles como bases de datos locales — sean del propio laboratorio o de bases de datos públicas como SwissProt, que el administrador descarga por su cuenta antes de subirlas al sistema.
 - Los **filtros pre-búsqueda** se cargan en un formulario con valores por defecto sensatos; los **filtros post-búsqueda** se aplican en la tabla de resultados sin volver a correr BLAST.
 - Los **resultados** se descargan en CSV, JSON, FASTA, tabular BLAST o XML.
@@ -67,7 +67,7 @@ LocalBlast es una **interfaz web para BLAST+** que resuelve las tres carencias:
 | **Investigador/a** | Estudiante de grado/posgrado, tesista, becario/a, docente-investigador/a | Sí (usuario final principal) | Reducir el tiempo de las búsquedas BLAST recurrentes y evitar la fricción de la terminal o de la web de NCBI. |
 | **Administrador/a de bases de datos** | Bioinformático/a del laboratorio, técnico/a de IT del grupo de investigación | Sí | Poder mantener bases de datos propias (secuencias del laboratorio) y espejos de bases públicas sin depender del acceso externo. |
 | **Docente de la cursada** | Docente de bioinformática o materias afines | Sí (a través del rol Investigador) | Usar la herramienta en clases y trabajos prácticos, reemplazando parcialmente a la web de NCBI. |
-| **NCBI** | Proveedor del servicio remoto de BLAST | No es usuario del sistema; es un sistema externo consumido por LocalBlast | Establece los límites de uso de la API remota (rate limits) que el sistema respeta. |
+| **NCBI** | Proveedor del servicio remoto de BLAST | No interactúa con LocalBlast; sus servidores son contactados por BLAST+ cuando se lo invoca con `-remote` | Establece los límites de uso de la API remota (rate limits) que BLAST+ respeta, y que indirectamente afectan al comportamiento visible del sistema. |
 | **Cátedra de Ingeniería de Software (FIUNER)** | Evaluador del proyecto | No | Verificar la aplicación correcta de los conceptos del cuatrimestre. |
 
 Los dos primeros son los actores del modelo de casos de uso (los que aparecen en el diagrama de contexto). El resto son stakeholders sin interacción directa con el sistema.
@@ -96,9 +96,9 @@ De los tres procesos identificados en el DFD Nivel 1 (P1, P2, P3), el grupo elig
 
 ### 5.1 Qué se profundiza y por qué
 
-- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra la complejidad interesante (dos rutas de ejecución alternativas, validación de parámetros pre-búsqueda, ejecución asíncrona, integración con NCBI y con el binario local). Se detalla como CU-01.
+- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra la complejidad interesante (dos modos de invocación a BLAST+ — con o sin `-remote` —, validación de parámetros pre-búsqueda, verificación de compatibilidad programa/query/base de datos, y ejecución asíncrona). Se detalla como CU-01.
 
-- **P3 · Administrar bases de datos — profundizado.** Es el proceso que habilita el modo local, que es lo que diferencia a LocalBlast de "otra interfaz web sobre NCBI". Sin P3 el laboratorio no puede tener bases propias, y el sistema pierde la mitad de su propuesta de valor. Se detalla como CU-02.
+- **P3 · Administrar bases de datos — profundizado.** Es el proceso que habilita el modo local, que es lo que diferencia a LocalBlast de "otra GUI para búsquedas remotas". Sin P3 el laboratorio no puede tener bases de datos propias, y el sistema pierde la mitad de su propuesta de valor. Se detalla como CU-02.
 
 ### 5.2 Qué queda fuera del profundizado y por qué
 
@@ -118,7 +118,7 @@ Los RF-11 a RF-14 corresponden a **P3 (Administrar bases de datos)** y son reali
 | ID | Requerimiento |
 |---|---|
 | **RF-01** | El sistema debe permitir al usuario ingresar la secuencia query como texto pegado en el formulario o como archivo FASTA subido. |
-| **RF-02** | El sistema debe permitir al usuario elegir entre dos modos de ejecución mutuamente excluyentes: **local** (contra una base de datos del catálogo del laboratorio) o **remoto** (contra NCBI vía la opción `-remote` de BLAST+). |
+| **RF-02** | El sistema debe permitir al usuario elegir entre dos modos de ejecución mutuamente excluyentes: **local** (invoca a BLAST+ contra una base de datos del catálogo del laboratorio) o **remoto** (invoca a BLAST+ con la flag `-remote`, y es BLAST+ el que se comunica con NCBI). |
 | **RF-03** | El sistema debe permitir al usuario seleccionar una base de datos disponible para el modo elegido: en modo local, las que figuran en el catálogo administrado por P3; en modo remoto, las bases estándar de NCBI. |
 | **RF-04** | El sistema debe permitir al usuario configurar los parámetros pre-búsqueda que afectan al algoritmo: **E-value máximo**, **matriz de sustitución** (para BLAST de proteínas), **tamaño de palabra** y **penalización de gaps** (apertura y extensión). El sistema debe ofrecer valores por defecto sensatos según el programa BLAST correspondiente. |
 | **RF-05** | El sistema debe permitir al usuario elegir el programa BLAST a ejecutar (`blastn`, `blastp`, `blastx`, `tblastn`, `tblastx`) y debe verificar que esa elección sea compatible con el tipo de la secuencia query y con el tipo de la base de datos seleccionada. Si la combinación no es compatible, no permite lanzar la búsqueda e indica el motivo. |
@@ -159,7 +159,7 @@ Las historias de usuario ya detalladas para el TP1 (slice básico + un slice sec
 ## 8. Suposiciones y dependencias
 
 - El binario **BLAST+** (versión 2.14 o posterior) está disponible en el servidor donde corre el sistema. Es una dependencia externa: LocalBlast **usa** BLAST+, no lo empaqueta.
-- La API remota de NCBI (`https://blast.ncbi.nlm.nih.gov/Blast.cgi`) está disponible desde la red del servidor cuando el usuario elige modo remoto. Las políticas de uso responsable de NCBI se respetan (frecuencia de polling, límite de queries por unidad de tiempo).
+- La API remota de NCBI (`https://blast.ncbi.nlm.nih.gov/Blast.cgi`) está disponible desde la red del servidor cuando el usuario elige modo remoto — **BLAST+ es quien la contacta**, no directamente nuestra GUI. Las políticas de uso responsable de NCBI (frecuencia de polling, límite de queries por unidad de tiempo) las respeta BLAST+, no nuestro código.
 - El servidor tiene espacio en disco suficiente para alojar las bases locales del laboratorio y los archivos temporales de las búsquedas.
 - Los usuarios acceden por HTTPS desde navegadores modernos.
 

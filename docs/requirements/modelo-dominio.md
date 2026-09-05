@@ -54,7 +54,7 @@ classDiagram
 
 **FiltroPostBusqueda** — criterios que el investigador aplica **después** de que BLAST devolvió los alineamientos, para reducir la lista sin volver a ejecutar el algoritmo (por ejemplo umbrales de % de identidad, % de cobertura, rango de E-value observado, taxonomía).
 
-**ModoEjecucion** — la elección entre correr BLAST localmente (contra un índice del catálogo del laboratorio) o remotamente (contra los servidores de NCBI, usando la opción `-remote` del BLAST+).
+**ModoEjecucion** — la elección entre correr BLAST+ localmente (contra un índice del catálogo del laboratorio) o remotamente (invocando a BLAST+ con la flag `-remote`, tras lo cual es BLAST+ el que dialoga con los servidores de NCBI del otro lado).
 
 **BaseDeDatos** — una base de datos BLAST utilizable para una búsqueda. En modo local es un índice construido por `makeblastdb` (ya sea a partir de una base de datos pública como SwissProt, o de secuencias propias del laboratorio); en modo remoto es una base de datos ofrecida por NCBI.
 

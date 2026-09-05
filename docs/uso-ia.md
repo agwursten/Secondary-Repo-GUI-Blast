@@ -36,10 +36,26 @@ Este documento registra el uso crítico de asistentes de IA generativa durante e
 - **Qué descartamos:** una sugerencia de la IA de "unir P1 y P2 en un solo proceso" para simplificar. La rechazamos porque justamente la separación entre P1 (ejecución) y P2 (filtrado post-búsqueda + entrega) refleja una decisión de dominio importante: los filtros post-búsqueda **no** vuelven a correr BLAST, y esa distinción se pierde si el DFD los mezcla.
 - **Errores detectados:** ninguno de la IA en esta revisión; el error estaba en nuestro diagrama y la IA lo ayudó a detectar.
 
+## Entrada 3 — Corrección del diagrama de contexto: BLAST+ como sistema externo (no NCBI)
+
+- **Herramienta usada:** asistente de IA generativa basado en LLM.
+- **Tarea concreta:** una vez que teníamos el DFD con Investigador, Administrador y NCBI como entidades externas, un integrante del grupo señaló que NCBI aparecía mal ubicado: nuestro sistema no habla directamente con NCBI. BLAST+ es el que hace toda la comunicación con NCBI internamente cuando se lo invoca con la flag `-remote`. Le pedimos a la IA que rediseñara el DFD para reflejar esto.
+- **Qué generó:** un DFD con BLAST+ como entidad externa en lugar de NCBI, mantenimiento del stakeholder NCBI en la tabla (como stakeholder indirecto), y una explicación del modelo local vs. remoto: ambos son invocaciones a BLAST+, la diferencia está del lado de BLAST+ y no del nuestro.
+- **Qué aceptamos:**
+  - La estructura del nuevo DFD con BLAST+ como sistema externo.
+  - Redefinir el almacén D1 como "catálogo de bases de datos" (metadatos) en lugar de "bases de datos BLAST locales" (índices físicos): los índices físicos los produce y consume BLAST+, nuestro sistema solo mantiene el catálogo de qué hay y dónde está.
+  - La aclaración de que NCBI queda en la tabla de stakeholders **pero con un rol distinto**: no interactúa con nuestro sistema, solo sus políticas afectan al comportamiento de BLAST+ que sí interactúa.
+- **Qué modificamos:**
+  - **Textos en las flechas del DFD.** El primer borrador de la IA seguía con etiquetas cortas (F1, F2, …) y una tabla aparte, pero el grupo decidió que era más legible poner el contenido de cada flujo directamente sobre la flecha, con saltos de línea para evitar superposición. Reescribimos cada etiqueta con ese criterio.
+  - **Naming del sistema.** La IA propuso renombrar el proyecto entero de "LocalBlast" a "BlastGUI" o similar. Decidimos mantener "LocalBlast" (así se llama el repo) y en su lugar dejar en el proceso 0 el rótulo *"LocalBlast · GUI web para BLAST+"* para que quede claro que el sistema es una GUI, no un motor de alineamiento propio.
+- **Qué descartamos:** una sugerencia de la IA de "unir P1 y P2 en un solo proceso" para simplificar (venía de una revisión anterior). La rechazamos porque justamente la separación entre P1 (ejecución) y P2 (filtrado post-búsqueda + entrega) refleja una decisión de dominio importante: los filtros post-búsqueda **no** vuelven a correr BLAST, y esa distinción se pierde si el DFD los mezcla.
+- **Errores detectados:**
+  - La primera versión que generó la IA seguía poniendo un flujo directo del sistema hacia NCBI en modo remoto, "por prolijidad de que se vea el destino final". Le tuvimos que insistir explícitamente en que ese flujo pasa por dentro de BLAST+ y no debe representarse como flujo de nuestro sistema, para no mentir sobre la arquitectura real.
+
 ---
 
 ## Reflexión general
 
-El uso de IA fue útil como **primer generador rápido de borradores** — sobre todo para arrancar sin quedarse mirando la hoja en blanco — pero **requiere revisión sistemática por parte del grupo**. Los errores que detectamos no fueron formales (formato, sintaxis) sino de **dominio**: la IA no sabe que SwissProt no se autodescarga, ni que el E-value default varía por programa, ni que hay una distinción conceptual entre parámetros pre-búsqueda y filtros post-búsqueda que es central a la propuesta del proyecto. Todo eso solo lo pudimos poner porque discutimos entre nosotros el modelo antes de aceptar el texto generado.
+El uso de IA fue útil como **primer generador rápido de borradores** — sobre todo para arrancar sin quedarse mirando la hoja en blanco — pero **requiere revisión sistemática por parte del grupo**. Los errores que detectamos no fueron formales (formato, sintaxis) sino de **dominio y arquitectura**: la IA no sabe que SwissProt no se autodescarga, ni que el E-value default varía por programa, ni que hay una distinción conceptual entre parámetros pre-búsqueda y filtros post-búsqueda, ni que nuestro sistema no habla con NCBI sino con BLAST+. Todo eso solo lo pudimos poner porque discutimos entre nosotros el modelo antes de aceptar el texto generado.
 
 La lección para los próximos TPs: usar la IA para agilizar la **redacción**, pero seguir discutiendo el **contenido** entre nosotros — el asistente ayuda a escribir más rápido lo que ya entendimos, no a entender por nosotros.

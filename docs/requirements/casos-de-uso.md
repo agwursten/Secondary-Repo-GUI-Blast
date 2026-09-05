@@ -11,10 +11,10 @@ Cada caso de uso declara qué requerimientos funcionales realiza (trazabilidad *
 ## CU-01 · Ejecutar búsqueda BLAST
 
 - **Actor principal:** Investigador/a
-- **Actor secundario:** Servicio remoto NCBI (en modo remoto), Motor BLAST+ local (en modo local)
+- **Actor secundario:** Motor **BLAST+** (invocado por el sistema en ambos modos: local, y remoto con la flag `-remote` — es BLAST+ el que se comunica con NCBI del otro lado, nunca directamente nuestra GUI)
 - **Objetivo:** Obtener un conjunto de alineamientos de una secuencia query contra una base de datos, con parámetros configurables, y llevarlos a un archivo descargable en el formato elegido.
 - **Realiza:** RF-01, RF-02, RF-03, RF-04, RF-05, RF-06, RF-07, RF-08, RF-09, RF-10
-- **Precondición:** Existe al menos una base de datos disponible (local, en D1, o remota vía NCBI). El investigador accedió a la interfaz web.
+- **Precondición:** Existe al menos una base de datos disponible (local, con su entrada en D1, o remota entre las que ofrece NCBI). El investigador accedió a la interfaz web.
 
 ### Flujo principal (slice básico) — camino feliz
 
@@ -25,7 +25,7 @@ Cada caso de uso declara qué requerimientos funcionales realiza (trazabilidad *
 5. El investigador ajusta los **parámetros pre-búsqueda** (E-value máximo, matriz de sustitución, tamaño de palabra, penalización de gaps). La interfaz ofrece valores por defecto sensatos para no obligar al usuario a completarlos.
 6. El investigador presiona **Ejecutar búsqueda**.
 7. El sistema **valida** que la secuencia sea reconocible como ADN, ARN o proteína, que los parámetros estén dentro de rangos lógicos, y que la combinación de programa BLAST elegido, tipo de la secuencia query y tipo de la base de datos seleccionada sea **compatible** (por ejemplo, no dejar correr `blastp` sobre una secuencia de nucleótidos).
-8. El sistema **lanza la ejecución en segundo plano** y muestra un indicador de progreso, sin bloquear la interfaz. En modo remoto envía la consulta a NCBI y hace polling; en modo local invoca al binario BLAST+ contra los índices de D1.
+8. El sistema **invoca a BLAST+** en segundo plano con la combinación de opciones armada a partir de la configuración del formulario (programa, ruta de la base de datos, query, parámetros pre-búsqueda, y la flag `-remote` cuando el modo elegido es remoto), y muestra un indicador de progreso sin bloquear la interfaz. La comunicación con los servidores de NCBI, cuando corresponde, la hace BLAST+ internamente por la flag `-remote`; el sistema solo espera su respuesta.
 9. Cuando termina, el sistema muestra la **lista de alineamientos** (hits) en una tabla, con columnas mínimas: identificador del hit, score, E-value observado, % identidad, % cobertura.
 10. El investigador ajusta los **filtros post-búsqueda** (umbrales de identidad, cobertura, E-value observado, taxonomía). La tabla se re-filtra en el momento, sin volver a correr BLAST.
 11. El investigador elige el **formato de descarga** (CSV, JSON, FASTA, tabular BLAST o XML) y presiona **Descargar**.
@@ -39,7 +39,7 @@ Cada caso de uso declara qué requerimientos funcionales realiza (trazabilidad *
 - **A2 · Parámetros pre-búsqueda fuera de rango.** El sistema detecta al menos un parámetro con valor imposible (E-value negativo, tamaño de palabra fuera del rango soportado) y señala qué campo corregir.
 - **A3 · Combinación programa BLAST / query / base de datos incompatible.** El investigador eligió un programa BLAST que no es compatible con el tipo de la secuencia query o con el tipo de la base de datos seleccionada (por ejemplo `blastp` con una query de nucleótidos, o `blastn` contra una base de datos de proteínas). El sistema no lanza la búsqueda, indica el motivo de la incompatibilidad y sugiere qué combinaciones sí son válidas para lo que el usuario ya cargó.
 - **A4 · Base de datos local no disponible.** El investigador seleccionó modo local y una base de datos que en ese momento no está lista en D1 (por ejemplo, se está actualizando desde P3). El sistema informa el estado y sugiere elegir otra base de datos o cambiar a modo remoto.
-- **A5 · Fallo del servicio remoto NCBI.** En modo remoto, NCBI no responde, devuelve error, o supera el timeout. El sistema informa el problema y ofrece reintentar o cambiar a modo local si hay una base de datos equivalente disponible.
+- **A5 · Fallo del modo remoto de BLAST+.** El investigador eligió modo remoto y BLAST+ reporta un error de comunicación con NCBI (sin respuesta, timeout, o error explícito). El sistema captura el error de BLAST+, lo informa al investigador, y ofrece reintentar o cambiar a modo local si hay una base de datos equivalente disponible.
 - **A6 · Cancelación manual de la búsqueda.** El investigador cancela una búsqueda que ya está en ejecución. El sistema aborta el subproceso local o cancela la solicitud remota, y deja la interfaz lista para una nueva búsqueda.
 - **A7 · Ningún resultado supera los filtros post-búsqueda.** El sistema no impide la descarga: entrega un reporte vacío pero con los metadatos de la búsqueda, para que el investigador tenga constancia del intento.
 
@@ -48,6 +48,7 @@ Cada caso de uso declara qué requerimientos funcionales realiza (trazabilidad *
 ## CU-02 · Administrar base de datos BLAST local
 
 - **Actor principal:** Administrador/a
+- **Actor secundario:** Motor **BLAST+** (invocado por el sistema para construir físicamente los índices con `makeblastdb`)
 - **Objetivo:** Mantener el catálogo de bases de datos locales disponibles para búsqueda, dando de alta nuevas bases de datos a partir de archivos FASTA subidos por el administrador (sean del propio laboratorio o descargados manualmente de bases de datos públicas como SwissProt), y actualizándolas o dándolas de baja.
 - **Realiza:** RF-11, RF-12, RF-13, RF-14
 - **Precondición:** El administrador está autenticado con rol de administrador y accedió a la sección de administración de bases de datos.
@@ -59,8 +60,8 @@ Cada caso de uso declara qué requerimientos funcionales realiza (trazabilidad *
 3. El sistema le pide: **nombre visible** de la base de datos, **tipo** (nucleótidos o proteínas) y el **archivo FASTA** que se va a usar como origen, subido desde el equipo del administrador.
 4. El administrador completa los datos y presiona **Crear base de datos**.
 5. El sistema valida que el FASTA sea legible y consistente con el tipo declarado.
-6. El sistema lanza en segundo plano la construcción de los índices con `makeblastdb`, muestra un indicador de progreso y no bloquea la interfaz.
-7. Al terminar, el sistema agrega la base de datos al catálogo con estado **Disponible**, la persiste en D1, y notifica al administrador que ya puede usarse en el CU-01.
+6. El sistema **invoca a BLAST+** en segundo plano con `makeblastdb`, pasándole el FASTA y el tipo declarado, y muestra un indicador de progreso sin bloquear la interfaz. BLAST+ genera los archivos de índice en una ruta que el sistema le indica.
+7. Al terminar, el sistema registra la nueva entrada en el **catálogo (D1)** con estado **Disponible** — nombre visible, tipo, ruta a los archivos de índice, fecha — y notifica al administrador que ya puede usarse en el CU-01.
 
 **Postcondición:** La nueva base de datos aparece en el catálogo y queda disponible para que los investigadores la seleccionen en el CU-01.
 
