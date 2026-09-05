@@ -20,14 +20,14 @@ Para el TP1 se detallan las historias del **slice básico** (camino feliz) de ca
 **Realiza:** RF-01 a RF-10
 
 > **Como** investigador/a,
-> **quiero** cargar una secuencia, elegir si la búsqueda se corre local o remota, ajustar los parámetros del algoritmo y descargar los resultados filtrados desde una misma interfaz web,
+> **quiero** subir mi secuencia, elegir el tipo de BLAST, elegir si la búsqueda se corre local o remota, ajustar los parámetros del algoritmo y descargar los resultados filtrados desde una misma interfaz web,
 > **para** obtener alineamientos sin depender de la línea de comandos ni cargar la web oficial de NCBI para cada consulta.
 
 **Escenarios de aceptación**
 
-- **EA-01.1 · Camino feliz en modo remoto.** El investigador ingresa una secuencia FASTA válida en el formulario, elige modo remoto contra la base de datos "nr" de NCBI, deja los parámetros pre-búsqueda en sus valores por defecto y presiona "Ejecutar búsqueda". La interfaz muestra un indicador de progreso mientras la consulta está en curso y, al terminar, presenta la tabla de alineamientos con al menos las columnas: identificador del hit, score, E-value observado, porcentaje de identidad y porcentaje de cobertura.
+- **EA-01.1 · Camino feliz en modo remoto.** El investigador sube un archivo FASTA válido con una secuencia de proteína, elige el programa `blastp`, modo remoto contra la base de datos "nr" de NCBI, y deja los parámetros pre-búsqueda en sus valores por defecto. Al presionar "Ejecutar búsqueda", la interfaz muestra un indicador de progreso mientras la consulta está en curso y, al terminar, presenta la tabla de alineamientos con al menos las columnas: identificador del hit, score, E-value observado, porcentaje de identidad y porcentaje de cobertura.
 
-- **EA-01.2 · Camino feliz en modo local.** Existe al menos una base de datos local en el catálogo. El investigador ingresa una secuencia válida, elige modo local contra esa base de datos y deja los parámetros por defecto. Al presionar "Ejecutar búsqueda", el sistema ejecuta la consulta contra los índices locales y presenta la tabla de resultados con las mismas columnas mínimas que en el escenario anterior.
+- **EA-01.2 · Camino feliz en modo local.** Existe al menos una base de datos local de proteínas en el catálogo. El investigador sube una secuencia válida de proteína, elige el programa `blastp`, modo local contra esa base de datos y deja los parámetros por defecto. Al presionar "Ejecutar búsqueda", el sistema ejecuta la consulta contra los índices locales y presenta la tabla de resultados con las mismas columnas mínimas que en el escenario anterior.
 
 - **EA-01.3 · Descarga del reporte en el formato elegido.** La búsqueda finalizó y el investigador está viendo la tabla de resultados con los filtros post-búsqueda aplicados. Selecciona un formato (por ejemplo CSV) y presiona "Descargar". El sistema entrega un archivo en ese formato que contiene únicamente los hits que superan los filtros post-búsqueda activos, y guarda una copia de la búsqueda en el historial del sistema.
 
@@ -63,9 +63,9 @@ Para el TP1 se detallan las historias del **slice básico** (camino feliz) de ca
 
 **Escenarios de aceptación**
 
-- **EA-02a.1 · Alta exitosa a partir de un FASTA propio del laboratorio.** El administrador está autenticado con rol de administrador, dispone de un archivo FASTA válido de proteínas del laboratorio y accedió a la sección "Administración de bases de datos". Completa el formulario con nombre visible, tipo "proteínas" y el archivo FASTA, y presiona "Crear base de datos". El sistema ejecuta la construcción de índices en segundo plano y, al terminar, la nueva base de datos aparece en el catálogo con estado "Disponible" y queda listada como opción para el investigador en el CU-01.
+- **EA-02a.1 · Alta exitosa a partir de un FASTA propio del laboratorio.** El administrador está autenticado con rol de administrador, dispone de un archivo FASTA válido de proteínas del laboratorio y accedió a la sección "Administración de bases de datos". Completa el formulario con nombre visible, tipo "proteínas" y el archivo FASTA subido desde su equipo, y presiona "Crear base de datos". El sistema ejecuta la construcción de índices en segundo plano y, al terminar, la nueva base de datos aparece en el catálogo con estado "Disponible" y queda listada como opción para el investigador en el CU-01.
 
-- **EA-02a.2 · Alta desde una fuente pública indicando URL (SwissProt).** El administrador está autenticado y quiere dar de alta la base de datos SwissProt. En el formulario elige la opción "URL pública", pega la URL del FASTA de SwissProt y presiona "Crear base de datos". El sistema descarga el FASTA desde la URL, construye los índices y agrega la base de datos al catálogo con estado "Disponible".
+- **EA-02a.2 · Alta a partir de un FASTA público descargado manualmente (SwissProt).** El administrador descargó previamente el archivo FASTA de SwissProt desde el sitio de UniProt y lo tiene guardado en su equipo. En el formulario completa nombre visible "SwissProt", tipo "proteínas" y sube ese archivo. Presiona "Crear base de datos". El sistema construye los índices, agrega la base de datos al catálogo con estado "Disponible" y la deja lista para búsquedas locales. Para el sistema no hay diferencia respecto a EA-02a.1: cualquier FASTA subido se trata igual, sea del laboratorio o de una base de datos pública.
 
 ---
 
@@ -92,7 +92,7 @@ Para el TP1 se detallan las historias del **slice básico** (camino feliz) de ca
 |---|---|---|---|
 | RF-01, RF-02, RF-03, RF-04, RF-05, RF-06, RF-07, RF-08, RF-09, RF-10 | CU-01 | básico | HU-01 |
 | RF-06 | CU-01 | A1 | HU-01.A1 |
-| — | CU-01 | A2, A3, A4, A5, A6 | *(nombrados, sin detallar aún)* |
+| — | CU-01 | A2, A3, A4, A5, A6, A7 | *(nombrados, sin detallar aún)* |
 | RF-11, RF-12, RF-14 | CU-02 | básico | HU-02a |
 | RF-13 | CU-02 | A1 | HU-02.A1 |
 | — | CU-02 | A2, A3, A4 | *(nombrados, sin detallar aún)* |

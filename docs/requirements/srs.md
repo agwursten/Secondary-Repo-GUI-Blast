@@ -37,7 +37,7 @@ Ninguna de las dos permite hoy, con una sola herramienta: correr BLAST **local o
 LocalBlast es una **interfaz web para BLAST+** que resuelve las tres carencias:
 
 - El **investigador** decide con un botón si el alineamiento se corre localmente (contra bases de datos del laboratorio) o remotamente (contra NCBI, usando la opción `-remote` del BLAST+).
-- El **administrador** puede subir archivos FASTA propios o importar bases públicas (SwissProt, por ejemplo) para dejarlas disponibles como bases locales.
+- El **administrador** puede subir archivos FASTA para dejarlos disponibles como bases de datos locales — sean del propio laboratorio o de bases de datos públicas como SwissProt, que el administrador descarga por su cuenta antes de subirlas al sistema.
 - Los **filtros pre-búsqueda** se cargan en un formulario con valores por defecto sensatos; los **filtros post-búsqueda** se aplican en la tabla de resultados sin volver a correr BLAST.
 - Los **resultados** se descargan en CSV, JSON, FASTA, tabular BLAST o XML.
 
@@ -48,7 +48,7 @@ LocalBlast es una **interfaz web para BLAST+** que resuelve las tres carencias:
 - Formulario de parámetros pre-búsqueda con valores por defecto.
 - Aplicación interactiva de filtros post-búsqueda sobre la tabla de resultados.
 - Descarga de resultados en múltiples formatos.
-- Alta, actualización y baja de bases de datos locales por parte del administrador, tanto a partir de archivo FASTA subido como de URL pública.
+- Alta, actualización y baja de bases de datos locales por parte del administrador, a partir de un archivo FASTA subido desde su equipo.
 - Autenticación básica con dos roles (Investigador y Administrador).
 
 ### 1.4 Fuera del alcance
@@ -121,7 +121,7 @@ Los RF-11 a RF-14 corresponden a **P3 (Administrar bases de datos)** y son reali
 | **RF-02** | El sistema debe permitir al usuario elegir entre dos modos de ejecución mutuamente excluyentes: **local** (contra una base de datos del catálogo del laboratorio) o **remoto** (contra NCBI vía la opción `-remote` de BLAST+). |
 | **RF-03** | El sistema debe permitir al usuario seleccionar una base de datos disponible para el modo elegido: en modo local, las que figuran en el catálogo administrado por P3; en modo remoto, las bases estándar de NCBI. |
 | **RF-04** | El sistema debe permitir al usuario configurar los parámetros pre-búsqueda que afectan al algoritmo: **E-value máximo**, **matriz de sustitución** (para BLAST de proteínas), **tamaño de palabra** y **penalización de gaps** (apertura y extensión). El sistema debe ofrecer valores por defecto sensatos según el programa BLAST correspondiente. |
-| **RF-05** | El sistema debe determinar automáticamente el programa BLAST a ejecutar (`blastn`, `blastp`, `blastx`, `tblastn`, `tblastx`) a partir del tipo de la secuencia query y del tipo de la base de datos seleccionada. |
+| **RF-05** | El sistema debe permitir al usuario elegir el programa BLAST a ejecutar (`blastn`, `blastp`, `blastx`, `tblastn`, `tblastx`) y debe verificar que esa elección sea compatible con el tipo de la secuencia query y con el tipo de la base de datos seleccionada. Si la combinación no es compatible, no permite lanzar la búsqueda e indica el motivo. |
 | **RF-06** | El sistema debe validar, antes de ejecutar la búsqueda, que la secuencia query respete el alfabeto declarado o inferido (ADN, ARN o proteína) y que los parámetros pre-búsqueda estén dentro de rangos válidos. |
 | **RF-07** | El sistema debe ejecutar la búsqueda de forma asíncrona, mostrando un indicador de progreso, sin bloquear la interfaz de usuario, y debe permitir cancelar una búsqueda en curso. |
 | **RF-08** | El sistema debe mostrar los resultados en una tabla con, como mínimo: identificador del hit, score, E-value observado, porcentaje de identidad y porcentaje de cobertura. |
@@ -132,7 +132,7 @@ Los RF-11 a RF-14 corresponden a **P3 (Administrar bases de datos)** y son reali
 
 | ID | Requerimiento |
 |---|---|
-| **RF-11** | El sistema debe permitir al administrador dar de alta una nueva base de datos local, indicando: nombre visible, tipo (nucleótidos o proteínas) y origen del archivo FASTA — subiendo un archivo local o indicando la URL de una fuente pública. |
+| **RF-11** | El sistema debe permitir al administrador dar de alta una nueva base de datos local, indicando: nombre visible, tipo (nucleótidos o proteínas) y archivo FASTA de origen, subido desde su equipo. |
 | **RF-12** | El sistema debe construir los índices BLAST (`makeblastdb`) de la nueva base de datos en segundo plano, mostrando un indicador de progreso y sin bloquear la interfaz. |
 | **RF-13** | El sistema debe validar que el archivo FASTA sea legible y que su contenido sea consistente con el tipo declarado, y debe rechazar la creación de la base de datos con un mensaje explicativo si la validación falla. |
 | **RF-14** | El sistema debe permitir al administrador actualizar o dar de baja una base de datos existente del catálogo, sin afectar las búsquedas en curso ni el historial de búsquedas ya realizadas. |
@@ -151,7 +151,7 @@ Las historias de usuario ya detalladas para el TP1 (slice básico + un slice sec
 
 **Resumen de la cadena de trazabilidad:**
 
-- **CU-01** realiza RF-01 a RF-10. Slice básico → **HU-01**. Slice A1 → **HU-01.A1**. Slices A2–A6 nombrados.
+- **CU-01** realiza RF-01 a RF-10. Slice básico → **HU-01**. Slice A1 → **HU-01.A1**. Slices A2–A7 nombrados.
 - **CU-02** realiza RF-11 a RF-14. Slice básico → **HU-02a**. Slice A1 → **HU-02.A1**. Slices A2–A4 nombrados.
 
 ---

@@ -10,23 +10,18 @@ Para mantener el diagrama legible, las etiquetas de las flechas se abrevian como
 
 ## Nivel 0 · Diagrama de contexto
 
-El sistema completo se representa como un único proceso (0), con sus cuatro entidades externas: los dos actores humanos (Investigador/a y Administrador/a) y los dos sistemas externos con los que dialoga (el servicio remoto de NCBI para el modo remoto, y el repositorio público de secuencias desde donde se pueden descargar bases de datos públicas como SwissProt).
+El sistema completo se representa como un único proceso (0), con sus tres entidades externas: los dos actores humanos (Investigador/a y Administrador/a) y el único sistema externo con el que dialoga (el servicio remoto de NCBI, para el modo remoto).
+
+Los archivos FASTA — tanto la secuencia query del investigador como el FASTA para dar de alta una base de datos local — son **subidos** por los propios actores desde su equipo; el sistema no busca datos en ningún repositorio externo por su cuenta. Por eso, ni las fuentes públicas de secuencias (SwissProt, UniProt, etc.) ni los laboratorios en sí aparecen como entidades externas del diagrama: si un admin quiere cargar SwissProt como base de datos local, la descarga por fuera del sistema y sube el archivo resultante como si fuera cualquier otro FASTA.
 
 ```mermaid
 flowchart LR
-    subgraph IZQ[" "]
-        direction TB
-        INV[Investigador/a]
-        REPO[Repositorio público<br/>de secuencias<br/>UniProt / NCBI FTP]
-    end
+    INV[Investigador/a]
 
     P((0<br/>LocalBlast))
 
-    subgraph DER[" "]
-        direction TB
-        ADM[Administrador/a]
-        NCBI[NCBI BLAST<br/>servicio remoto]
-    end
+    ADM[Administrador/a]
+    NCBI[NCBI BLAST<br/>servicio remoto]
 
     INV -->|F1| P
     P -->|F2| INV
@@ -34,38 +29,30 @@ flowchart LR
     P -->|F4| ADM
     P -->|F5| NCBI
     NCBI -->|F6| P
-    REPO -->|F7| P
-
-    style IZQ fill:none,stroke:none
-    style DER fill:none,stroke:none
 ```
 
-**Tabla de flujos externos** (los mismos siete que van a preservarse en Nivel 1):
+**Tabla de flujos externos** (los mismos seis que van a preservarse en Nivel 1):
 
 | # | Origen | Destino | Contenido |
 |---|---|---|---|
-| F1 | Investigador/a | Sistema | Secuencia query + configuración de búsqueda (modo, parámetros pre-búsqueda, filtros post-búsqueda) |
+| F1 | Investigador/a | Sistema | Archivo FASTA de la secuencia query, elección del programa BLAST, elección del modo, elección de la base de datos, parámetros pre-búsqueda y filtros post-búsqueda |
 | F2 | Sistema | Investigador/a | Resultados filtrados y archivo descargable |
-| F3 | Administrador/a | Sistema | Archivo FASTA local o URL de fuente pública + orden de alta / actualización / baja |
+| F3 | Administrador/a | Sistema | Archivo FASTA para dar de alta la base de datos + tipo declarado (nucleótidos / proteínas) + orden de alta, actualización o baja |
 | F4 | Sistema | Administrador/a | Estado y lista de bases de datos disponibles |
 | F5 | Sistema | NCBI | Consulta BLAST remota |
 | F6 | NCBI | Sistema | Resultados crudos NCBI |
-| F7 | Repositorio público | Sistema | Archivo FASTA de la base de datos pública descargada |
-
-**Observación sobre F7:** el repositorio público (UniProt FTP, NCBI FTP) es un **sistema externo** — no es una persona ni una organización, pero sí es otro sistema que interactúa con LocalBlast, y por eso se representa como rectángulo según la simbología del instructivo. Este flujo solo se dispara cuando el administrador elige la opción "descargar desde URL"; si en cambio sube un archivo FASTA propio del laboratorio desde su equipo, el archivo forma parte del flujo F3 y no interviene ningún sistema externo.
 
 ---
 
 ## Nivel 1 · Descomposición del proceso 0
 
-El proceso 0 se descompone en **tres procesos internos**, más dos almacenes. La regla de balanceo se respeta: los siete flujos F1–F7 que cruzan el límite del sistema son los mismos que en Nivel 0, redistribuidos entre los procesos internos.
+El proceso 0 se descompone en **tres procesos internos**, más dos almacenes. La regla de balanceo se respeta: los seis flujos F1–F6 que cruzan el límite del sistema son los mismos que en Nivel 0, redistribuidos entre los procesos internos.
 
 ```mermaid
 flowchart TD
     INV[Investigador/a]
     ADM[Administrador/a]
     NCBI[NCBI BLAST<br/>servicio remoto]
-    REPO[Repositorio público<br/>de secuencias<br/>UniProt / NCBI FTP]
 
     P1((1<br/>Ejecutar búsqueda<br/>BLAST))
     P2((2<br/>Filtrar y entregar<br/>resultados))
@@ -86,9 +73,6 @@ flowchart TD
     P1 -->|F5| NCBI
     NCBI -->|F6| P1
 
-    %% Flujos externos — Repositorio público
-    REPO -->|F7| P3
-
     %% Flujos internos entre procesos
     P1 -->|resultados crudos<br/>+ criterios post-búsqueda| P2
 
@@ -102,7 +86,7 @@ flowchart TD
     D2 -.->|historial consultable<br/>uso futuro| P2
 ```
 
-**Chequeo de balanceo:** los siete flujos externos F1–F7 aparecen en Nivel 1 exactamente con los mismos extremos externos que en Nivel 0. Solo cambia a qué proceso interno se conectan del lado del sistema.
+**Chequeo de balanceo:** los seis flujos externos F1–F6 aparecen en Nivel 1 exactamente con los mismos extremos externos que en Nivel 0. Solo cambia a qué proceso interno se conectan del lado del sistema.
 
 ---
 
@@ -110,11 +94,11 @@ flowchart TD
 
 ### Procesos
 
-- **P1 · Ejecutar búsqueda BLAST.** Recibe del investigador la secuencia query, el modo (local o remoto), los parámetros pre-búsqueda que afectan al algoritmo (E-value, matriz de sustitución, tamaño de palabra, penalizaciones de gap, etc.) y la elección de la base de datos. Valida la entrada, decide la ruta de ejecución y produce el conjunto crudo de alineamientos: en modo local invoca al binario BLAST+ contra los índices de D1; en modo remoto arma la consulta BLAST y la envía a NCBI, esperando el resultado.
+- **P1 · Ejecutar búsqueda BLAST.** Recibe del investigador el archivo FASTA con la secuencia query, la elección del programa BLAST (`blastn`, `blastp`, `blastx`, `tblastn`, `tblastx`), el modo (local o remoto), la base de datos elegida y los parámetros pre-búsqueda que afectan al algoritmo (E-value, matriz de sustitución, tamaño de palabra, penalizaciones de gap, etc.). Verifica la compatibilidad entre el programa BLAST elegido, el tipo de la secuencia query y el tipo de la base de datos, valida el resto de la entrada y decide la ruta de ejecución: en modo local invoca al binario BLAST+ contra los índices de D1; en modo remoto arma la consulta BLAST y la envía a NCBI, esperando el resultado. Produce el conjunto crudo de alineamientos.
 
 - **P2 · Filtrar y entregar resultados.** Recibe los resultados crudos y los criterios de filtrado post-búsqueda que el usuario definió (por ejemplo umbrales de % identidad, cobertura, E-value, taxones), aplica esos filtros, arma la vista de resultados que se muestra en la interfaz y prepara el archivo descargable en el formato pedido (CSV, JSON, FASTA, tabular BLAST, XML). Al cerrar la búsqueda, escribe una copia del resultado en el historial D2.
 
-- **P3 · Administrar bases de datos.** Es el proceso del rol Administrador. Recibe el archivo FASTA (subido por el admin o descargado desde una fuente pública como SwissProt) y las órdenes de alta, actualización o baja de una base de datos local; construye los índices BLAST correspondientes usando `makeblastdb`; y mantiene actualizado el catálogo de bases de datos disponibles que P1 va a ofrecer al investigador. Devuelve al administrador el estado del proceso (base de datos creada, actualizada, con errores, etc.).
+- **P3 · Administrar bases de datos.** Es el proceso del rol Administrador. Recibe el archivo FASTA subido por el admin y el tipo declarado (nucleótidos o proteínas), junto con las órdenes de alta, actualización o baja de una base de datos local; construye los índices BLAST correspondientes usando `makeblastdb`; y mantiene actualizado el catálogo de bases de datos disponibles que P1 va a ofrecer al investigador. Devuelve al administrador el estado del proceso (base de datos creada, actualizada, con errores, etc.).
 
 ### Almacenes
 
