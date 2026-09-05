@@ -73,7 +73,7 @@ flowchart TD
     P1 -->|resultados crudos<br/>+ criterios post-búsqueda| P2
 
     %% Flujos con almacenes
-    P3 -->|nueva entrada del catálogo| D1
+    P3 -->|entrada del catálogo| D1
     D1 -->|lista de bases de datos<br/>disponibles con ubicación| P1
     D1 -->|catálogo para el admin| P3
 
