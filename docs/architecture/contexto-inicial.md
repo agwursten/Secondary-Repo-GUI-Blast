@@ -19,7 +19,7 @@ flowchart LR
     ADM[Administrador/a]
     BLAST[BLAST+<br/>motor de alineamiento<br/>local y remoto]
 
-    INV -->|secuencia query, programa,<br/>modo, base de datos,<br/>parámetros y filtros| P
+    INV -->|secuencia query, programa,<br/>modo, id base de datos,<br/>parámetros y filtros| P
     P -->|tabla de resultados<br/>y archivo descargable| INV
 
     ADM -->|FASTA + tipo +<br/>orden alta/actualizar/baja| P
