@@ -4,6 +4,9 @@ Los casos de uso se redactan en **formato textual estructurado (Cockburn)** — 
 
 > El grupo maneja igualmente la notación UML de casos de uso —actor, elipse, límite del sistema, relaciones `<<include>>` / `<<extend>>`, generalización de actores— y puede dibujarla a mano si el docente lo solicita en la presentación.
 
+<img width="2400" height="1440" alt="casos-de-uso-localblast (1)" src="https://github.com/user-attachments/assets/7bb38886-7752-4689-b4dd-022196921637" />
+
+
 Cada caso de uso declara qué requerimientos funcionales realiza (trazabilidad **RF → CU → slice → HU**). Los slices secundarios se **nombran** en este TP; su detalle como historias de usuario está en [`historias-usuario.md`](historias-usuario.md).
 
 ---
