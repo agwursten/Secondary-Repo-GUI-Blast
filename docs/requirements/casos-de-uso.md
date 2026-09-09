@@ -1,26 +1,37 @@
 # Casos de Uso — LocalBlast
 
-Los casos de uso se redactan en **formato textual estructurado (Cockburn)** — actor, objetivo, precondición, flujo principal, postcondición — según pide el TP1, y **no** como diagrama gráfico (Mermaid no incluye un tipo de diagrama de casos de uso nativo).
+Los casos de uso se redactan en **formato textual estructurado (Cockburn)** — actor, objetivo, precondición, flujo principal, alternativos, excepciones, postcondición — según pide el TP1, y **no** como diagrama gráfico (Mermaid no incluye un tipo de diagrama de casos de uso nativo).
 
-> El grupo maneja igualmente la notación UML de casos de uso —actor, elipse, límite del sistema, relaciones `<<include>>` / `<<extend>>`, generalización de actores— y puede dibujarla a mano si el docente lo solicita en la presentación.Ej:
+> El grupo maneja igualmente la notación UML de casos de uso —actor, elipse, límite del sistema, relaciones `<<include>>` / `<<extend>>`, generalización de actores— y puede dibujarla a mano si el docente lo solicita en la presentación. Ej:
 
 <img width="2400" height="1440" alt="casos-de-uso-localblast (3)" src="https://github.com/user-attachments/assets/f585918d-d291-4d89-9012-a77d93b6459a" />
 
+Todos los casos de uso de este documento derivan del proceso profundizado **P1 · Ejecutar búsqueda BLAST** del DFD Nivel 1. Los procesos P2 y P3 quedan documentados a nivel de alcance en el DFD y en el modelo de dominio, pero **no** tienen casos de uso propios en este TP (ver justificación en la sección 5 del [SRS](srs.md#5-selección-de-procesos-a-profundizar)).
 
+Cada caso de uso declara qué requerimientos funcionales realiza. La cadena completa de trazabilidad es:
 
-Cada caso de uso declara qué requerimientos funcionales realiza (trazabilidad **RF → CU → slice → HU**). Los slices secundarios se **nombran** en este TP; su detalle como historias de usuario está en [`historias-usuario.md`](historias-usuario.md).
+**RF → CU → slice → HU**
+
+- Un **CU** puede realizar uno o varios RF.
+- Cuando el camino feliz de un CU es largo y contiene módulos que aportan valor por sí mismos, se descompone en **slices básicos** (`B1`, `B2`, `B3`, …). Los caminos alternativos válidos se numeran como **slices alternativos** (`A1`, `A2`, …) y las terminaciones abruptas del flujo como **slices de excepción** (`E1`, `E2`, …).
+- La relación **slice ↔ HU es 1:1**. La HU que detalla un slice conserva su identificador de origen (por ejemplo `HU01_CU001_B1` detalla el slice `CU001_B1`).
+
+Los slices detallados como HU en este TP son los tres del camino feliz (`B1`, `B2`, `B3`) y una excepción representativa (`E1`). El resto están **nombrados** en este archivo — su detalle como HU llegará cuando algún TP posterior (UX en TP2, diseño en TP4, pruebas en TP5) lo necesite, como aclara la propia guía del TP1.
 
 ---
 
-## CU-01 · Ejecutar búsqueda BLAST
+## CU001 · Ejecutar búsqueda BLAST
 
 - **Actor principal:** Investigador/a
 - **Actor secundario:** Motor **BLAST+** (invocado por el sistema en ambos modos: local, y remoto con la flag `-remote` — es BLAST+ el que se comunica con NCBI del otro lado, nunca directamente nuestra GUI)
 - **Objetivo:** Obtener un conjunto de alineamientos de una secuencia query contra una base de datos, con parámetros configurables, y llevarlos a un archivo descargable en el formato elegido.
 - **Realiza:** RF-01, RF-02, RF-03, RF-04, RF-05, RF-06, RF-07, RF-08, RF-09, RF-10
 - **Precondición:** Existe al menos una base de datos disponible (local, con su entrada en D1, o remota entre las que ofrece NCBI). El investigador accedió a la interfaz web.
+- **Disparador:** El investigador decide iniciar una nueva búsqueda BLAST.
+- **Garantía de éxito:** El investigador obtiene un archivo con los alineamientos filtrados en su equipo, y la búsqueda queda registrada en el historial del sistema.
+- **Garantía mínima:** El sistema nunca lanza una búsqueda con datos que no pasaron validación, ni deja búsquedas parcialmente ejecutadas que consuman recursos indefinidamente.
 
-### Flujo principal (slice básico) — camino feliz
+### Flujo principal (camino feliz)
 
 1. El investigador ingresa la **secuencia query** subiendo un archivo FASTA desde su equipo o pegando la secuencia como texto en el formulario.
 2. El investigador elige el **modo de ejecución**: local o remoto (NCBI). La interfaz muestra una única opción, alternativa, para que la decisión sea clara.
@@ -37,52 +48,67 @@ Cada caso de uso declara qué requerimientos funcionales realiza (trazabilidad *
 
 **Postcondición:** El investigador tiene un archivo con los alineamientos filtrados en su equipo. La búsqueda queda registrada en el historial del sistema.
 
-### Slices secundarios nombrados
+### Descomposición en slices
 
-- **A1 · Secuencia con formato inválido.** El sistema detecta que la secuencia ingresada no tiene formato reconocible (caracteres inválidos, FASTA mal formado, longitud fuera de rango), indica exactamente el problema, y no lanza la búsqueda.
-- **A2 · Parámetros pre-búsqueda fuera de rango.** El sistema detecta al menos un parámetro con valor imposible (E-value negativo, tamaño de palabra fuera del rango soportado) y señala qué campo corregir.
-- **A3 · Combinación programa BLAST / query / base de datos incompatible.** El investigador eligió un programa BLAST que no es compatible con el tipo de la secuencia query o con el tipo de la base de datos seleccionada (por ejemplo `blastp` con una query de nucleótidos, o `blastn` contra una base de datos de proteínas). El sistema no lanza la búsqueda, indica el motivo de la incompatibilidad y sugiere qué combinaciones sí son válidas para lo que el usuario ya cargó.
-- **A4 · Base de datos local no disponible.** El investigador seleccionó modo local y una base de datos que en ese momento no está lista en D1 (por ejemplo, se está actualizando desde P3). El sistema informa el estado y sugiere elegir otra base de datos o cambiar a modo remoto.
-- **A5 · Fallo del modo remoto de BLAST+.** El investigador eligió modo remoto y BLAST+ reporta un error de comunicación con NCBI (sin respuesta, timeout, o error explícito). El sistema captura el error de BLAST+, lo informa al investigador, y ofrece reintentar o cambiar a modo local si hay una base de datos equivalente disponible.
-- **A6 · Cancelación manual de la búsqueda.** El investigador cancela una búsqueda que ya está en ejecución. El sistema aborta el subproceso local o cancela la solicitud remota, y deja la interfaz lista para una nueva búsqueda.
-- **A7 · Ningún resultado supera los filtros post-búsqueda.** El sistema no impide la descarga: entrega un reporte vacío pero con los metadatos de la búsqueda, para que el investigador tenga constancia del intento.
+El camino feliz de 12 pasos es grande y contiene tres módulos que aportan valor en sí mismos hacia el objetivo del CU: configurar y validar una búsqueda (deja lista una búsqueda ejecutable), ejecutar y ver los resultados crudos (deja los alineamientos frente al investigador), y refinar y descargar (deja el archivo entregable). Se descompone en tres slices básicos, más los slices alternativos y de excepción que se explican debajo.
+
+```
+CU001 · Ejecutar búsqueda BLAST
+├─ Camino feliz (slices básicos)
+│  ├─ CU001_B1  — pasos 1-7:  cargar, configurar y validar la búsqueda
+│  ├─ CU001_B2  — pasos 8-9:  ejecutar la búsqueda y presentar resultados crudos
+│  └─ CU001_B3  — pasos 10-12: filtrar, descargar y persistir la búsqueda
+├─ Caminos alternativos (slices A)
+│  ├─ CU001_A1  — cancelación manual de la búsqueda en curso
+│  ├─ CU001_A2  — ningún resultado supera los filtros post-búsqueda
+│  └─ CU001_A3  — base de datos local no disponible, cambio a modo remoto
+└─ Terminaciones abruptas (slices E)
+   ├─ CU001_E1  — secuencia query con formato inválido
+   ├─ CU001_E2  — parámetros pre-búsqueda fuera de rango
+   ├─ CU001_E3  — combinación programa / query / base de datos incompatible
+   └─ CU001_E4  — fallo del modo remoto de BLAST+
+```
+
+### Slices básicos — descripción
+
+- **`CU001_B1` · Cargar, configurar y validar la búsqueda (pasos 1-7).** El investigador ingresa la secuencia query, elige el modo (local o remoto), la base de datos correspondiente, el programa BLAST y los parámetros pre-búsqueda; al presionar **Ejecutar búsqueda**, el sistema valida el alfabeto de la secuencia, los rangos de los parámetros y la compatibilidad programa/query/base de datos. **Valor entregado:** una búsqueda queda configurada y validada, lista para ser ejecutada. **Realiza:** RF-01, RF-02, RF-03, RF-04, RF-05, RF-06.
+- **`CU001_B2` · Ejecutar la búsqueda y presentar resultados crudos (pasos 8-9).** El sistema invoca a BLAST+ con la configuración ya validada, muestra un indicador de progreso sin bloquear la interfaz y, al terminar, presenta la tabla de alineamientos con las columnas mínimas. **Valor entregado:** el investigador ve los hits crudos de BLAST. **Realiza:** RF-07, RF-08.
+- **`CU001_B3` · Filtrar, descargar y persistir la búsqueda (pasos 10-12).** El investigador aplica filtros post-búsqueda sobre la tabla (sin volver a correr BLAST), elige un formato de descarga y baja el archivo; el sistema guarda la búsqueda y sus resultados en el historial (D2). **Valor entregado:** un archivo de resultados filtrados en el equipo del investigador. **Realiza:** RF-09, RF-10.
+
+### Slices alternativos — descripción
+
+Son caminos válidos alternativos al flujo principal; el sistema sigue funcionando y el CU puede alcanzar (o no) el objetivo por otra ruta.
+
+- **`CU001_A1` · Cancelación manual de la búsqueda.** Mientras la búsqueda está en ejecución (durante el slice `CU001_B2`), el investigador presiona **Cancelar**. El sistema aborta el subproceso local o cancela la solicitud remota a través de BLAST+, y deja la interfaz lista para iniciar una nueva búsqueda. **Realiza:** RF-07.
+- **`CU001_A2` · Ningún resultado supera los filtros post-búsqueda.** En el slice `CU001_B3`, los filtros elegidos por el investigador dejan la tabla vacía. El sistema no impide la descarga: entrega un archivo con encabezados y los metadatos de la búsqueda (parámetros, base de datos, timestamp) pero sin filas de hits, y guarda igualmente la búsqueda en D2, para que el investigador tenga constancia del intento. **Realiza:** RF-09, RF-10.
+- **`CU001_A3` · Base de datos local no disponible, cambio a modo remoto.** En el paso 3, el investigador seleccionó modo local y una base de datos que en ese momento no está lista en D1 (por ejemplo, se está actualizando desde P3). El sistema informa el estado y sugiere cambiar a modo remoto contra una base equivalente de NCBI; si el investigador acepta, el flujo continúa desde el paso 3 con la nueva selección y termina normalmente. **Realiza:** RF-02, RF-03.
+
+### Slices de excepción — descripción
+
+Son terminaciones abruptas del flujo: el sistema detecta una condición que impide continuar, corta la ejecución del CU y notifica al investigador. La postcondición del CU no se alcanza.
+
+- **`CU001_E1` · Secuencia query con formato inválido.** En el paso 7, la validación detecta que la secuencia ingresada no tiene formato reconocible (caracteres fuera del alfabeto de ADN/ARN/proteína, FASTA mal formado, encabezado sin cuerpo, longitud fuera de rango). El sistema no invoca a BLAST+, corta el flujo y muestra un mensaje que indica exactamente el problema y dónde aparece. **Realiza:** RF-06.
+- **`CU001_E2` · Parámetros pre-búsqueda fuera de rango.** En el paso 7, la validación detecta al menos un parámetro con valor imposible (E-value negativo, tamaño de palabra fuera del rango soportado, penalización de gap fuera de escala). El sistema corta el flujo y señala qué campo corregir y cuál es el rango esperado. **Realiza:** RF-04, RF-06.
+- **`CU001_E3` · Combinación programa / query / base de datos incompatible.** En el paso 7, la verificación de compatibilidad detecta que el programa BLAST elegido no coincide con el tipo de la secuencia query o con el tipo de la base de datos seleccionada (por ejemplo `blastp` con query de nucleótidos, o `blastn` contra una base de datos de proteínas). El sistema corta el flujo, indica el motivo de la incompatibilidad y sugiere qué combinaciones sí son válidas para lo que el usuario ya cargó. **Realiza:** RF-05.
+- **`CU001_E4` · Fallo del modo remoto de BLAST+.** En el paso 8, con modo remoto seleccionado, BLAST+ reporta un error de comunicación con NCBI (sin respuesta, timeout, o error explícito devuelto por la API). El sistema captura el error de BLAST+, corta el flujo del CU e informa al investigador con el detalle del error. Un reintento posterior es un CU nuevo, no la continuación de este. **Realiza:** RF-07.
 
 ---
 
-## CU-02 · Administrar base de datos BLAST local
+## Trazabilidad RF → CU → slice
 
-- **Actor principal:** Administrador/a
-- **Actor secundario:** Motor **BLAST+** (invocado por el sistema para construir físicamente los índices con `makeblastdb`)
-- **Objetivo:** Mantener el catálogo de bases de datos locales disponibles para búsqueda, dando de alta nuevas bases de datos a partir de archivos FASTA subidos por el administrador (sean del propio laboratorio o descargados manualmente de bases de datos públicas como SwissProt), y actualizándolas o dándolas de baja.
-- **Realiza:** RF-11, RF-12, RF-13, RF-14
-- **Precondición:** El administrador está autenticado con rol de administrador y accedió a la sección de administración de bases de datos.
+La tabla completa `RF → CU → slice → HU` (con las HU incluidas) está en [`historias-usuario.md`](historias-usuario.md). Acá se resume la parte `RF → CU → slice`:
 
-### Flujo principal (slice básico) — camino feliz
+| RF | CU | Slice(s) que lo realizan |
+|---|---|---|
+| RF-01 | CU001 | B1 |
+| RF-02 | CU001 | B1, A3 |
+| RF-03 | CU001 | B1, A3 |
+| RF-04 | CU001 | B1, E2 |
+| RF-05 | CU001 | B1, E3 |
+| RF-06 | CU001 | B1, E1, E2 |
+| RF-07 | CU001 | B2, A1, E4 |
+| RF-08 | CU001 | B2 |
+| RF-09 | CU001 | B3, A2 |
+| RF-10 | CU001 | B3, A2 |
 
-1. El administrador accede a la sección **Administración de bases de datos** y ve el catálogo actual, con: nombre, tipo (nucleótidos / proteínas), tamaño, fecha de alta y estado.
-2. El administrador elige **Dar de alta una nueva base de datos**.
-3. El sistema le pide: **nombre visible** de la base de datos, **tipo** (nucleótidos o proteínas) y el **archivo FASTA** que se va a usar como origen, subido desde el equipo del administrador.
-4. El administrador completa los datos y presiona **Crear base de datos**.
-5. El sistema valida que el FASTA sea legible y consistente con el tipo declarado.
-6. El sistema **invoca a BLAST+** en segundo plano con `makeblastdb`, pasándole el FASTA y el tipo declarado, y muestra un indicador de progreso sin bloquear la interfaz. BLAST+ genera los archivos de índice en una ruta que el sistema le indica.
-7. Al terminar, el sistema registra la nueva entrada en el **catálogo (D1)** con estado **Disponible** — nombre visible, tipo, ruta a los archivos de índice, fecha — y notifica al administrador que ya puede usarse en el CU-01.
-
-**Postcondición:** La nueva base de datos aparece en el catálogo y queda disponible para que los investigadores la seleccionen en el CU-01.
-
-### Slices secundarios nombrados
-
-- **A1 · FASTA inválido o inconsistente con el tipo declarado.** El sistema detecta que el archivo no es FASTA legible, o que su contenido no coincide con el tipo declarado (por ejemplo se subió FASTA de proteínas indicando "nucleótidos"). Informa el problema y no crea la base de datos.
-- **A2 · Actualización de una base de datos existente.** El administrador sube una versión nueva del FASTA para una base de datos ya presente en el catálogo; el sistema reconstruye los índices y actualiza la fecha, sin cambiar el nombre visible ni el resto de sus metadatos. Las búsquedas en curso sobre la versión anterior no se interrumpen.
-- **A3 · Baja de una base de datos.** El administrador quita una base de datos del catálogo. El sistema pide confirmación explícita, libera los índices en D1 y deja constancia en el registro. Las búsquedas históricas que la usaron siguen visibles en el historial, marcadas con la nota de que la base de datos ya no existe.
-- **A4 · Falla la construcción del índice.** `makeblastdb` termina con error (falta de espacio, FASTA corrupto detectado a mitad, etc.). El sistema informa el error crudo y no agrega la base de datos al catálogo.
-
----
-
-## Trazabilidad RF → CU
-
-| Requerimiento funcional | Caso de uso que lo realiza |
-|---|---|
-| RF-01 a RF-10 | CU-01 |
-| RF-11 a RF-14 | CU-02 |
-
-La trazabilidad completa **RF → CU → slice → HU** se ve en [`historias-usuario.md`](historias-usuario.md), donde cada HU declara explícitamente de qué slice se deriva.
+Un mismo RF puede aparecer en varios slices — por ejemplo RF-06 (validación pre-ejecución) se realiza parcialmente en el camino feliz (`B1`, cuando la validación pasa) y también en las excepciones `E1` y `E2` (cuando la validación falla y corta el flujo). Esa dispersión es esperable: los slices de excepción son, justamente, otra forma en que se cumple el RF de validación.

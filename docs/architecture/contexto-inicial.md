@@ -105,4 +105,6 @@ flowchart TD
 
 ## Nota sobre el alcance profundizado
 
-De los tres procesos identificados, el grupo lleva a profundidad **P1 (Ejecutar búsqueda BLAST)** y **P3 (Administrar bases de datos)** — ver la justificación en la sección "Selección de procesos a profundizar" del [SRS](../requirements/srs.md#5-selección-de-procesos-a-profundizar).
+De los tres procesos identificados, el grupo lleva a profundidad **únicamente P1 (Ejecutar búsqueda BLAST)** durante el cuatrimestre. Los otros dos procesos (P2 y P3) quedan documentados a nivel de alcance en este DFD y en el modelo de dominio, pero **no** se detallan como casos de uso ni historias de usuario propios: no tienen RF profundizados en el SRS y no forman parte de la cadena `RF → CU → slice → HU` de este TP.
+
+Los casos de uso escritos en `docs/requirements/casos-de-uso.md` son **todos** derivados del proceso P1. Ver la justificación completa en la sección [Selección de procesos a profundizar](../requirements/srs.md#5-selección-de-procesos-a-profundizar) del SRS.

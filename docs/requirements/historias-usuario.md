@@ -1,100 +1,145 @@
 # Historias de Usuario — LocalBlast
 
-Cada historia de usuario detalla un **slice** puntual de un caso de uso, con el formato:
+Cada historia de usuario detalla **un slice puntual** de un caso de uso (relación 1:1). El identificador de la HU conserva explícitamente el del slice de origen, para que la trazabilidad sea directa: la HU llamada `HU01_CU001_B1` detalla el slice `B1` del caso de uso `CU001`.
 
-- **Origen**: qué CU y qué slice detalla.
+Formato de cada HU:
+
+- **Deriva de**: qué CU y qué slice detalla.
+- **Realiza**: qué RF materializa este slice (heredados del CU y del slice de origen).
 - **Rol – meta – motivo**: "Como … quiero … para …".
-- **Escenarios de aceptación**: descripción en prosa de las situaciones concretas en las que la historia queda cumplida, trazables a la precondición y postcondición del **slice** correspondiente.
+- **Criterios de aceptación**: en formato **Given-When-Then**, trazables a la precondición y postcondición del slice.
 
-Para el TP1 se detallan las historias del **slice básico** (camino feliz) de cada caso de uso profundizado, más una historia sobre un slice secundario relevante por CU. El resto de los slices secundarios están **nombrados en los casos de uso** y se detallarán como HU cuando algún TP posterior (UX en TP2, diseño en TP4, pruebas en TP5) los necesite — no es obligación abrirlos ya, según la propia guía del TP1.
-
-> **Nota:** el formato Given-When-Then para los criterios de aceptación queda pendiente para una entrega posterior; por ahora los escenarios se redactan en prosa.
+Para el TP1 se detallan las HU de los **tres slices básicos** del camino feliz (`B1`, `B2`, `B3`) del único caso de uso profundizado (`CU001`), más una HU de un slice de excepción representativo (`E1`, secuencia con formato inválido). El resto de los slices están **nombrados en el caso de uso** ([`casos-de-uso.md`](casos-de-uso.md)) y se detallarán como HU cuando algún TP posterior los necesite — no es obligación abrirlos todos ya, como aclara la propia guía del TP1.
 
 ---
 
-## HU derivadas de CU-01 · Ejecutar búsqueda BLAST
+## HU derivadas del slice básico de CU001
 
-### HU-01 · Ejecutar una búsqueda BLAST completa desde la interfaz web
+### HU01_CU001_B1 · Cargar, configurar y validar una búsqueda BLAST
 
-**Deriva de:** CU-01, slice básico
-**Realiza:** RF-01 a RF-10
+- **Deriva de:** `CU001`, slice `B1` (pasos 1-7 del camino feliz)
+- **Realiza:** RF-01, RF-02, RF-03, RF-04, RF-05, RF-06
 
 > **Como** investigador/a,
-> **quiero** subir mi secuencia, elegir el tipo de BLAST, elegir si la búsqueda se corre local o remota, ajustar los parámetros del algoritmo y descargar los resultados filtrados desde una misma interfaz web,
-> **para** obtener alineamientos sin depender de la línea de comandos ni cargar la web oficial de NCBI para cada consulta.
+> **quiero** cargar mi secuencia query, elegir el modo (local o remoto), la base de datos, el programa BLAST y los parámetros pre-búsqueda, y que el sistema valide todo antes de habilitar la ejecución,
+> **para** no perder tiempo lanzando búsquedas mal configuradas.
 
-**Escenarios de aceptación**
+**Criterios de aceptación (Given-When-Then)**
 
-- **EA-01.1 · Camino feliz en modo remoto.** El investigador sube un archivo FASTA válido con una secuencia de proteína, elige el programa `blastp`, modo remoto contra la base de datos "nr" de NCBI, y deja los parámetros pre-búsqueda en sus valores por defecto. Al presionar "Ejecutar búsqueda", la interfaz muestra un indicador de progreso mientras la consulta está en curso y, al terminar, presenta la tabla de alineamientos con al menos las columnas: identificador del hit, score, E-value observado, porcentaje de identidad y porcentaje de cobertura.
+- **CA-01.** Configuración completa y válida en modo remoto:
+  - **Given** una secuencia FASTA de proteína válida pegada en el formulario, modo remoto seleccionado, base de datos remota "nr", programa `blastp` y parámetros pre-búsqueda en sus valores por defecto,
+  - **When** el investigador presiona "Ejecutar búsqueda",
+  - **Then** el sistema valida la secuencia y los parámetros, no muestra errores, y habilita la ejecución de la búsqueda (transición al slice `B2`).
 
-- **EA-01.2 · Camino feliz en modo local.** Existe al menos una base de datos local de proteínas en el catálogo. El investigador sube una secuencia válida de proteína, elige el programa `blastp`, modo local contra esa base de datos y deja los parámetros por defecto. Al presionar "Ejecutar búsqueda", el sistema ejecuta la consulta contra los índices locales y presenta la tabla de resultados con las mismas columnas mínimas que en el escenario anterior.
+- **CA-02.** Valores por defecto sensatos según el programa:
+  - **Given** un formulario donde el investigador acaba de seleccionar el programa `blastp`,
+  - **When** la interfaz carga los parámetros pre-búsqueda,
+  - **Then** los campos de E-value máximo, matriz de sustitución, tamaño de palabra y penalización de gaps aparecen prellenados con los valores por defecto correspondientes al programa `blastp` (no los mismos que para `blastn`).
 
-- **EA-01.3 · Descarga del reporte en el formato elegido.** La búsqueda finalizó y el investigador está viendo la tabla de resultados con los filtros post-búsqueda aplicados. Selecciona un formato (por ejemplo CSV) y presiona "Descargar". El sistema entrega un archivo en ese formato que contiene únicamente los hits que superan los filtros post-búsqueda activos, y guarda una copia de la búsqueda en el historial del sistema.
+- **CA-03.** Base de datos coherente con el modo elegido:
+  - **Given** el investigador cambia el modo de "remoto" a "local",
+  - **When** el sistema recarga la lista de bases de datos disponibles,
+  - **Then** la lista muestra únicamente las bases de datos del catálogo local (leídas de D1), sin las bases estándar de NCBI que aparecían en modo remoto.
 
 ---
 
-### HU-01.A1 · Manejo de secuencia con formato inválido
+### HU02_CU001_B2 · Ejecutar la búsqueda BLAST y presentar los resultados crudos
 
-**Deriva de:** CU-01, slice A1
-**Realiza:** RF-06
+- **Deriva de:** `CU001`, slice `B2` (pasos 8-9 del camino feliz)
+- **Realiza:** RF-07, RF-08
 
 > **Como** investigador/a,
-> **quiero** recibir un mensaje claro cuando la secuencia que pego o subo no es reconocible,
-> **para** poder corregirla sin tener que adivinar qué le pasa.
+> **quiero** que el sistema ejecute la búsqueda en segundo plano y me muestre los resultados en una tabla cuando termine,
+> **para** poder seguir trabajando mientras se ejecuta y luego revisar los hits sin cargar otra pantalla.
 
-**Escenarios de aceptación**
+**Criterios de aceptación (Given-When-Then)**
 
-- **EA-01.A1.1 · Secuencia con caracteres no permitidos.** El investigador ingresa como query una cadena que contiene caracteres fuera del alfabeto de ADN, ARN o proteína, y presiona "Ejecutar búsqueda". El sistema no lanza la ejecución y muestra un mensaje que indica cuál es el carácter inválido y en qué posición aparece.
+- **CA-01.** Ejecución asíncrona con indicador de progreso:
+  - **Given** una búsqueda ya configurada y validada (postcondición del slice `B1`),
+  - **When** el sistema invoca a BLAST+ en segundo plano,
+  - **Then** la interfaz muestra un indicador de progreso visible y permanece navegable — el investigador puede desplazarse dentro de la aplicación sin que la ejecución se interrumpa.
 
-- **EA-01.A1.2 · FASTA con encabezado pero sin secuencia.** El investigador sube un archivo FASTA con línea de encabezado (`>ID`) pero cuerpo vacío, y presiona "Ejecutar búsqueda". El sistema no lanza la ejecución y muestra el mensaje "El FASTA contiene un encabezado pero ninguna secuencia asociada".
-
----
-
-## HU derivadas de CU-02 · Administrar base de datos BLAST local
-
-### HU-02a · Dar de alta una base de datos BLAST subiendo un FASTA
-
-**Deriva de:** CU-02, slice básico
-**Realiza:** RF-11, RF-12, RF-14
-
-> **Como** administrador/a del sistema,
-> **quiero** subir un archivo FASTA y darlo de alta como una nueva base de datos local,
-> **para** que los investigadores del laboratorio puedan usarla en sus búsquedas locales.
-
-**Escenarios de aceptación**
-
-- **EA-02a.1 · Alta exitosa a partir de un FASTA propio del laboratorio.** El administrador está autenticado con rol de administrador, dispone de un archivo FASTA válido de proteínas del laboratorio y accedió a la sección "Administración de bases de datos". Completa el formulario con nombre visible, tipo "proteínas" y el archivo FASTA subido desde su equipo, y presiona "Crear base de datos". El sistema ejecuta la construcción de índices en segundo plano y, al terminar, la nueva base de datos aparece en el catálogo con estado "Disponible" y queda listada como opción para el investigador en el CU-01.
-
-- **EA-02a.2 · Alta a partir de un FASTA público descargado manualmente (SwissProt).** El administrador descargó previamente el archivo FASTA de SwissProt desde el sitio de UniProt y lo tiene guardado en su equipo. En el formulario completa nombre visible "SwissProt", tipo "proteínas" y sube ese archivo. Presiona "Crear base de datos". El sistema construye los índices, agrega la base de datos al catálogo con estado "Disponible" y la deja lista para búsquedas locales. Para el sistema no hay diferencia respecto a EA-02a.1: cualquier FASTA subido se trata igual, sea del laboratorio o de una base de datos pública.
+- **CA-02.** Presentación de la tabla al finalizar:
+  - **Given** una búsqueda que finalizó correctamente y BLAST+ devolvió al menos un hit,
+  - **When** el sistema recibe los resultados,
+  - **Then** los presenta en una tabla con al menos las columnas: identificador del hit, score, E-value observado, porcentaje de identidad y porcentaje de cobertura.
 
 ---
 
-### HU-02.A1 · Rechazo de FASTA inconsistente con el tipo declarado
+### HU03_CU001_B3 · Filtrar, descargar y persistir los resultados de la búsqueda
 
-**Deriva de:** CU-02, slice A1
-**Realiza:** RF-13
+- **Deriva de:** `CU001`, slice `B3` (pasos 10-12 del camino feliz)
+- **Realiza:** RF-09, RF-10
 
-> **Como** administrador/a,
-> **quiero** que el sistema me alerte si el FASTA que subí no corresponde con el tipo de base de datos que declaré,
-> **para** no dejar en el catálogo bases de datos mal etiquetadas que después arruinen las búsquedas.
+> **Como** investigador/a,
+> **quiero** aplicar filtros post-búsqueda sobre la tabla de resultados sin volver a correr BLAST y luego descargar los hits filtrados en el formato que necesite,
+> **para** llevarme solo los alineamientos relevantes y en la forma en que voy a seguir procesándolos.
 
-**Escenarios de aceptación**
+**Criterios de aceptación (Given-When-Then)**
 
-- **EA-02.A1.1 · FASTA de proteínas subido declarando tipo "nucleótidos".** El administrador declaró tipo "nucleótidos" en el formulario y subió un archivo FASTA cuyas secuencias contienen aminoácidos no válidos como bases nitrogenadas. Al presionar "Crear base de datos", el sistema no agrega la base de datos al catálogo y muestra el mensaje "El contenido del FASTA no coincide con el tipo declarado (nucleótidos)", explicando cuál es el carácter que rompe la coincidencia.
+- **CA-01.** Filtrado interactivo sin re-ejecución:
+  - **Given** una tabla de resultados con al menos 20 hits y filtros post-búsqueda establecidos en identidad ≥ 80% y cobertura ≥ 50%,
+  - **When** el investigador confirma los filtros,
+  - **Then** la tabla se re-filtra en el momento mostrando solo los hits que cumplen ambos umbrales, sin volver a invocar a BLAST+.
 
-- **EA-02.A1.2 · Archivo que no es FASTA.** El administrador subió un archivo cuyo contenido no respeta la estructura FASTA (ninguna línea comienza con `>`). Al presionar "Crear base de datos", el sistema no agrega la base de datos al catálogo y muestra el mensaje "El archivo no es un FASTA válido".
+- **CA-02.** Descarga en el formato elegido:
+  - **Given** una tabla de resultados con filtros post-búsqueda ya aplicados,
+  - **When** el investigador selecciona formato "CSV" y presiona "Descargar",
+  - **Then** el sistema entrega un archivo `.csv` que contiene únicamente los hits filtrados, con una fila de encabezados que incluye al menos las columnas mínimas (identificador, score, E-value observado, % identidad, % cobertura).
+
+- **CA-03.** Persistencia en el historial:
+  - **Given** una descarga que finalizó correctamente,
+  - **When** el archivo termina de entregarse al investigador,
+  - **Then** el sistema guarda en el historial (D2) una entrada con los parámetros de la búsqueda, la base de datos usada, el timestamp y el conjunto de resultados obtenidos (antes de aplicar los filtros post-búsqueda).
 
 ---
 
-## Tabla de trazabilidad RF → CU → slice → HU
+## HU derivada de un slice de excepción de CU001
+
+### HU04_CU001_E1 · Rechazo de secuencia query con formato inválido
+
+- **Deriva de:** `CU001`, slice `E1` (terminación abrupta detectada en el paso 7)
+- **Realiza:** RF-06
+
+> **Como** investigador/a,
+> **quiero** recibir un mensaje claro cuando la secuencia que subo o pego no es reconocible,
+> **para** poder corregirla de inmediato sin tener que adivinar qué le pasa.
+
+**Criterios de aceptación (Given-When-Then)**
+
+- **CA-01.** Caracter fuera del alfabeto:
+  - **Given** un texto pegado como query que contiene al menos un carácter fuera del alfabeto de ADN, ARN o proteína (por ejemplo un dígito o un símbolo de puntuación),
+  - **When** el investigador presiona "Ejecutar búsqueda",
+  - **Then** el sistema no invoca a BLAST+, corta el flujo del CU y muestra un mensaje que indica cuál es el carácter inválido y en qué posición aparece.
+
+- **CA-02.** FASTA con encabezado sin cuerpo:
+  - **Given** un archivo FASTA con una línea de encabezado (`>ID`) pero sin ninguna línea de secuencia debajo,
+  - **When** el investigador presiona "Ejecutar búsqueda",
+  - **Then** el sistema no invoca a BLAST+, corta el flujo del CU y muestra el mensaje "El FASTA contiene un encabezado pero ninguna secuencia asociada".
+
+---
+
+## Tabla de trazabilidad completa `RF → CU → slice → HU`
 
 | RF | CU | Slice | HU |
 |---|---|---|---|
-| RF-01, RF-02, RF-03, RF-04, RF-05, RF-06, RF-07, RF-08, RF-09, RF-10 | CU-01 | básico | HU-01 |
-| RF-06 | CU-01 | A1 | HU-01.A1 |
-| — | CU-01 | A2, A3, A4, A5, A6, A7 | *(nombrados, sin detallar aún)* |
-| RF-11, RF-12, RF-14 | CU-02 | básico | HU-02a |
-| RF-13 | CU-02 | A1 | HU-02.A1 |
-| — | CU-02 | A2, A3, A4 | *(nombrados, sin detallar aún)* |
+| RF-01, RF-02, RF-03, RF-04, RF-05, RF-06 | CU001 | B1 | **HU01_CU001_B1** |
+| RF-07, RF-08 | CU001 | B2 | **HU02_CU001_B2** |
+| RF-09, RF-10 | CU001 | B3 | **HU03_CU001_B3** |
+| RF-06 | CU001 | E1 | **HU04_CU001_E1** |
+| RF-07 | CU001 | A1 (cancelación manual) | *nombrada, sin detallar aún* |
+| RF-09, RF-10 | CU001 | A2 (resultado vacío) | *nombrada, sin detallar aún* |
+| RF-02, RF-03 | CU001 | A3 (BD local no disponible) | *nombrada, sin detallar aún* |
+| RF-04, RF-06 | CU001 | E2 (parámetros fuera de rango) | *nombrada, sin detallar aún* |
+| RF-05 | CU001 | E3 (combinación incompatible) | *nombrada, sin detallar aún* |
+| RF-07 | CU001 | E4 (fallo modo remoto) | *nombrada, sin detallar aún* |
 
 Los slices nombrados sin HU detallada no son un olvido: la propia guía del TP1 aclara que "no todo slice justifica ese nivel de inversión" y que se detallan solo cuando un TP posterior los necesita.
+
+---
+
+## Notas sobre el enfoque de este TP
+
+- **Un CU puede implementar varios RF**, y viceversa un mismo RF puede estar realizado por varios slices del mismo CU — por ejemplo RF-06 (validación pre-ejecución) aparece en el slice `B1` cuando la validación pasa y también en los slices `E1` y `E2` cuando falla y corta el flujo. La trazabilidad de la tabla de arriba refleja esa realidad.
+- **La unidad mínima de sprint es la HU**, no el CU ni el slice. Por eso las HU están nombradas con un identificador propio (`HU01`, `HU02`, …) además del sufijo de trazabilidad — para que la planificación de sprints pueda referirse a ellas sin ambigüedad.
+- **Los criterios de aceptación en formato Given-When-Then** son la semilla de los casos de prueba de TP5 (Módulo 6). Cada `Then` describe un resultado observable — un mensaje puntual, una columna que debe aparecer, un archivo que se entrega — nunca una descripción de implementación interna.
