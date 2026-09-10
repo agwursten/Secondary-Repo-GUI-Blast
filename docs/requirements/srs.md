@@ -152,7 +152,7 @@ Las historias de usuario asociadas a cada slice (relación 1:1 slice ↔ HU), co
 - **CU002 · Refinar y descargar los resultados de una búsqueda** realiza RF-09 y RF-10.
   - Slice básico único (camino feliz corto, sin subdivisión): `CU002_B` (aplicar filtros y descargar).
   - Slice alternativo: `CU002_A1` (ningún resultado supera los filtros).
-- **HU detalladas en este TP:** `HU01_CU001_B1`, `HU02_CU001_B2`, `HU03_CU002_B`, `HU04_CU001_E1`. El resto de los slices están **nombrados** en los CU y se detallarán como HU cuando algún TP posterior los necesite.
+- **HU detalladas en este TP:** las diez, una por cada slice identificado en los dos CU: `HU01_CU001_B1`, `HU02_CU001_B2`, `HU04_CU001_E1`, `HU05_CU001_A1`, `HU06_CU001_A2`, `HU07_CU001_E2`, `HU08_CU001_E3`, `HU09_CU001_E4` (de `CU001`); `HU03_CU002_B`, `HU10_CU002_A1` (de `CU002`). El grupo decidió detallar todas ya —no solo el básico + una representativa— porque el modelo de ciclo de vida es ágil y la HU es la unidad mínima de sprint (ver justificación al comienzo de [`historias-usuario.md`](historias-usuario.md)).
 
 ---
 

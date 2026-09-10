@@ -9,7 +9,9 @@ Formato de cada HU:
 - **Rol – meta – motivo**: "Como … quiero … para …".
 - **Criterios de aceptación**: en formato **Given-When-Then**, trazables a la precondición y postcondición del slice.
 
-Para el TP1 se detallan las HU de los **tres slices básicos** de los dos casos de uso profundizados (`CU001_B1`, `CU001_B2`, `CU002_B`) más una HU de un slice de excepción representativo (`CU001_E1`, secuencia con formato inválido). El resto de los slices están **nombrados en los casos de uso** ([`casos-de-uso.md`](casos-de-uso.md)) y se detallarán como HU cuando algún TP posterior los necesite — no es obligación abrirlos todos ya, como aclara la propia guía del TP1.
+Para el TP1 se detallan las HU de **todos los slices identificados en los casos de uso** — los tres básicos (`CU001_B1`, `CU001_B2`, `CU002_B`), las tres alternativas (`CU001_A1`, `CU001_A2`, `CU002_A1`) y las cuatro excepciones (`CU001_E1`, `CU001_E2`, `CU001_E3`, `CU001_E4`). En total, 10 historias de usuario.
+
+La guía del TP1 dice que "un slice se detalla como historia de usuario recién cuando algún TP posterior lo necesita, no todos de una vez"; el grupo decidió, sin embargo, detallar todas ya. Motivo: seguimos un modelo de ciclo de vida iterativo-incremental con prácticas ágiles (ver [README](../../README.md#modelo-de-ciclo-de-vida)), y en ágil la HU es la unidad mínima de sprint — la que efectivamente se planifica y se implementa. Dejar slices "nombrados sin criterios de aceptación" implicaría, al llegar al sprint correspondiente, no tener forma objetiva de decidir cuándo el trabajo del slice está terminado. Es más trabajo ahora, pero pone piso concreto a lo que después hay que construir y probar en TP4 y TP5.
 
 ---
 
@@ -49,8 +51,8 @@ Para el TP1 se detallan las HU de los **tres slices básicos** de los dos casos 
 - **Realiza:** RF-07, RF-08
 
 > **Como** investigador/a,
-> **quiero** que el sistema ejecute la búsqueda en segundo plano y me muestre los resultados en una tabla cuando termine,
-> **para** poder seguir trabajando mientras se ejecuta y luego revisar los alineamientos sin cargar otra pantalla.
+> **quiero** que el sistema ejecute la búsqueda en segundo plano y me muestre los resultados en una tabla dentro de la misma vista cuando termine,
+> **para** poder seguir trabajando en la aplicación mientras la búsqueda corre, sin quedarme atado a una pantalla de espera.
 
 **Criterios de aceptación (Given-When-Then)**
 
@@ -89,6 +91,121 @@ Para el TP1 se detallan las HU de los **tres slices básicos** de los dos casos 
 
 ---
 
+### HU05_CU001_A1 · Cancelación manual de una búsqueda en curso
+
+- **Deriva de:** `CU001`, slice `A1` (camino alternativo durante el slice `B2`)
+- **Realiza:** RF-07
+
+> **Como** investigador/a,
+> **quiero** poder cancelar una búsqueda que está en ejecución,
+> **para** dejar de esperar y no consumir recursos remotos ni locales cuando me di cuenta que configuré algo mal o el resultado ya dejó de importarme.
+
+**Criterios de aceptación (Given-When-Then)**
+
+- **CA-01.** Cancelación de una búsqueda local:
+  - **Given** una búsqueda en modo local que BLAST+ está ejecutando en el servidor (indicador de progreso visible),
+  - **When** el investigador presiona "Cancelar",
+  - **Then** el sistema aborta el subproceso local de BLAST+, deja la interfaz lista para configurar otra búsqueda desde cero y no muestra tabla de resultados.
+
+- **CA-02.** Cancelación de una búsqueda remota:
+  - **Given** una búsqueda en modo remoto que BLAST+ tramita contra NCBI (indicador de progreso visible),
+  - **When** el investigador presiona "Cancelar",
+  - **Then** el sistema cancela la solicitud a través de BLAST+, deja la interfaz lista para configurar otra búsqueda desde cero y no muestra tabla de resultados.
+
+---
+
+### HU06_CU001_A2 · Manejo de base de datos local no disponible
+
+- **Deriva de:** `CU001`, slice `A2` (camino alternativo en el paso 3)
+- **Realiza:** RF-03
+
+> **Como** investigador/a,
+> **quiero** que el sistema me informe claramente cuando la base de datos local que elegí no está en condiciones de ser usada, y me devuelva la lista actualizada para que yo decida,
+> **para** no quedarme trabado ni terminar corriendo contra una base equivocada porque el sistema me la sustituyó por su cuenta.
+
+**Criterios de aceptación (Given-When-Then)**
+
+- **CA-01.** Base de datos en proceso de actualización:
+  - **Given** modo local seleccionado y una base de datos del catálogo D1 que está en estado "actualizándose" porque P3 la está reconstruyendo en ese momento,
+  - **When** el investigador la selecciona en el paso 3,
+  - **Then** el sistema muestra el mensaje "La base de datos '\<nombre\>' está siendo actualizada y no puede usarse en este momento" y devuelve al investigador al paso 3 con la lista de bases locales actualizada, **sin** proponer un cambio automático a modo remoto.
+
+- **CA-02.** Base de datos con índice en error:
+  - **Given** modo local seleccionado y una base de datos cuyo índice quedó marcado como "con errores" tras un fallo previo de `makeblastdb`,
+  - **When** el investigador la selecciona en el paso 3,
+  - **Then** el sistema muestra un mensaje que explica que el índice está corrupto y sugiere contactar al administrador de bases de datos, y devuelve al investigador al paso 3.
+
+---
+
+### HU07_CU001_E2 · Rechazo de parámetros pre-búsqueda fuera de rango
+
+- **Deriva de:** `CU001`, slice `E2` (terminación abrupta detectada en el paso 7)
+- **Realiza:** RF-04, RF-06
+
+> **Como** investigador/a,
+> **quiero** que el sistema me señale exactamente qué parámetro está fuera de rango y cuál es el rango válido para el programa BLAST que elegí,
+> **para** poder corregirlo sin consultar la documentación de BLAST+ por afuera.
+
+**Criterios de aceptación (Given-When-Then)**
+
+- **CA-01.** E-value negativo:
+  - **Given** un formulario completo con el campo "E-value máximo" en `-1`,
+  - **When** el investigador presiona "Ejecutar búsqueda",
+  - **Then** el sistema no invoca a BLAST+, corta el flujo del CU y muestra un mensaje que señala el campo "E-value" e indica que debe ser un número positivo (típicamente entre 0 y 10).
+
+- **CA-02.** Tamaño de palabra fuera del rango del programa:
+  - **Given** un formulario con programa `blastn` seleccionado y "Tamaño de palabra" = 3 (por debajo del mínimo válido para `blastn`),
+  - **When** el investigador presiona "Ejecutar búsqueda",
+  - **Then** el sistema no invoca a BLAST+, corta el flujo del CU y muestra un mensaje que señala el campo "Tamaño de palabra" e indica el rango válido para el programa `blastn`.
+
+---
+
+### HU08_CU001_E3 · Rechazo de combinación programa / query / base de datos incompatible
+
+- **Deriva de:** `CU001`, slice `E3` (terminación abrupta detectada en el paso 7)
+- **Realiza:** RF-05
+
+> **Como** investigador/a,
+> **quiero** que el sistema me impida lanzar una combinación de programa BLAST y tipos de secuencia/base incompatibles, y me sugiera qué combinaciones sí funcionan con lo que ya cargué,
+> **para** no perder tiempo esperando un resultado que no va a existir.
+
+**Criterios de aceptación (Given-When-Then)**
+
+- **CA-01.** `blastp` sobre una query de nucleótidos:
+  - **Given** una secuencia query de nucleótidos (ADN o ARN), programa `blastp` seleccionado, y cualquier base de datos,
+  - **When** el investigador presiona "Ejecutar búsqueda",
+  - **Then** el sistema no invoca a BLAST+, corta el flujo del CU y muestra el mensaje "El programa `blastp` espera queries de proteína. Para su query de nucleótidos, opciones válidas son: `blastn` (contra base de nucleótidos), `blastx` o `tblastx`".
+
+- **CA-02.** `blastn` contra una base de datos de proteínas:
+  - **Given** una secuencia query de nucleótidos, programa `blastn` seleccionado, y una base de datos de proteínas seleccionada,
+  - **When** el investigador presiona "Ejecutar búsqueda",
+  - **Then** el sistema no invoca a BLAST+, corta el flujo del CU y muestra el mensaje "El programa `blastn` requiere base de datos de nucleótidos. Elija otra base de datos, o cambie el programa a `blastx`".
+
+---
+
+### HU09_CU001_E4 · Manejo de fallo del modo remoto de BLAST+
+
+- **Deriva de:** `CU001`, slice `E4` (terminación abrupta durante el slice `B2`)
+- **Realiza:** RF-07
+
+> **Como** investigador/a,
+> **quiero** que cuando la búsqueda remota falla el sistema me muestre el error tal como lo devolvió BLAST+ (o NCBI a través de BLAST+),
+> **para** poder distinguir un problema de red temporal de un problema más grave y decidir si vale la pena reintentar más tarde.
+
+**Criterios de aceptación (Given-When-Then)**
+
+- **CA-01.** Timeout de comunicación con NCBI:
+  - **Given** una búsqueda en modo remoto en ejecución y la API remota de NCBI que no responde dentro del tiempo esperado,
+  - **When** BLAST+ reporta timeout de comunicación,
+  - **Then** el sistema corta el flujo del CU y muestra el mensaje de error de BLAST+, aclarando explícitamente que se trata de un timeout de la conexión remota y no de un problema con los parámetros de la búsqueda.
+
+- **CA-02.** Error explícito devuelto por NCBI:
+  - **Given** una búsqueda en modo remoto que BLAST+ envió a NCBI,
+  - **When** NCBI responde con un error explícito (rate limit, query rejected, u otro) que BLAST+ propaga al sistema,
+  - **Then** el sistema corta el flujo del CU y muestra el error literal que devolvió BLAST+, incluyendo el mensaje original de NCBI, sin traducirlo ni reinterpretarlo.
+
+---
+
 ## HU derivadas de CU002 · Refinar y descargar los resultados de una búsqueda
 
 ### HU03_CU002_B · Filtrar los alineamientos y descargarlos en un formato
@@ -119,22 +236,45 @@ Para el TP1 se detallan las HU de los **tres slices básicos** de los dos casos 
 
 ---
 
+### HU10_CU002_A1 · Descarga cuando ningún resultado supera los filtros
+
+- **Deriva de:** `CU002`, slice `A1` (camino alternativo dentro del slice `B`)
+- **Realiza:** RF-09, RF-10
+
+> **Como** investigador/a,
+> **quiero** poder descargar el archivo aunque los filtros post-búsqueda dejen la tabla vacía,
+> **para** tener constancia del intento y de los criterios que apliqué, aun cuando ningún hit los haya superado.
+
+**Criterios de aceptación (Given-When-Then)**
+
+- **CA-01.** Descarga con tabla vacía:
+  - **Given** una tabla de resultados con filtros post-búsqueda que dejan cero hits visibles (por ejemplo identidad ≥ 99% sobre una búsqueda de similitud lejana),
+  - **When** el investigador selecciona formato "CSV" y presiona "Descargar",
+  - **Then** el sistema entrega un archivo `.csv` con la fila de encabezados y una sección de metadatos de la búsqueda (parámetros pre-búsqueda, base de datos, timestamp, filtros post-búsqueda aplicados), pero **sin** filas de hits.
+
+- **CA-02.** Persistencia en historial con resultado vacío tras filtros:
+  - **Given** una búsqueda cuya descarga se hizo con filtros que dejaron cero hits visibles,
+  - **When** el sistema termina de entregar el archivo,
+  - **Then** la entrada en el historial (D2) queda registrada con el conjunto **completo** de resultados originales que devolvió BLAST+ (antes de aplicar los filtros post-búsqueda), no solo con los hits filtrados — de forma que el investigador pueda volver más tarde y probar filtros distintos sin re-ejecutar BLAST.
+
+---
+
 ## Tabla de trazabilidad completa `RF → CU → slice → HU`
 
 | RF | CU | Slice | HU |
 |---|---|---|---|
 | RF-01, RF-02, RF-03, RF-04, RF-05, RF-06 | CU001 | B1 | **HU01_CU001_B1** |
 | RF-07, RF-08 | CU001 | B2 | **HU02_CU001_B2** |
-| RF-06 | CU001 | E1 | **HU04_CU001_E1** |
-| RF-07 | CU001 | A1 (cancelación manual) | *nombrada, sin detallar aún* |
-| RF-03 | CU001 | A2 (BD local no disponible) | *nombrada, sin detallar aún* |
-| RF-04, RF-06 | CU001 | E2 (parámetros fuera de rango) | *nombrada, sin detallar aún* |
-| RF-05 | CU001 | E3 (combinación incompatible) | *nombrada, sin detallar aún* |
-| RF-07 | CU001 | E4 (fallo modo remoto) | *nombrada, sin detallar aún* |
+| RF-06 | CU001 | E1 (secuencia inválida) | **HU04_CU001_E1** |
+| RF-07 | CU001 | A1 (cancelación manual) | **HU05_CU001_A1** |
+| RF-03 | CU001 | A2 (BD local no disponible) | **HU06_CU001_A2** |
+| RF-04, RF-06 | CU001 | E2 (parámetros fuera de rango) | **HU07_CU001_E2** |
+| RF-05 | CU001 | E3 (combinación incompatible) | **HU08_CU001_E3** |
+| RF-07 | CU001 | E4 (fallo modo remoto) | **HU09_CU001_E4** |
 | RF-09, RF-10 | CU002 | B | **HU03_CU002_B** |
-| RF-09, RF-10 | CU002 | A1 (resultado vacío) | *nombrada, sin detallar aún* |
+| RF-09, RF-10 | CU002 | A1 (resultado vacío) | **HU10_CU002_A1** |
 
-Los slices nombrados sin HU detallada no son un olvido: la propia guía del TP1 aclara que "no todo slice justifica ese nivel de inversión" y que se detallan solo cuando un TP posterior los necesita.
+**Todos los slices identificados en los casos de uso tienen HU detallada.** Esta decisión responde a que el proyecto sigue un enfoque ágil, y en ágil la HU es la unidad mínima de sprint — la que efectivamente se implementa. Dejar slices "nombrados pero sin criterios de aceptación" implicaría, al llegar el sprint correspondiente, no tener forma objetiva de decidir cuándo el trabajo está terminado. Es más trabajo ahora, pero le pone piso concreto a lo que después hay que construir y probar.
 
 ---
 
