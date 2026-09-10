@@ -96,21 +96,23 @@ De los tres procesos identificados en el DFD Nivel 1 (P1, P2, P3), el grupo elig
 
 ### 5.1 Qué se profundiza y por qué
 
-- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra toda la complejidad interesante del dominio (dos modos de invocación a BLAST+ — con o sin `-remote` —, validación de parámetros pre-búsqueda, verificación de compatibilidad programa/query/base de datos, ejecución asíncrona con cancelación, y refinamiento posterior de resultados). Se detalla como `CU001`, descompuesto en slices en [`docs/requirements/casos-de-uso.md`](casos-de-uso.md).
+- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra toda la complejidad interesante del dominio (dos modos de invocación a BLAST+ — con o sin `-remote` —, validación de parámetros pre-búsqueda, verificación de compatibilidad programa/query/base de datos, ejecución asíncrona con cancelación, y refinamiento posterior de resultados). De este proceso se derivan **dos casos de uso** con capacidades distintas del actor investigador: `CU001` (ejecutar una búsqueda BLAST) y `CU002` (refinar y descargar los resultados de una búsqueda). Ambos se detallan en [`docs/requirements/casos-de-uso.md`](casos-de-uso.md), con `CU001` descompuesto en slices y `CU002` sin subdivisión adicional.
 
 ### 5.2 Qué queda fuera del profundizado y por qué
 
-- **P2 · Filtrar y entregar resultados — no profundizado.** Se ejecuta enteramente sobre datos ya en memoria (filtros a la tabla y serialización a un formato) y su lógica es previsible: comparaciones numéricas y export a formatos estándar. No aporta descubrimiento significativo al TP1 ni riesgo de arquitectura para el TP3. En la primera versión del sistema, además, el resultado de P2 es visible como parte del flujo del investigador (aparece cubierto por los slices post-búsqueda de `CU001`, en cuanto a valor entregado al usuario); tratarlo como CU aparte con sus propios slices duplicaría trabajo sin ganar información.
+- **P2 · Filtrar y entregar resultados — no profundizado como proceso en sí.** Se ejecuta enteramente sobre datos ya en memoria (filtros a la tabla y serialización a un formato) y su lógica es previsible: comparaciones numéricas y export a formatos estándar. Su capacidad hacia el actor sí queda cubierta —como parte de `CU002` (refinar y descargar los resultados de una búsqueda)—, porque desde el punto de vista del investigador aplicar filtros y bajar un archivo es una única capacidad. Como proceso técnico independiente, en cambio, no aporta descubrimiento significativo al TP1 ni riesgo de arquitectura para el TP3; su tratamiento como CU aparte con sus propios slices duplicaría trabajo sin ganar información.
 
 - **P3 · Administrar bases de datos — no profundizado.** Es el proceso de un actor distinto (Administrador), con objetivo distinto y precondición distinta al de P1. Un caso de uso derivado de P3 —por ejemplo "Administrar base de datos BLAST local"— pertenece conceptualmente a ese proceso, no a P1, y por lo tanto queda fuera de la cadena `RF → CU → slice → HU` de este TP. Se documenta a nivel de alcance en el DFD Nivel 1 (con sus flujos hacia BLAST+ y hacia D1) y sus entidades siguen presentes en el modelo de dominio, pero sin RF ni CU propios profundizados en este cuatrimestre.
 
-**Criterio general.** Esta decisión respeta la recomendación explícita de la cátedra: *"elegir uno bien resuelto vale más que varios a medio desarrollar"*. Concentrar el trabajo en P1 nos permite descomponer su flujo en slices con valor incremental (carga y configuración → ejecución y resultados → refinamiento y descarga), en lugar de dispersar el esfuerzo entre procesos que responden a objetivos y actores diferentes.
+**Criterio general.** Esta decisión respeta la recomendación explícita de la cátedra: *"elegir uno bien resuelto vale más que varios a medio desarrollar"*. Concentrar el trabajo en P1 nos permite descomponerlo en los dos casos de uso que le da al investigador —lanzar una búsqueda y trabajar sobre sus resultados—, y todavía dentro de `CU001` distinguir dos slices con valor incremental (dejar la búsqueda validada, versus ejecutar y ver resultados). Es más rico que dispersar el esfuerzo entre procesos que responden a objetivos y actores diferentes.
+
+**Nota sobre el enfoque de los CU.** Un caso de uso representa **una capacidad discreta que el sistema le da al actor**, no un trazo secuencial de pasos. Por eso del proceso P1 salen dos CU en vez de uno solo largo: la capacidad de correr una búsqueda (`CU001`) y la capacidad de refinar/descargar resultados (`CU002`) son dos objetivos distintos del mismo actor, aunque uno dependa del otro en cuanto a los datos. Ver la explicación completa en la sección "Enfoque de los casos de uso" de [`casos-de-uso.md`](casos-de-uso.md).
 
 ---
 
 ## 6. Requerimientos funcionales
 
-Los RF-01 a RF-10 corresponden a **P1 (Ejecutar búsqueda BLAST)** y son realizados por `CU001` (uno o más RF por slice, según se detalla en la sección de trazabilidad de [`casos-de-uso.md`](casos-de-uso.md)).
+Los RF-01 a RF-10 corresponden a **P1 (Ejecutar búsqueda BLAST)** y están repartidos entre los dos casos de uso derivados de ese proceso: `CU001` realiza RF-01 a RF-08 y `CU002` realiza RF-09 y RF-10. La tabla de trazabilidad detallada por slice está en [`casos-de-uso.md`](casos-de-uso.md).
 
 Los requerimientos del proceso P3 (administración de bases de datos) no se incluyen en este SRS porque P3 no se profundiza en el cuatrimestre — ver justificación en la sección 5.2.
 
@@ -143,11 +145,14 @@ Las historias de usuario asociadas a cada slice (relación 1:1 slice ↔ HU), co
 
 **Resumen de la cadena de trazabilidad `RF → CU → slice → HU`:**
 
-- **CU001 · Ejecutar búsqueda BLAST** realiza RF-01 a RF-10.
-  - Slices del camino feliz (básicos): `CU001_B1` (carga y configuración), `CU001_B2` (ejecución y resultados), `CU001_B3` (filtrado y descarga).
-  - Slices alternativos: `CU001_A1` (cancelación manual), `CU001_A2` (resultado vacío tras filtros), `CU001_A3` (base de datos local no disponible — el sistema informa y el investigador decide).
+- **CU001 · Ejecutar una búsqueda BLAST** realiza RF-01 a RF-08.
+  - Slices del camino feliz (básicos): `CU001_B1` (cargar, configurar y validar), `CU001_B2` (ejecutar y presentar resultados).
+  - Slices alternativos: `CU001_A1` (cancelación manual), `CU001_A2` (base de datos local no disponible — el sistema informa y el investigador decide).
   - Slices de excepción: `CU001_E1` (secuencia con formato inválido), `CU001_E2` (parámetros fuera de rango), `CU001_E3` (combinación programa/query/BD incompatible), `CU001_E4` (fallo del modo remoto de BLAST+).
-  - HU detalladas en este TP: `HU01_CU001_B1`, `HU02_CU001_B2`, `HU03_CU001_B3`, `HU04_CU001_E1`. El resto de los slices están **nombrados** en el CU y se detallarán como HU cuando algún TP posterior los necesite.
+- **CU002 · Refinar y descargar los resultados de una búsqueda** realiza RF-09 y RF-10.
+  - Slice básico único (camino feliz corto, sin subdivisión): `CU002_B` (aplicar filtros y descargar).
+  - Slice alternativo: `CU002_A1` (ningún resultado supera los filtros).
+- **HU detalladas en este TP:** `HU01_CU001_B1`, `HU02_CU001_B2`, `HU03_CU002_B`, `HU04_CU001_E1`. El resto de los slices están **nombrados** en los CU y se detallarán como HU cuando algún TP posterior los necesite.
 
 ---
 
