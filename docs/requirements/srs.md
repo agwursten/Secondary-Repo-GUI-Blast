@@ -66,6 +66,11 @@ LocalBlast es una **interfaz web para BLAST+** que resuelve las tres carencias:
 |---|---|---|---|
 | **Investigador/a** | Estudiante de grado/posgrado, tesista, becario/a, docente-investigador/a | Sí (usuario final principal) | Reducir el tiempo de las búsquedas BLAST recurrentes y evitar la fricción de la terminal o de la web de NCBI. |
 | **Administrador/a de bases de datos** | Bioinformático/a del laboratorio, técnico/a de IT del grupo de investigación | Sí | Poder mantener bases de datos propias (secuencias del laboratorio) y espejos de bases públicas sin depender del acceso externo. |
+| **Docente de la cursada** | Docente de bioinformática o materias afines | Sí (a través del rol Investigador) | Usar la herramienta en clases y trabajos prácticos, reemplazando parcialmente a la web de NCBI. |
+| **NCBI** | Proveedor del servicio remoto de BLAST | No interactúa con LocalBlast; sus servidores son contactados por BLAST+ cuando se lo invoca con `-remote` | Establece los límites de uso de la API remota (rate limits) que BLAST+ respeta, y que indirectamente afectan al comportamiento visible del sistema. |
+| **Cátedra de Ingeniería de Software (FIUNER)** | Evaluador del proyecto | No | Verificar la aplicación correcta de los conceptos del cuatrimestre. |
+
+Los dos primeros son los actores del modelo de casos de uso (los que aparecen en el diagrama de contexto). El resto son stakeholders sin interacción directa con el sistema.
 
 ---
 
@@ -140,7 +145,7 @@ Las historias de usuario asociadas a cada slice (relación 1:1 slice ↔ HU), co
 
 - **CU001 · Ejecutar búsqueda BLAST** realiza RF-01 a RF-10.
   - Slices del camino feliz (básicos): `CU001_B1` (carga y configuración), `CU001_B2` (ejecución y resultados), `CU001_B3` (filtrado y descarga).
-  - Slices alternativos: `CU001_A1` (cancelación manual), `CU001_A2` (resultado vacío tras filtros), `CU001_A3` (base de datos local no disponible → cambio a modo remoto).
+  - Slices alternativos: `CU001_A1` (cancelación manual), `CU001_A2` (resultado vacío tras filtros), `CU001_A3` (base de datos local no disponible — el sistema informa y el investigador decide).
   - Slices de excepción: `CU001_E1` (secuencia con formato inválido), `CU001_E2` (parámetros fuera de rango), `CU001_E3` (combinación programa/query/BD incompatible), `CU001_E4` (fallo del modo remoto de BLAST+).
   - HU detalladas en este TP: `HU01_CU001_B1`, `HU02_CU001_B2`, `HU03_CU001_B3`, `HU04_CU001_E1`. El resto de los slices están **nombrados** en el CU y se detallarán como HU cuando algún TP posterior los necesite.
 

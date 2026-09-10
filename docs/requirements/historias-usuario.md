@@ -129,7 +129,7 @@ Para el TP1 se detallan las HU de los **tres slices básicos** del camino feliz 
 | RF-06 | CU001 | E1 | **HU04_CU001_E1** |
 | RF-07 | CU001 | A1 (cancelación manual) | *nombrada, sin detallar aún* |
 | RF-09, RF-10 | CU001 | A2 (resultado vacío) | *nombrada, sin detallar aún* |
-| RF-02, RF-03 | CU001 | A3 (BD local no disponible) | *nombrada, sin detallar aún* |
+| RF-03 | CU001 | A3 (BD local no disponible) | *nombrada, sin detallar aún* |
 | RF-04, RF-06 | CU001 | E2 (parámetros fuera de rango) | *nombrada, sin detallar aún* |
 | RF-05 | CU001 | E3 (combinación incompatible) | *nombrada, sin detallar aún* |
 | RF-07 | CU001 | E4 (fallo modo remoto) | *nombrada, sin detallar aún* |

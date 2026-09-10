@@ -61,7 +61,7 @@ CU001 · Ejecutar búsqueda BLAST
 ├─ Caminos alternativos (slices A)
 │  ├─ CU001_A1  — cancelación manual de la búsqueda en curso
 │  ├─ CU001_A2  — ningún resultado supera los filtros post-búsqueda
-│  └─ CU001_A3  — base de datos local no disponible, cambio a modo remoto
+│  └─ CU001_A3  — base de datos local no disponible
 └─ Terminaciones abruptas (slices E)
    ├─ CU001_E1  — secuencia query con formato inválido
    ├─ CU001_E2  — parámetros pre-búsqueda fuera de rango
@@ -81,7 +81,7 @@ Son caminos válidos alternativos al flujo principal; el sistema sigue funcionan
 
 - **`CU001_A1` · Cancelación manual de la búsqueda.** Mientras la búsqueda está en ejecución (durante el slice `CU001_B2`), el investigador presiona **Cancelar**. El sistema aborta el subproceso local o cancela la solicitud remota a través de BLAST+, y deja la interfaz lista para iniciar una nueva búsqueda. **Realiza:** RF-07.
 - **`CU001_A2` · Ningún resultado supera los filtros post-búsqueda.** En el slice `CU001_B3`, los filtros elegidos por el investigador dejan la tabla vacía. El sistema no impide la descarga: entrega un archivo con encabezados y los metadatos de la búsqueda (parámetros, base de datos, timestamp) pero sin filas de hits, y guarda igualmente la búsqueda en D2, para que el investigador tenga constancia del intento. **Realiza:** RF-09, RF-10.
-- **`CU001_A3` · Base de datos local no disponible, cambio a modo remoto.** En el paso 3, el investigador seleccionó modo local y una base de datos que en ese momento no está lista en D1 (por ejemplo, se está actualizando desde P3). El sistema informa el estado y sugiere cambiar a modo remoto contra una base equivalente de NCBI; si el investigador acepta, el flujo continúa desde el paso 3 con la nueva selección y termina normalmente. **Realiza:** RF-02, RF-03.
+- **`CU001_A3` · Base de datos local no disponible.** En el paso 3, el investigador seleccionó modo local y una base de datos que en ese momento no está lista en D1 (por ejemplo, se está actualizando desde P3, o su índice quedó marcado con error). El sistema informa el estado de esa base de datos y su motivo, y devuelve al investigador al paso 3 con la lista de bases de datos locales actualizada. El investigador decide por su cuenta qué hacer a continuación (elegir otra base local, cambiar de modo, o cancelar); el sistema **no** propone equivalencias entre bases locales y remotas, porque no las hay: una base propia del laboratorio no es intercambiable con las bases estándar de NCBI. **Realiza:** RF-03.
 
 ### Slices de excepción — descripción
 
@@ -101,7 +101,7 @@ La tabla completa `RF → CU → slice → HU` (con las HU incluidas) está en [
 | RF | CU | Slice(s) que lo realizan |
 |---|---|---|
 | RF-01 | CU001 | B1 |
-| RF-02 | CU001 | B1, A3 |
+| RF-02 | CU001 | B1 |
 | RF-03 | CU001 | B1, A3 |
 | RF-04 | CU001 | B1, E2 |
 | RF-05 | CU001 | B1, E3 |
