@@ -111,7 +111,7 @@ Los requerimientos del proceso P3 (administración de bases de datos) no se incl
 
 ### Proceso P1 — Ejecución de búsqueda BLAST
 
-| --- ID  --| Requerimiento |
+| ID | Requerimiento |
 |---|---|
 | **RF-01** | El sistema debe permitir al usuario ingresar la secuencia query como texto pegado en el formulario o como archivo FASTA subido. |
 | **RF-02** | El sistema debe permitir al usuario elegir entre dos modos de ejecución mutuamente excluyentes: **local** (invoca a BLAST+ contra una base de datos del catálogo del laboratorio) o **remoto** (invoca a BLAST+ con la flag `-remote`, y es BLAST+ el que se comunica con NCBI). |
