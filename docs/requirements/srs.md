@@ -66,11 +66,6 @@ LocalBlast es una **interfaz web para BLAST+** que resuelve las tres carencias:
 |---|---|---|---|
 | **Investigador/a** | Estudiante de grado/posgrado, tesista, becario/a, docente-investigador/a | Sí (usuario final principal) | Reducir el tiempo de las búsquedas BLAST recurrentes y evitar la fricción de la terminal o de la web de NCBI. |
 | **Administrador/a de bases de datos** | Bioinformático/a del laboratorio, técnico/a de IT del grupo de investigación | Sí | Poder mantener bases de datos propias (secuencias del laboratorio) y espejos de bases públicas sin depender del acceso externo. |
-| **Docente de la cursada** | Docente de bioinformática o materias afines | Sí (a través del rol Investigador) | Usar la herramienta en clases y trabajos prácticos, reemplazando parcialmente a la web de NCBI. |
-| **NCBI** | Proveedor del servicio remoto de BLAST | No interactúa con LocalBlast; sus servidores son contactados por BLAST+ cuando se lo invoca con `-remote` | Establece los límites de uso de la API remota (rate limits) que BLAST+ respeta, y que indirectamente afectan al comportamiento visible del sistema. |
-| **Cátedra de Ingeniería de Software (FIUNER)** | Evaluador del proyecto | No | Verificar la aplicación correcta de los conceptos del cuatrimestre. |
-
-Los dos primeros son los actores del modelo de casos de uso (los que aparecen en el diagrama de contexto). El resto son stakeholders sin interacción directa con el sistema.
 
 ---
 
