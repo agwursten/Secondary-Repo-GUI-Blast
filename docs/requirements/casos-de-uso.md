@@ -21,7 +21,7 @@ Un caso de uso representa **una capacidad discreta que el sistema le brinda al a
 
 - Un **CU** puede realizar uno o varios RF, y a la inversa un RF puede estar realizado por varios slices del mismo CU (por ejemplo la validación previa aparece tanto en el camino feliz como en los slices de excepción).
 - El identificador del **slice básico** es la letra `B` (`CU00X_B`); si además se subdivide, pasa a `B1`, `B2`, … Los **slices alternativos** se numeran `A1`, `A2`, … y los **de excepción** `E1`, `E2`, …
-- La relación **slice ↔ HU es 1:1**. La HU conserva el identificador de trazabilidad del slice: `HU01_CU001_B1` detalla el slice `CU001_B1`; `HU03_CU002_B` detalla el (único) slice básico de `CU002`.
+- La relación **slice ↔ HU es 1:1**. La HU conserva el identificador de trazabilidad del slice: `HU01_CU001_B1` detalla el slice `CU001_B1`; `HU09_CU002_B` detalla el (único) slice básico de `CU002`.
 - Los diez slices identificados en los dos CU tienen **cada uno** su HU detallada en [`historias-usuario.md`](historias-usuario.md), con criterios Given-When-Then. El grupo decidió detallarlos a todos ya (en lugar de dejar algunos "nombrados sin detallar", que sería la opción mínima de la guía) porque el modelo de ciclo de vida es ágil y la HU es la unidad mínima de sprint — la explicación completa está al comienzo del `historias-usuario.md`.
 
 ---

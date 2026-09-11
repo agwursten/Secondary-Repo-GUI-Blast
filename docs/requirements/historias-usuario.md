@@ -1,6 +1,6 @@
 # Historias de Usuario — LocalBlast
 
-Cada historia de usuario detalla **un slice puntual** de un caso de uso (relación 1:1). El identificador de la HU conserva explícitamente el del slice de origen, para que la trazabilidad sea directa: la HU llamada `HU01_CU001_B1` detalla el slice `B1` del caso de uso `CU001`; la HU `HU03_CU002_B` detalla el (único) slice básico `B` del caso de uso `CU002`.
+Cada historia de usuario detalla **un slice puntual** de un caso de uso (relación 1:1). El identificador de la HU conserva explícitamente el del slice de origen, para que la trazabilidad sea directa: la HU llamada `HU01_CU001_B1` detalla el slice `B1` del caso de uso `CU001`; la HU `HU09_CU002_B` detalla el (único) slice básico `B` del caso de uso `CU002`.
 
 Formato de cada HU:
 
@@ -12,6 +12,8 @@ Formato de cada HU:
 Para el TP1 se detallan las HU de **todos los slices identificados en los casos de uso** — los tres básicos (`CU001_B1`, `CU001_B2`, `CU002_B`), las tres alternativas (`CU001_A1`, `CU001_A2`, `CU002_A1`) y las cuatro excepciones (`CU001_E1`, `CU001_E2`, `CU001_E3`, `CU001_E4`). En total, 10 historias de usuario.
 
 La guía del TP1 dice que "un slice se detalla como historia de usuario recién cuando algún TP posterior lo necesita, no todos de una vez"; el grupo decidió, sin embargo, detallar todas ya. Motivo: seguimos un modelo de ciclo de vida iterativo-incremental con prácticas ágiles (ver [README](../../README.md#modelo-de-ciclo-de-vida)), y en ágil la HU es la unidad mínima de sprint — la que efectivamente se planifica y se implementa. Dejar slices "nombrados sin criterios de aceptación" implicaría, al llegar al sprint correspondiente, no tener forma objetiva de decidir cuándo el trabajo del slice está terminado. Es más trabajo ahora, pero pone piso concreto a lo que después hay que construir y probar en TP4 y TP5.
+
+**Numeración:** las HU se enumeran de forma consecutiva por CU y, dentro de cada CU, en el orden: slices básicos (`B` / `B1`, `B2`) → slices alternativos (`A1`, `A2`, …) → slices de excepción (`E1`, `E2`, …). Así los identificadores acompañan el orden en el que aparecen los slices en [`casos-de-uso.md`](casos-de-uso.md).
 
 ---
 
@@ -68,30 +70,7 @@ La guía del TP1 dice que "un slice se detalla como historia de usuario recién 
 
 ---
 
-### HU04_CU001_E1 · Rechazo de secuencia query con formato inválido
-
-- **Deriva de:** `CU001`, slice `E1` (terminación abrupta detectada en el paso 7)
-- **Realiza:** RF-06
-
-> **Como** investigador/a,
-> **quiero** recibir un mensaje claro cuando la secuencia que subo o pego no es reconocible,
-> **para** poder corregirla de inmediato sin tener que adivinar qué le pasa.
-
-**Criterios de aceptación (Given-When-Then)**
-
-- **CA-01.** Caracter fuera del alfabeto:
-  - **Given** un texto pegado como query que contiene al menos un carácter fuera del alfabeto de ADN, ARN o proteína (por ejemplo un dígito o un símbolo de puntuación),
-  - **When** el investigador presiona "Ejecutar búsqueda",
-  - **Then** el sistema no invoca a BLAST+, corta el flujo del CU y muestra un mensaje que indica cuál es el carácter inválido y en qué posición aparece.
-
-- **CA-02.** FASTA con encabezado sin cuerpo:
-  - **Given** un archivo FASTA con una línea de encabezado (`>ID`) pero sin ninguna línea de secuencia debajo,
-  - **When** el investigador presiona "Ejecutar búsqueda",
-  - **Then** el sistema no invoca a BLAST+, corta el flujo del CU y muestra el mensaje "El FASTA contiene un encabezado pero ninguna secuencia asociada".
-
----
-
-### HU05_CU001_A1 · Cancelación manual de una búsqueda en curso
+### HU03_CU001_A1 · Cancelación manual de una búsqueda en curso
 
 - **Deriva de:** `CU001`, slice `A1` (camino alternativo durante el slice `B2`)
 - **Realiza:** RF-07
@@ -114,7 +93,7 @@ La guía del TP1 dice que "un slice se detalla como historia de usuario recién 
 
 ---
 
-### HU06_CU001_A2 · Manejo de base de datos local no disponible
+### HU04_CU001_A2 · Manejo de base de datos local no disponible
 
 - **Deriva de:** `CU001`, slice `A2` (camino alternativo en el paso 3)
 - **Realiza:** RF-03
@@ -137,7 +116,30 @@ La guía del TP1 dice que "un slice se detalla como historia de usuario recién 
 
 ---
 
-### HU07_CU001_E2 · Rechazo de parámetros pre-búsqueda fuera de rango
+### HU05_CU001_E1 · Rechazo de secuencia query con formato inválido
+
+- **Deriva de:** `CU001`, slice `E1` (terminación abrupta detectada en el paso 7)
+- **Realiza:** RF-06
+
+> **Como** investigador/a,
+> **quiero** recibir un mensaje claro cuando la secuencia que subo o pego no es reconocible,
+> **para** poder corregirla de inmediato sin tener que adivinar qué le pasa.
+
+**Criterios de aceptación (Given-When-Then)**
+
+- **CA-01.** Caracter fuera del alfabeto:
+  - **Given** un texto pegado como query que contiene al menos un carácter fuera del alfabeto de ADN, ARN o proteína (por ejemplo un dígito o un símbolo de puntuación),
+  - **When** el investigador presiona "Ejecutar búsqueda",
+  - **Then** el sistema no invoca a BLAST+, corta el flujo del CU y muestra un mensaje que indica cuál es el carácter inválido y en qué posición aparece.
+
+- **CA-02.** FASTA con encabezado sin cuerpo:
+  - **Given** un archivo FASTA con una línea de encabezado (`>ID`) pero sin ninguna línea de secuencia debajo,
+  - **When** el investigador presiona "Ejecutar búsqueda",
+  - **Then** el sistema no invoca a BLAST+, corta el flujo del CU y muestra el mensaje "El FASTA contiene un encabezado pero ninguna secuencia asociada".
+
+---
+
+### HU06_CU001_E2 · Rechazo de parámetros pre-búsqueda fuera de rango
 
 - **Deriva de:** `CU001`, slice `E2` (terminación abrupta detectada en el paso 7)
 - **Realiza:** RF-04, RF-06
@@ -160,7 +162,7 @@ La guía del TP1 dice que "un slice se detalla como historia de usuario recién 
 
 ---
 
-### HU08_CU001_E3 · Rechazo de combinación programa / query / base de datos incompatible
+### HU07_CU001_E3 · Rechazo de combinación programa / query / base de datos incompatible
 
 - **Deriva de:** `CU001`, slice `E3` (terminación abrupta detectada en el paso 7)
 - **Realiza:** RF-05
@@ -183,7 +185,7 @@ La guía del TP1 dice que "un slice se detalla como historia de usuario recién 
 
 ---
 
-### HU09_CU001_E4 · Manejo de fallo del modo remoto de BLAST+
+### HU08_CU001_E4 · Manejo de fallo del modo remoto de BLAST+
 
 - **Deriva de:** `CU001`, slice `E4` (terminación abrupta durante el slice `B2`)
 - **Realiza:** RF-07
@@ -208,7 +210,7 @@ La guía del TP1 dice que "un slice se detalla como historia de usuario recién 
 
 ## HU derivadas de CU002 · Refinar y descargar los resultados de una búsqueda
 
-### HU03_CU002_B · Filtrar los alineamientos y descargarlos en un formato
+### HU09_CU002_B · Filtrar los alineamientos y descargarlos en un formato
 
 - **Deriva de:** `CU002`, slice `B` (único slice básico; el camino feliz no se subdivide)
 - **Realiza:** RF-09, RF-10
@@ -265,13 +267,13 @@ La guía del TP1 dice que "un slice se detalla como historia de usuario recién 
 |---|---|---|---|
 | RF-01, RF-02, RF-03, RF-04, RF-05, RF-06 | CU001 | B1 | **HU01_CU001_B1** |
 | RF-07, RF-08 | CU001 | B2 | **HU02_CU001_B2** |
-| RF-06 | CU001 | E1 (secuencia inválida) | **HU04_CU001_E1** |
-| RF-07 | CU001 | A1 (cancelación manual) | **HU05_CU001_A1** |
-| RF-03 | CU001 | A2 (BD local no disponible) | **HU06_CU001_A2** |
-| RF-04, RF-06 | CU001 | E2 (parámetros fuera de rango) | **HU07_CU001_E2** |
-| RF-05 | CU001 | E3 (combinación incompatible) | **HU08_CU001_E3** |
-| RF-07 | CU001 | E4 (fallo modo remoto) | **HU09_CU001_E4** |
-| RF-09, RF-10 | CU002 | B | **HU03_CU002_B** |
+| RF-07 | CU001 | A1 (cancelación manual) | **HU03_CU001_A1** |
+| RF-03 | CU001 | A2 (BD local no disponible) | **HU04_CU001_A2** |
+| RF-06 | CU001 | E1 (secuencia inválida) | **HU05_CU001_E1** |
+| RF-04, RF-06 | CU001 | E2 (parámetros fuera de rango) | **HU06_CU001_E2** |
+| RF-05 | CU001 | E3 (combinación incompatible) | **HU07_CU001_E3** |
+| RF-07 | CU001 | E4 (fallo modo remoto) | **HU08_CU001_E4** |
+| RF-09, RF-10 | CU002 | B | **HU09_CU002_B** |
 | RF-09, RF-10 | CU002 | A1 (resultado vacío) | **HU10_CU002_A1** |
 
 **Todos los slices identificados en los casos de uso tienen HU detallada.** Esta decisión responde a que el proyecto sigue un enfoque ágil, y en ágil la HU es la unidad mínima de sprint — la que efectivamente se implementa. Dejar slices "nombrados pero sin criterios de aceptación" implicaría, al llegar el sprint correspondiente, no tener forma objetiva de decidir cuándo el trabajo está terminado. Es más trabajo ahora, pero le pone piso concreto a lo que después hay que construir y probar.
