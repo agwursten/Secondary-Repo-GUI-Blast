@@ -126,7 +126,7 @@ Este documento registra el uso crítico de asistentes de IA generativa durante e
 - **Errores / imprecisiones detectadas:**
   - En la primera pasada, la IA olvidó actualizar la introducción del `historias-usuario.md` (seguía diciendo "para el TP1 se detallan las HU de los tres slices básicos + una excepción representativa") aunque ya había agregado las seis nuevas HU al cuerpo del documento. Es el mismo patrón que ya notamos en entradas anteriores: cuando el cambio afecta a varios lugares del mismo archivo, la IA suele aplicarlo bien al cuerpo y olvidarlo en la introducción o en el resumen. Requiere revisión sistemática antes de commitear.
 
-## Entrada 7 — Renumeración de HU para que cada CU tenga sus historias consecutivas
+## Entrada 7 — Cambio de enumeración de HU para que cada CU tenga sus historias consecutivas
 
 - **Herramienta usada:** asistente de IA generativa basado en LLM.
 - **Tarea concreta:** después de completar la cobertura de HU (Entrada 6), un integrante notó que la numeración quedaba visualmente confusa: `CU002` empezaba con `HU03_CU002_B` (porque era la tercera HU escrita) y saltaba a `HU10_CU002_A1`, aunque `CU002` solo tiene dos slices en total. El motivo era cronológico —esa había sido la HU número 3 que escribimos, cuando aún era el único ejemplo de CU002— pero para el lector nuevo del documento no tenía justificación aparente.
