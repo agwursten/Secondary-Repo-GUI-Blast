@@ -2,7 +2,12 @@
 
 Los casos de uso se redactan en **formato textual estructurado (Cockburn)** — actor, objetivo, precondición, flujo principal, alternativos, excepciones, postcondición — según pide el TP1, y **no** como diagrama gráfico (Mermaid no incluye un tipo de diagrama de casos de uso nativo).
 
-Todos los casos de uso de este documento derivan del proceso profundizado **P1 · Ejecutar búsqueda BLAST** del DFD Nivel 1. Los procesos P2 y P3 quedan documentados a nivel de alcance en el DFD y en el modelo de dominio, pero **no** tienen casos de uso propios en este TP (ver justificación en la sección 5 del [SRS](srs.md#5-selección-de-procesos-a-profundizar)).
+Los casos de uso de este documento derivan de los dos procesos profundizados del DFD Nivel 1:
+
+- `CU001` deriva del proceso **P1 · Ejecutar búsqueda BLAST**.
+- `CU002` y `CU003` derivan del proceso **P2 · Filtrar y entregar resultados**.
+
+Ambos procesos son necesarios para cerrar una interacción típica del investigador con el sistema: P1 le corre la búsqueda y la persiste, y P2 le deja trabajar con esos resultados (filtrar y descargar) a su conveniencia. El tercer proceso, **P3 (Administrar bases de datos)**, queda documentado a nivel de alcance en el DFD y en el modelo de dominio pero **no** tiene casos de uso propios en este TP (ver justificación en la sección 5 del [SRS](srs.md#5-selección-de-procesos-a-profundizar)).
 
 Cada caso de uso declara qué requerimientos funcionales realiza. La cadena completa de trazabilidad es:
 
@@ -12,10 +17,10 @@ Cada caso de uso declara qué requerimientos funcionales realiza. La cadena comp
 
 Un caso de uso representa **una capacidad discreta que el sistema le brinda al actor** — un objetivo alcanzable —, no un trazo secuencial de pasos que el actor tiene que recorrer de punta a punta. Dos consecuencias prácticas de esa definición para este TP:
 
-- **Del proceso P1 salen tres CU, no uno solo largo.** El investigador tiene tres objetivos distintos que el sistema le habilita, y que puede combinar como necesite:
-  - `CU001` (ejecutar una búsqueda) — obtener alineamientos crudos visibles en la interfaz.
-  - `CU002` (refinar con filtros post-búsqueda) — ver los alineamientos con criterios post-búsqueda aplicados, sin volver a correr BLAST.
-  - `CU003` (descargar) — obtener un archivo con los alineamientos actualmente visibles, en un formato.
+- **De los procesos profundizados salen tres CU, no uno solo largo.** El investigador tiene tres objetivos distintos que el sistema le habilita, y que puede combinar como necesite:
+  - `CU001` (ejecutar una búsqueda, deriva de **P1**) — obtener alineamientos crudos visibles en la interfaz.
+  - `CU002` (refinar con filtros post-búsqueda, deriva de **P2**) — ver los alineamientos con criterios post-búsqueda aplicados, sin volver a correr BLAST.
+  - `CU003` (descargar, deriva de **P2**) — obtener un archivo con los alineamientos actualmente visibles, en un formato.
 - **La descarga no siempre se ejerce.** A veces el investigador solo quiere mirar los resultados filtrados en pantalla (queda en `CU002`) y no descargarlos. A veces querrá descargar sin haber filtrado (directamente `CU003` sobre los crudos). Y, cuando D2 se profundice como fuente de lectura en una versión futura, el investigador podrá iniciar `CU003` sobre una búsqueda vieja del historial sin volver a ejecutar `CU001`. Ese abanico de combinaciones es lo que justifica tener CU separados por capacidad y no uno solo secuencial.
 - **Cuando el camino feliz de un CU queda largo, se descompone en slices.** No los CU en sí, sino su flujo principal. Los slices son módulos que aportan valor por sí mismos hacia el objetivo del CU. En este TP, `CU001` se descompone en dos slices básicos (`B1` y `B2`); `CU002` y `CU003` quedan cada uno con un único slice básico (`B`) porque sus flujos son cortos.
 
@@ -32,6 +37,7 @@ Un caso de uso representa **una capacidad discreta que el sistema le brinda al a
 
 ## CU001 · Ejecutar una búsqueda BLAST
 
+- **Deriva del proceso:** P1 · Ejecutar búsqueda BLAST
 - **Actor principal:** Investigador/a
 - **Actor secundario:** Motor **BLAST+** (invocado por el sistema en ambos modos: local, y remoto con la flag `-remote` — es BLAST+ el que se comunica con NCBI del otro lado, nunca directamente nuestra GUI)
 - **Objetivo:** Obtener un conjunto de alineamientos de una secuencia query contra una base de datos elegida, con parámetros del algoritmo bajo control del usuario, verlos en la interfaz, y que la búsqueda quede persistida en el historial para uso posterior.
@@ -100,6 +106,7 @@ Son terminaciones abruptas del flujo: el sistema detecta una condición que impi
 
 ## CU002 · Refinar los resultados con filtros post-búsqueda
 
+- **Deriva del proceso:** P2 · Filtrar y entregar resultados
 - **Actor principal:** Investigador/a
 - **Objetivo:** Ver la lista de alineamientos filtrada por criterios post-búsqueda (identidad, cobertura, E-value observado, taxonomía), sin re-ejecutar BLAST.
 - **Realiza:** RF-09
@@ -131,6 +138,7 @@ CU002 · Refinar los resultados con filtros post-búsqueda
 
 ## CU003 · Descargar los resultados en un formato
 
+- **Deriva del proceso:** P2 · Filtrar y entregar resultados
 - **Actor principal:** Investigador/a
 - **Objetivo:** Obtener, en su equipo, un archivo con los alineamientos actualmente visibles en la interfaz, en el formato adecuado para su análisis posterior.
 - **Realiza:** RF-10
@@ -187,4 +195,4 @@ La tabla `RF → CU → slice → HU` (con las HU incluidas) está en [`historia
 
 Un mismo RF puede aparecer en varios slices del mismo CU — por ejemplo RF-06 (validación pre-ejecución) se realiza en el camino feliz `B1` (cuando la validación pasa) y también en `E1` y `E2` (cuando falla y corta el flujo). Esa dispersión es esperable: los slices de excepción son otra forma en que se cumple el RF de validación.
 
-Ningún RF cruza entre los tres CU: los RF de ejecución y persistencia (RF-01 a RF-08, RF-11) son todos de `CU001`, RF-09 es exclusivo de `CU002` y RF-10 es exclusivo de `CU003`. Esa separación limpia es una consecuencia directa de haber separado los CU por capacidad y no por trazo secuencial: cada CU realiza el subconjunto de RF que le corresponde a su objetivo.
+Ningún RF cruza entre los tres CU: los RF de ejecución y persistencia (RF-01 a RF-08, RF-11) son todos de `CU001` (derivado de P1), RF-09 es exclusivo de `CU002` y RF-10 es exclusivo de `CU003` (ambos derivados de P2). Esa separación limpia es una consecuencia directa de haber separado los CU por capacidad y no por trazo secuencial: cada CU realiza el subconjunto de RF que le corresponde a su objetivo, y ese subconjunto se corresponde a su vez con el proceso del que deriva.

@@ -99,29 +99,31 @@ El modelo de dominio conceptual, entidades esenciales del problema y sus relacio
 
 ## 5. Selección de procesos a profundizar
 
-De los tres procesos identificados en el DFD Nivel 1 (P1, P2, P3), el grupo elige llevar a profundidad **únicamente P1 (Ejecutar búsqueda BLAST)**. P2 (Filtrar y entregar resultados) y P3 (Administrar bases de datos) quedan documentados a nivel de alcance en el DFD y en el modelo de dominio, pero **no** se detallan como casos de uso propios ni tienen RF profundizados en este SRS.
+De los tres procesos identificados en el DFD Nivel 1 (P1, P2, P3), el grupo elige llevar a profundidad **P1 (Ejecutar búsqueda BLAST) y P2 (Filtrar y entregar resultados)**. Ambos son necesarios para cerrar una interacción típica del investigador con el sistema: P1 se ocupa de correr la búsqueda y dejarla persistida, y P2 le permite al investigador trabajar sobre esos resultados (filtrarlos y descargarlos) a su conveniencia. El proceso **P3 (Administrar bases de datos)** queda documentado a nivel de alcance en el DFD y en el modelo de dominio, pero **no** se detalla como casos de uso propios ni tiene RF profundizados en este SRS.
 
 ### 5.1 Qué se profundiza y por qué
 
-- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra toda la complejidad interesante del dominio (dos modos de invocación a BLAST+ — con o sin `-remote` —, validación de parámetros pre-búsqueda, verificación de compatibilidad programa/query/base de datos, ejecución asíncrona con cancelación, y refinamiento posterior de resultados). Da lugar a **tres casos de uso** con capacidades distintas para el mismo actor investigador: `CU001` (ejecutar una búsqueda BLAST), `CU002` (refinar los resultados con filtros post-búsqueda) y `CU003` (descargar los resultados en un formato). Están detallados en [`docs/requeriments/casos-de-uso.md`](casos-de-uso.md).
+- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra la complejidad interesante del dominio (dos modos de invocación a BLAST+ — con o sin `-remote` —, validación de parámetros pre-búsqueda, verificación de compatibilidad programa/query/base de datos, ejecución asíncrona con cancelación y persistencia automática en el historial). Da lugar a **un caso de uso**, `CU001 · Ejecutar una búsqueda BLAST`, descompuesto en dos slices básicos `B1` (cargar, configurar y validar) y `B2` (ejecutar, presentar resultados y persistir), más sus alternativas y excepciones.
+
+- **P2 · Filtrar y entregar resultados — profundizado.** Es lo que le permite al investigador cerrar la interacción con valor real: sin filtrar ni descargar, la búsqueda queda "en el aire" en la interfaz. P2 se ejecuta sobre los datos ya devueltos por BLAST+ y su lógica es previsible (comparaciones numéricas para el filtro, serialización para la descarga), pero es indispensable para el flujo típico del usuario y por eso lo profundizamos. Da lugar a **dos casos de uso** con capacidades distintas para el mismo actor investigador: `CU002 · Refinar los resultados con filtros post-búsqueda` y `CU003 · Descargar los resultados en un formato`. Están detallados en [`docs/requeriments/casos-de-uso.md`](casos-de-uso.md).
 
 ### 5.2 Qué queda fuera del profundizado y por qué
 
-- **P2 · Filtrar y entregar resultados — no profundizado como proceso en sí.** Se ejecuta enteramente sobre datos ya en memoria (filtros a la tabla y serialización a un formato) y su lógica es previsible: comparaciones numéricas y export a formatos estándar. Sus capacidades visibles para el actor **sí** se profundizan —como `CU002` (refinar) y `CU003` (descargar)—, pero P2 como proceso técnico no aporta descubrimiento significativo al TP1 ni riesgo de arquitectura para el TP3.
+- **P3 · Administrar bases de datos — no profundizado.** Es el proceso de un actor distinto (Administrador), con objetivo distinto y precondición distinta a los procesos anteriores. Un caso de uso derivado de P3 —por ejemplo "Administrar base de datos BLAST local"— pertenece conceptualmente a ese proceso, no a P1 ni a P2, y por lo tanto queda fuera de la cadena `RF → CU → slice → HU` de este TP. Se documenta a nivel de alcance en el DFD Nivel 1 (con sus flujos hacia BLAST+ y hacia D1) y sus entidades siguen presentes en el modelo de dominio, pero sin RF ni CU propios profundizados en este cuatrimestre.
 
-- **P3 · Administrar bases de datos — no profundizado.** Es el proceso de un actor distinto (Administrador), con objetivo distinto y precondición distinta al de P1. Un caso de uso derivado de P3 —por ejemplo "Administrar base de datos BLAST local"— pertenece conceptualmente a ese proceso, no a P1, y por lo tanto queda fuera de la cadena `RF → CU → slice → HU` de este TP. Se documenta a nivel de alcance en el DFD Nivel 1 (con sus flujos hacia BLAST+ y hacia D1) y sus entidades siguen presentes en el modelo de dominio, pero sin RF ni CU propios profundizados en este cuatrimestre.
+**Criterio general.** Esta decisión respeta la recomendación explícita de la cátedra: *"elegir uno bien resuelto vale más que varios a medio desarrollar"*. Concentrar el trabajo en los dos procesos que cubren una interacción completa del investigador (P1 y P2) nos permite descomponer esa interacción en las tres capacidades que el sistema le da —lanzar una búsqueda, refinar resultados, descargarlos—, y todavía dentro de `CU001` distinguir dos slices con valor incremental (dejar la búsqueda validada, versus ejecutar y ver resultados). Es más rico que dispersar el esfuerzo entre P3, que responde a un objetivo y a un actor diferentes.
 
-**Criterio general.** Esta decisión respeta la recomendación explícita de la cátedra: *"elegir uno bien resuelto vale más que varios a medio desarrollar"*. Concentrar el trabajo en P1 nos permite descomponerlo en las tres capacidades que le da al investigador —lanzar una búsqueda, refinar resultados, descargarlos—, y todavía dentro de `CU001` distinguir dos slices con valor incremental (dejar la búsqueda validada, versus ejecutar y ver resultados). Es más rico que dispersar el esfuerzo entre procesos que responden a objetivos y actores diferentes.
-
-**Nota sobre el enfoque de los CU.** Un caso de uso representa **una capacidad discreta que el sistema le da al actor**, no un trazo secuencial de pasos. Por eso del proceso P1 salen tres CU en vez de uno solo largo: ejecutar una búsqueda (`CU001`), refinar los resultados con filtros post-búsqueda (`CU002`) y descargar los resultados (`CU003`) son tres objetivos distintos del mismo actor. El investigador puede quedarse en `CU002` (solo mirar resultados filtrados sin descargar), o incluso ejercer `CU003` sin haber ejercido `CU002` (descargar sin filtrar). Ver la explicación completa en la sección "Enfoque de los casos de uso" de [`casos-de-uso.md`](casos-de-uso.md).
+**Nota sobre el enfoque de los CU.** Un caso de uso representa **una capacidad discreta que el sistema le da al actor**, no un trazo secuencial de pasos. Por eso el proceso P1 da lugar a un CU (`CU001`) y el proceso P2 da lugar a dos CU distintos (`CU002` y `CU003`), en vez de fundirlos en un único CU largo que trace toda la interacción: ejecutar una búsqueda, refinar los resultados con filtros post-búsqueda y descargar los resultados son tres objetivos distintos del mismo actor. El investigador puede quedarse en `CU002` (solo mirar resultados filtrados sin descargar), o incluso ejercer `CU003` sin haber ejercido `CU002` (descargar sin filtrar). Ver la explicación completa en la sección "Enfoque de los casos de uso" de [`casos-de-uso.md`](casos-de-uso.md).
 
 ---
 
 ## 6. Requerimientos funcionales
 
-### Proceso P1 — Ejecución de búsqueda BLAST
+Los RF-01 a RF-11 corresponden a los procesos profundizados P1 y P2. La tabla de trazabilidad detallada por slice está en [`casos-de-uso.md`](casos-de-uso.md).
 
-Los RF-01 a RF-11 corresponden a **P1**. La tabla de trazabilidad detallada por slice está en [`casos-de-uso.md`](casos-de-uso.md).
+### 6.1 Proceso P1 — Ejecución de búsqueda BLAST
+
+Realizados por `CU001` (ejecutar una búsqueda).
 
 | ID | Requerimiento |
 |---|---|
@@ -133,9 +135,16 @@ Los RF-01 a RF-11 corresponden a **P1**. La tabla de trazabilidad detallada por 
 | **RF-06** | El sistema debe validar, antes de ejecutar la búsqueda, que la secuencia query respete el alfabeto declarado o inferido (ADN, ARN o proteína) y que los parámetros pre-búsqueda estén dentro de rangos válidos. |
 | **RF-07** | El sistema debe ejecutar la búsqueda de forma asíncrona, mostrando un indicador de progreso, sin bloquear la interfaz de usuario, y debe permitir cancelar una búsqueda en curso. |
 | **RF-08** | El sistema debe mostrar los resultados en una tabla con, como mínimo: identificador del hit, score, E-value observado, porcentaje de identidad y porcentaje de cobertura. |
+| **RF-11** | El sistema debe persistir automáticamente en el historial (D2) cada búsqueda que termine su ejecución exitosamente, incluyendo parámetros pre-búsqueda, base de datos usada, timestamp y el conjunto **crudo** de resultados que devolvió BLAST+ (antes de cualquier filtro post-búsqueda), independientemente de si el investigador aplica filtros o descarga el archivo. |
+
+### 6.2 Proceso P2 — Filtrado y entrega de resultados
+
+Realizados por `CU002` (refinar con filtros post-búsqueda) y `CU003` (descargar en un formato).
+
+| ID | Requerimiento |
+|---|---|
 | **RF-09** | El sistema debe permitir aplicar filtros post-búsqueda sobre la tabla de resultados (al menos: umbrales de porcentaje de identidad, porcentaje de cobertura, E-value observado y filtro por taxonomía cuando la información esté disponible) sin volver a ejecutar la búsqueda. |
 | **RF-10** | El sistema debe permitir al usuario descargar los resultados actualmente visibles en la tabla (filtrados o sin filtrar) en al menos los formatos: CSV, JSON, FASTA, tabular BLAST (`-outfmt 6`) y XML. |
-| **RF-11** | El sistema debe persistir automáticamente en el historial (D2) cada búsqueda que termine su ejecución exitosamente, incluyendo parámetros pre-búsqueda, base de datos usada, timestamp y el conjunto **crudo** de resultados que devolvió BLAST+ (antes de cualquier filtro post-búsqueda), independientemente de si el investigador aplica filtros o descarga el archivo. |
 
 ## 7. Casos de uso e historias de usuario
 
@@ -149,13 +158,13 @@ Las historias de usuario asociadas a cada slice (relación 1:1 slice ↔ HU), co
 
 **Resumen de la cadena de trazabilidad `RF → CU → slice → HU`:**
 
-- **CU001 · Ejecutar una búsqueda BLAST** realiza RF-01 a RF-08 y RF-11.
+- **CU001 · Ejecutar una búsqueda BLAST** (deriva de **P1**) — realiza RF-01 a RF-08 y RF-11.
   - Slices del camino feliz (básicos): `CU001_B1` (cargar, configurar y validar), `CU001_B2` (ejecutar, presentar resultados y persistir).
   - Slices alternativos: `CU001_A1` (cancelación manual), `CU001_A2` (base de datos local no disponible — el sistema informa y el investigador decide).
   - Slices de excepción: `CU001_E1` (secuencia con formato inválido), `CU001_E2` (parámetros fuera de rango), `CU001_E3` (combinación programa/query/BD incompatible), `CU001_E4` (fallo del modo remoto de BLAST+).
-- **CU002 · Refinar los resultados con filtros post-búsqueda** realiza RF-09.
+- **CU002 · Refinar los resultados con filtros post-búsqueda** (deriva de **P2**) — realiza RF-09.
   - Slice básico único: `CU002_B` (ajustar filtros y ver la tabla re-filtrada).
-- **CU003 · Descargar los resultados en un formato** realiza RF-10.
+- **CU003 · Descargar los resultados en un formato** (deriva de **P2**) — realiza RF-10.
   - Slice básico único: `CU003_B` (elegir formato y descargar los resultados actualmente visibles).
   - Slice alternativo: `CU003_A1` (descarga cuando ningún hit supera los filtros — entrega archivo con solo metadatos).
 - **HU detalladas en este TP:** las once, una por cada slice identificado: `HU01_CU001_B1`, `HU02_CU001_B2`, `HU03_CU001_A1`, `HU04_CU001_A2`, `HU05_CU001_E1`, `HU06_CU001_E2`, `HU07_CU001_E3`, `HU08_CU001_E4`, `HU09_CU002_B`, `HU10_CU003_B`, `HU11_CU003_A1`. El grupo decidió detallar todas ya —no solo el básico + una representativa— porque el modelo de ciclo de vida es ágil y la HU es la unidad mínima de sprint (ver justificación al comienzo de [`historias-usuario.md`](historias-usuario.md)).

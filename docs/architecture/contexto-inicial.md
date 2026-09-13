@@ -94,6 +94,12 @@ flowchart TD
 
 ## Nota sobre el alcance profundizado
 
-De los tres procesos identificados, el grupo lleva a profundidad **únicamente P1 (Ejecutar búsqueda BLAST)** durante el cuatrimestre. Los otros dos procesos (P2 y P3) quedan documentados a nivel de alcance en este DFD y en el modelo de dominio, pero **no** se detallan como casos de uso ni historias de usuario propios: no tienen RF profundizados en el SRS y no forman parte de la cadena `RF → CU → slice → HU` de este TP.
+De los tres procesos identificados, el grupo lleva a profundidad **P1 (Ejecutar búsqueda BLAST) y P2 (Filtrar y entregar resultados)** durante el cuatrimestre. Ambos son necesarios para completar una interacción típica del investigador con el sistema: P1 se ocupa de ejecutar la búsqueda y persistirla, y P2 se ocupa de dejar al investigador trabajar con esos resultados (filtrarlos y descargarlos). El proceso **P3 (Administrar bases de datos)** queda documentado a nivel de alcance en este DFD y en el modelo de dominio, pero **no** se detalla como casos de uso ni historias de usuario propios: no tiene RF profundizados en el SRS y no forma parte de la cadena `RF → CU → slice → HU` de este TP.
 
-Los casos de uso escritos en `docs/requeriments/casos-de-uso.md` son **todos** derivados del proceso P1. Ver la justificación completa en la sección [Selección de procesos a profundizar](../requeriments/srs.md#5-selección-de-procesos-a-profundizar) del SRS.
+Los casos de uso escritos en `docs/requeriments/casos-de-uso.md` se distribuyen así entre los procesos profundizados:
+
+- `CU001 · Ejecutar una búsqueda BLAST` **deriva de P1**.
+- `CU002 · Refinar los resultados con filtros post-búsqueda` **deriva de P2**.
+- `CU003 · Descargar los resultados en un formato` **deriva de P2**.
+
+Ver la justificación completa en la sección [Selección de procesos a profundizar](../requeriments/srs.md#5-selección-de-procesos-a-profundizar) del SRS.
