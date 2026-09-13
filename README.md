@@ -1,36 +1,61 @@
-# LocalBlast 2026
+# LocalBlast_2026
 
 ## Integrantes
-
-- Agustín Facundo Gaitán
-- Augusto Wursten
-- Valentín Farías
-
----
-
-## Síntesis del proyecto
-
-**LocalBlast** es una interfaz gráfica web sobre **BLAST+** — la suite oficial de línea de comandos de NCBI — que permite a investigadores y estudiantes ejecutar alineamientos de secuencias sin depender de la terminal ni de la carga de la interfaz oficial de NCBI. El motor de alineamiento es BLAST+ en todos los casos: LocalBlast no reimplementa BLAST, lo envuelve. Con un mismo formulario, el usuario elige si el alineamiento se corre localmente (BLAST+ contra bases de datos alojadas por el laboratorio) o de forma remota (BLAST+ con la flag `-remote`, que a su vez se comunica con NCBI); configura los parámetros del algoritmo y aplica filtros a los resultados antes de descargarlos. El sistema contempla también un rol de administrador que mantiene el catálogo de bases de datos locales; ese proceso queda documentado a nivel de alcance pero **no se profundiza** en la cursada (ver justificación en el SRS).
-
-Para el detalle completo — visión, alcance, requerimientos funcionales, casos de uso, historias de usuario y modelo de dominio — ver el SRS:
-
-👉 [`docs/requirements/srs.md`](docs/requirements/srs.md)
-
-Documentos adicionales del SRS:
-
-- [Diagrama de contexto (DFD N0 y N1)](docs/architecture/contexto-inicial.md)
-- [Modelo de dominio conceptual](docs/requirements/modelo-dominio.md)
-- [Casos de uso (Cockburn)](docs/requirements/casos-de-uso.md)
-- [Historias de usuario con criterios de aceptación Given-When-Then](docs/requirements/historias-usuario.md)
-- [Bitácora de uso de IA](docs/uso-ia.md)
+* Agustin Facundo Gaitan
+* Wursten Augusto
+* Farias Valentin
 
 ---
 
-## Modelo de ciclo de vida
+## 1. Canvas de Descubrimiento (Síntesis)
 
-El grupo adopta un **modelo iterativo e incremental con prácticas ágiles livianas** (tablero de tareas y revisiones cortas por TP), por dos razones concretas del proyecto:
+### Problema
+Actualmente, la realización de alineamientos locales de secuencias mediante BLAST presenta barreras de entrada significativas según el canal utilizado:
+* **Línea de comandos (Consola):** Requiere recordar comandos complejos, sintaxis rigurosa y navegar por documentación extensa, lo que ralentiza el trabajo de usuarios sin perfil puramente bioinformático o técnico.
+* **Interfaz Web Oficial (NCBI BLAST):** Aunque es accesible, carece de opciones avanzadas de filtrado directo e interactivo (como filtros instantáneos por % de identidad o cobertura posterior a la búsqueda) y resulta sobrecargada para consultas simples y rápidas.
 
-1. **Los requerimientos están claros en el núcleo pero indefinidos en los bordes.** El corazón —lanzar una búsqueda BLAST desde una interfaz web y descargar el resultado— lo entendemos bien porque la herramienta subyacente (BLAST+) ya resuelve el algoritmo; pero los detalles finos del formulario de parámetros, y qué filtros post-búsqueda son realmente útiles para el usuario, los vamos a descubrir recién cuando mostremos versiones intermedias a un usuario real. Un modelo secuencial (cascada) obligaría a congelar esos detalles antes de tiempo.
-2. **Hay valor entregable temprano.** Una primera iteración con solo búsqueda remota (invocando a BLAST+ con `-remote` contra NCBI) y descarga en un único formato ya demuestra el valor central y sirve para validar la interfaz antes de sumar el resto (más programas BLAST, más formatos de descarga, filtros post-búsqueda). Alinea con el enfoque del cuatrimestre, donde cada TP es una iteración con su propio punto de control.
+### Stakeholders
+* **Estudiantes de Grado y Posgrado:** Que necesitan realizar alineamientos locales rápidos para trabajos prácticos o investigación sin perder tiempo en la configuración de entornos por terminal.
+* **Investigadores y Docentes de Bioinformática / Biología Molecular:** Que buscan una herramienta ágil e intuitiva para explorar resultados con filtros visuales personalizados que no están disponibles de forma nativa en la web tradicional.
 
-Se descartó **cascada** por la razón (1), y **espiral** porque el riesgo tecnológico del proyecto es acotado (BLAST+ está estable y bien documentado) — no justifica el sobrecosto de análisis de riesgo por iteración.
+### Alcance del Proyecto
+* **Interfaz Gráfica Intuitiva:** Diseño web o desktop amigable para la introducción de secuencias query (FASTA/texto plano) y configuración simple de parámetros.
+* **Integración con Motor BLAST:** Capacidad de enviar consultas y recibir resultados conectándose a NCBI (vía API/remoto) o ejecutables de BLAST local.
+* **Filtros Avanzados y Personalizados:** Opciones de visualización y filtrado dinámico sobre la lista de resultados (ej. umbrales de identidad, cobertura, E-value, taxones).
+* **Exportación de Resultados:** Descarga de resultados filtrados en formatos estándar (CSV, JSON, FASTA).
+
+#### Fuera del Alcance (Out of Scope)
+* Reescritura o modificación del algoritmo de alineamiento subyacente de BLAST.
+* Implementación de herramientas de alineamiento múltiple (como ClustalW o Muscle) o modelado 3D de estructuras.
+* Creación o administración de bases de datos genómicas complejas desde la aplicación.
+
+---
+
+## 2. Documentación del Proyecto
+Para consultar la Especificación de Requisitos de Software (SRS) completa, visión, casos de uso y escenarios de calidad, diríjase a:
+👉 [`docs/requeriments/srs.md`](docs/requeriments/srs.md)
+
+---
+
+## 3. Modelo de Ciclo de Vida Específico
+
+El grupo se decanta por una **metodologia incremental con practicas agiles**. 
+
+Esta elección se basa en que la herramienta posee características
+funcionales intrínsecas que se pueden modularizar naturalmente.
+Donde es posible la entrega de un modulo operativo cuyo desarrollo
+es independiente de otros del mismo sistema (Por ejemplo, *procesar_secuencia*). 
+
+Cada incremento añade una capacidad operativa completa y utilizable.
+
+• Descartamos enfoques como *Cascada* dado que es un flujo estrictamente secuencial, donde no se avanza a la siguiente fase sin cerrar por completo al anterior, lo cual no es caracteristico de este proyecto dado que como bien mencionamos es posible separar responsabilidades. 
+
+• Descartamos enfoques como *Modelo en V* porque es en parte una variacion del metodo en cascada. 
+
+• Descartamos enfoques como *Espiral* dado que esta pensado para proyectos más grandes en donde un fallo implica consecuencias catastroficas y por eso
+se deben llevar a cabo gestion de riesgos, en un proyecto como el presente añadir la complejidad de un modelo en espiral supera ampliamente la complejidad del software en si, lo que ralentiza el desarrollo.
+
+• Descartamos enfoques como *iterativo* debido a que obligaria a rehacer todo
+el sistema en cada ciclo, lo cual es ineficiente cuando **ya contamos con requisitos bien definidos**. Por lo que no seria necesario primero desarrollar un esqueleto basico del sistema para luego ir refinandolo, sino que al conocer bien los requisitos podemos simplemente construir un modulo dejandolo listo para produccion y luego construir el siguiente. 
+
+

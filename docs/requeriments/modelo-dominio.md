@@ -36,7 +36,6 @@ classDiagram
 
     Administrador "1" --> "*" BaseDeDatos : administra
 ```
-
 ---
 
 ## Entidades y su rol en el dominio
@@ -65,13 +64,3 @@ classDiagram
 **FormatoDescarga** — el formato en que se puede exportar un reporte (CSV, JSON, FASTA, tabular BLAST, XML).
 
 ---
-
-## Notas de modelado
-
-- La especialización `Usuario → Investigador / Administrador` refleja la **generalización de actores** del modelo de casos de uso: un mismo Usuario puede tener uno u otro rol (o ambos en organizaciones chicas). En el TP1 se documenta la especialización a nivel conceptual; las reglas concretas de autorización pertenecen al TP4.
-
-- La `Busqueda` se relaciona con **una** `SecuenciaQuery` en esta versión. Búsquedas múltiples con varias queries en un mismo lote quedan fuera del alcance profundizado del cuatrimestre.
-
-- `ParametrosPreBusqueda` y `FiltroPostBusqueda` son entidades **separadas** a propósito — es una distinción clave del dominio: los primeros cambian el resultado del algoritmo (hay que volver a ejecutar para probar otro valor), los segundos solo cambian qué se muestra al usuario (se aplican sobre resultados ya calculados).
-
-- Este modelo va a **refinarse en las siguientes semanas** a medida que aparezcan casos de uso adicionales o slices con requerimientos nuevos. Es el estado inicial acordado por el grupo.

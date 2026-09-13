@@ -1,6 +1,6 @@
 # SRS — LocalBlast
 
-**Especificación de Requerimientos de Software (SRS) — Ingeniería de Software 2026, FIUNER.**
+**Especificación de Requerimientos de Software (SRS)**
 Este documento es la línea base del proyecto **LocalBlast** al cierre del TP1. Se estructura en secciones y se apoya en documentos hermanos para el detalle de diagramas, casos de uso e historias de usuario.
 
 ---
@@ -8,7 +8,7 @@ Este documento es la línea base del proyecto **LocalBlast** al cierre del TP1. 
 ## Índice
 
 1. [Visión y alcance](#1-visión-y-alcance)
-2. [Stakeholders y usuarios](#2-stakeholders-y-usuarios)
+2. [Stakeholders y actores del sistema](#2-stakeholders-y-actores-del-sistema)
 3. [Diagrama de contexto (DFD)](#3-diagrama-de-contexto-dfd)
 4. [Modelo de dominio](#4-modelo-de-dominio)
 5. [Selección de procesos a profundizar](#5-selección-de-procesos-a-profundizar)
@@ -16,8 +16,6 @@ Este documento es la línea base del proyecto **LocalBlast** al cierre del TP1. 
 7. [Casos de uso e historias de usuario](#7-casos-de-uso-e-historias-de-usuario)
 8. [Suposiciones y dependencias](#8-suposiciones-y-dependencias)
 9. [Glosario](#9-glosario)
-
-> **Nota:** los atributos de calidad (ISO 25010) con sus escenarios se incorporan en la siguiente entrega, según la reprogramación indicada por la cátedra.
 
 ---
 
@@ -48,6 +46,7 @@ LocalBlast es una **interfaz web para BLAST+** que resuelve las tres carencias:
 - Formulario de parámetros pre-búsqueda con valores por defecto.
 - Aplicación interactiva de filtros post-búsqueda sobre la tabla de resultados.
 - Descarga de resultados en múltiples formatos.
+- Persistencia automática de las búsquedas ejecutadas en un historial, para uso futuro.
 - Alta, actualización y baja de bases de datos locales por parte del administrador, a partir de un archivo FASTA subido desde su equipo.
 - Autenticación básica con dos roles (Investigador y Administrador).
 
@@ -57,20 +56,28 @@ LocalBlast es una **interfaz web para BLAST+** que resuelve las tres carencias:
 - Herramientas de alineamiento múltiple (ClustalW, Muscle) o modelado 3D de estructuras.
 - Búsquedas en lote con múltiples queries simultáneas en una sola ejecución (queda como posible ampliación en el Trabajo Integrador).
 - Anotación funcional o enriquecimiento biológico de los hits más allá de lo que devuelve BLAST.
+- **Consulta/recuperación de búsquedas del historial** (D2): en esta primera versión D2 solo se escribe. La lectura de D2 —que permitiría al investigador retomar una búsqueda vieja y, por ejemplo, volver a descargarla— queda como uso futuro documentado en el DFD.
 
 ---
+## 2. Stakeholders y actores del sistema
 
-## 2. Stakeholders y usuarios
+### 2.1 Stakeholders
 
-| Actor / Stakeholder | Rol | Usa el sistema | Interés en el proyecto |
-|---|---|---|---|
-| **Investigador/a** | Estudiante de grado/posgrado, tesista, becario/a, docente-investigador/a | Sí (usuario final principal) | Reducir el tiempo de las búsquedas BLAST recurrentes y evitar la fricción de la terminal o de la web de NCBI. |
-| **Administrador/a de bases de datos** | Bioinformático/a del laboratorio, técnico/a de IT del grupo de investigación | Sí | Poder mantener bases de datos propias (secuencias del laboratorio) y espejos de bases públicas sin depender del acceso externo. |
-| **Docente de la cursada** | Docente de bioinformática o materias afines | Sí (a través del rol Investigador) | Usar la herramienta en clases y trabajos prácticos, reemplazando parcialmente a la web de NCBI. |
-| **NCBI** | Proveedor del servicio remoto de BLAST | No interactúa con LocalBlast; sus servidores son contactados por BLAST+ cuando se lo invoca con `-remote` | Establece los límites de uso de la API remota (rate limits) que BLAST+ respeta, y que indirectamente afectan al comportamiento visible del sistema. |
-| **Cátedra de Ingeniería de Software (FIUNER)** | Evaluador del proyecto | No | Verificar la aplicación correcta de los conceptos del cuatrimestre. |
+Se conservan los stakeholders identificados en el canvas de descubrimiento (ver [README](../../README.md#1-canvas-de-descubrimiento-síntesis) del repositorio):
 
-Los dos primeros son los actores del modelo de casos de uso (los que aparecen en el diagrama de contexto). El resto son stakeholders sin interacción directa con el sistema.
+- **Estudiantes de Grado y Posgrado.** Necesitan realizar alineamientos locales rápidos para trabajos prácticos o investigación sin perder tiempo en la configuración de entornos por terminal.
+- **Investigadores y Docentes de Bioinformática / Biología Molecular.** Buscan una herramienta ágil e intuitiva para explorar resultados con filtros visuales personalizados que no están disponibles de forma nativa en la web tradicional.
+
+Estos son los grupos humanos cuyo interés motiva el proyecto. No son (necesariamente) categorías exhaustivas de los actores del sistema, ni describen quién tiene qué permiso en la aplicación — para eso ver la subsección siguiente.
+
+### 2.2 Actores del sistema
+
+Los stakeholders anteriores interactúan con el sistema tomando alguno de estos dos roles operativos, que son los que aparecen en el DFD Nivel 0 y en el modelo de dominio:
+
+- **Investigador/a.** El actor principal del proceso profundizado P1. Es quien ejecuta búsquedas, refina resultados y los descarga. Cualquiera de los dos grupos de stakeholders arriba mencionados puede asumir este rol.
+- **Administrador/a de bases de datos.** El actor del proceso P3 (no profundizado en este TP). Es quien mantiene el catálogo de bases de datos locales del laboratorio. Suele ser un bioinformático o técnico de IT del grupo de investigación, aunque nada impide que un investigador con permisos administre su propio catálogo.
+
+Además, el sistema dialoga con un **actor no humano**: **BLAST+**, la suite oficial de línea de comandos de NCBI, que aparece como sistema externo en el DFD. LocalBlast lo invoca; no lo reimplementa.
 
 ---
 
@@ -84,9 +91,9 @@ Los diagramas de contexto (Nivel 0) y su descomposición (Nivel 1), junto con la
 
 ## 4. Modelo de dominio
 
-El modelo de dominio conceptual — entidades esenciales del problema y sus relaciones, sin atributos ni detalles de implementación — está en:
+El modelo de dominio conceptual, entidades esenciales del problema y sus relaciones sin atributos ni detalles de implementación, está en:
 
-👉 [`docs/requirements/modelo-dominio.md`](modelo-dominio.md)
+👉 [`docs/requeriments/modelo-dominio.md`](modelo-dominio.md)
 
 ---
 
@@ -96,27 +103,25 @@ De los tres procesos identificados en el DFD Nivel 1 (P1, P2, P3), el grupo elig
 
 ### 5.1 Qué se profundiza y por qué
 
-- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra toda la complejidad interesante del dominio (dos modos de invocación a BLAST+ — con o sin `-remote` —, validación de parámetros pre-búsqueda, verificación de compatibilidad programa/query/base de datos, ejecución asíncrona con cancelación, y refinamiento posterior de resultados). De este proceso se derivan **dos casos de uso** con capacidades distintas del actor investigador: `CU001` (ejecutar una búsqueda BLAST) y `CU002` (refinar y descargar los resultados de una búsqueda). Ambos se detallan en [`docs/requirements/casos-de-uso.md`](casos-de-uso.md), con `CU001` descompuesto en slices y `CU002` sin subdivisión adicional.
+- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra toda la complejidad interesante del dominio (dos modos de invocación a BLAST+ — con o sin `-remote` —, validación de parámetros pre-búsqueda, verificación de compatibilidad programa/query/base de datos, ejecución asíncrona con cancelación, y refinamiento posterior de resultados). Da lugar a **tres casos de uso** con capacidades distintas para el mismo actor investigador: `CU001` (ejecutar una búsqueda BLAST), `CU002` (refinar los resultados con filtros post-búsqueda) y `CU003` (descargar los resultados en un formato). Están detallados en [`docs/requeriments/casos-de-uso.md`](casos-de-uso.md).
 
 ### 5.2 Qué queda fuera del profundizado y por qué
 
-- **P2 · Filtrar y entregar resultados — no profundizado como proceso en sí.** Se ejecuta enteramente sobre datos ya en memoria (filtros a la tabla y serialización a un formato) y su lógica es previsible: comparaciones numéricas y export a formatos estándar. Su capacidad hacia el actor sí queda cubierta —como parte de `CU002` (refinar y descargar los resultados de una búsqueda)—, porque desde el punto de vista del investigador aplicar filtros y bajar un archivo es una única capacidad. Como proceso técnico independiente, en cambio, no aporta descubrimiento significativo al TP1 ni riesgo de arquitectura para el TP3; su tratamiento como CU aparte con sus propios slices duplicaría trabajo sin ganar información.
+- **P2 · Filtrar y entregar resultados — no profundizado como proceso en sí.** Se ejecuta enteramente sobre datos ya en memoria (filtros a la tabla y serialización a un formato) y su lógica es previsible: comparaciones numéricas y export a formatos estándar. Sus capacidades visibles para el actor **sí** se profundizan —como `CU002` (refinar) y `CU003` (descargar)—, pero P2 como proceso técnico no aporta descubrimiento significativo al TP1 ni riesgo de arquitectura para el TP3.
 
 - **P3 · Administrar bases de datos — no profundizado.** Es el proceso de un actor distinto (Administrador), con objetivo distinto y precondición distinta al de P1. Un caso de uso derivado de P3 —por ejemplo "Administrar base de datos BLAST local"— pertenece conceptualmente a ese proceso, no a P1, y por lo tanto queda fuera de la cadena `RF → CU → slice → HU` de este TP. Se documenta a nivel de alcance en el DFD Nivel 1 (con sus flujos hacia BLAST+ y hacia D1) y sus entidades siguen presentes en el modelo de dominio, pero sin RF ni CU propios profundizados en este cuatrimestre.
 
-**Criterio general.** Esta decisión respeta la recomendación explícita de la cátedra: *"elegir uno bien resuelto vale más que varios a medio desarrollar"*. Concentrar el trabajo en P1 nos permite descomponerlo en los dos casos de uso que le da al investigador —lanzar una búsqueda y trabajar sobre sus resultados—, y todavía dentro de `CU001` distinguir dos slices con valor incremental (dejar la búsqueda validada, versus ejecutar y ver resultados). Es más rico que dispersar el esfuerzo entre procesos que responden a objetivos y actores diferentes.
+**Criterio general.** Esta decisión respeta la recomendación explícita de la cátedra: *"elegir uno bien resuelto vale más que varios a medio desarrollar"*. Concentrar el trabajo en P1 nos permite descomponerlo en las tres capacidades que le da al investigador —lanzar una búsqueda, refinar resultados, descargarlos—, y todavía dentro de `CU001` distinguir dos slices con valor incremental (dejar la búsqueda validada, versus ejecutar y ver resultados). Es más rico que dispersar el esfuerzo entre procesos que responden a objetivos y actores diferentes.
 
-**Nota sobre el enfoque de los CU.** Un caso de uso representa **una capacidad discreta que el sistema le da al actor**, no un trazo secuencial de pasos. Por eso del proceso P1 salen dos CU en vez de uno solo largo: la capacidad de correr una búsqueda (`CU001`) y la capacidad de refinar/descargar resultados (`CU002`) son dos objetivos distintos del mismo actor, aunque uno dependa del otro en cuanto a los datos. Ver la explicación completa en la sección "Enfoque de los casos de uso" de [`casos-de-uso.md`](casos-de-uso.md).
+**Nota sobre el enfoque de los CU.** Un caso de uso representa **una capacidad discreta que el sistema le da al actor**, no un trazo secuencial de pasos. Por eso del proceso P1 salen tres CU en vez de uno solo largo: ejecutar una búsqueda (`CU001`), refinar los resultados con filtros post-búsqueda (`CU002`) y descargar los resultados (`CU003`) son tres objetivos distintos del mismo actor. El investigador puede quedarse en `CU002` (solo mirar resultados filtrados sin descargar), o incluso ejercer `CU003` sin haber ejercido `CU002` (descargar sin filtrar). Ver la explicación completa en la sección "Enfoque de los casos de uso" de [`casos-de-uso.md`](casos-de-uso.md).
 
 ---
 
 ## 6. Requerimientos funcionales
 
-Los RF-01 a RF-10 corresponden a **P1 (Ejecutar búsqueda BLAST)** y están repartidos entre los dos casos de uso derivados de ese proceso: `CU001` realiza RF-01 a RF-08 y `CU002` realiza RF-09 y RF-10. La tabla de trazabilidad detallada por slice está en [`casos-de-uso.md`](casos-de-uso.md).
-
-Los requerimientos del proceso P3 (administración de bases de datos) no se incluyen en este SRS porque P3 no se profundiza en el cuatrimestre — ver justificación en la sección 5.2.
-
 ### Proceso P1 — Ejecución de búsqueda BLAST
+
+Los RF-01 a RF-11 corresponden a **P1**. La tabla de trazabilidad detallada por slice está en [`casos-de-uso.md`](casos-de-uso.md).
 
 | ID | Requerimiento |
 |---|---|
@@ -128,41 +133,41 @@ Los requerimientos del proceso P3 (administración de bases de datos) no se incl
 | **RF-06** | El sistema debe validar, antes de ejecutar la búsqueda, que la secuencia query respete el alfabeto declarado o inferido (ADN, ARN o proteína) y que los parámetros pre-búsqueda estén dentro de rangos válidos. |
 | **RF-07** | El sistema debe ejecutar la búsqueda de forma asíncrona, mostrando un indicador de progreso, sin bloquear la interfaz de usuario, y debe permitir cancelar una búsqueda en curso. |
 | **RF-08** | El sistema debe mostrar los resultados en una tabla con, como mínimo: identificador del hit, score, E-value observado, porcentaje de identidad y porcentaje de cobertura. |
-| **RF-09** | El sistema debe permitir aplicar filtros post-búsqueda sobre la tabla de resultados — al menos: umbrales de porcentaje de identidad, porcentaje de cobertura, E-value observado y filtro por taxonomía cuando la información esté disponible — sin volver a ejecutar la búsqueda. |
-| **RF-10** | El sistema debe permitir al usuario descargar los resultados filtrados en al menos los formatos: CSV, JSON, FASTA, tabular BLAST (`-outfmt 6`) y XML. |
-
----
+| **RF-09** | El sistema debe permitir aplicar filtros post-búsqueda sobre la tabla de resultados (al menos: umbrales de porcentaje de identidad, porcentaje de cobertura, E-value observado y filtro por taxonomía cuando la información esté disponible) sin volver a ejecutar la búsqueda. |
+| **RF-10** | El sistema debe permitir al usuario descargar los resultados actualmente visibles en la tabla (filtrados o sin filtrar) en al menos los formatos: CSV, JSON, FASTA, tabular BLAST (`-outfmt 6`) y XML. |
+| **RF-11** | El sistema debe persistir automáticamente en el historial (D2) cada búsqueda que termine su ejecución exitosamente, incluyendo parámetros pre-búsqueda, base de datos usada, timestamp y el conjunto **crudo** de resultados que devolvió BLAST+ (antes de cualquier filtro post-búsqueda), independientemente de si el investigador aplica filtros o descarga el archivo. |
 
 ## 7. Casos de uso e historias de usuario
 
 Los casos de uso en formato Cockburn (flujo principal detallado y slices secundarios nombrados), todos derivados del proceso profundizado P1, están en:
 
-👉 [`docs/requirements/casos-de-uso.md`](casos-de-uso.md)
+👉 [`docs/requeriments/casos-de-uso.md`](casos-de-uso.md)
 
 Las historias de usuario asociadas a cada slice (relación 1:1 slice ↔ HU), con criterios de aceptación en formato **Given-When-Then**, están en:
 
-👉 [`docs/requirements/historias-usuario.md`](historias-usuario.md)
+👉 [`docs/requeriments/historias-usuario.md`](historias-usuario.md)
 
 **Resumen de la cadena de trazabilidad `RF → CU → slice → HU`:**
 
-- **CU001 · Ejecutar una búsqueda BLAST** realiza RF-01 a RF-08.
-  - Slices del camino feliz (básicos): `CU001_B1` (cargar, configurar y validar), `CU001_B2` (ejecutar y presentar resultados).
+- **CU001 · Ejecutar una búsqueda BLAST** realiza RF-01 a RF-08 y RF-11.
+  - Slices del camino feliz (básicos): `CU001_B1` (cargar, configurar y validar), `CU001_B2` (ejecutar, presentar resultados y persistir).
   - Slices alternativos: `CU001_A1` (cancelación manual), `CU001_A2` (base de datos local no disponible — el sistema informa y el investigador decide).
   - Slices de excepción: `CU001_E1` (secuencia con formato inválido), `CU001_E2` (parámetros fuera de rango), `CU001_E3` (combinación programa/query/BD incompatible), `CU001_E4` (fallo del modo remoto de BLAST+).
-- **CU002 · Refinar y descargar los resultados de una búsqueda** realiza RF-09 y RF-10.
-  - Slice básico único (camino feliz corto, sin subdivisión): `CU002_B` (aplicar filtros y descargar).
-  - Slice alternativo: `CU002_A1` (ningún resultado supera los filtros).
-- **HU detalladas en este TP:** las diez, una por cada slice identificado en los dos CU: `HU01_CU001_B1`, `HU02_CU001_B2`, `HU05_CU001_E1`, `HU03_CU001_A1`, `HU04_CU001_A2`, `HU06_CU001_E2`, `HU07_CU001_E3`, `HU08_CU001_E4` (de `CU001`); `HU09_CU002_B`, `HU10_CU002_A1` (de `CU002`). El grupo decidió detallar todas ya —no solo el básico + una representativa— porque el modelo de ciclo de vida es ágil y la HU es la unidad mínima de sprint (ver justificación al comienzo de [`historias-usuario.md`](historias-usuario.md)).
-
----
+- **CU002 · Refinar los resultados con filtros post-búsqueda** realiza RF-09.
+  - Slice básico único: `CU002_B` (ajustar filtros y ver la tabla re-filtrada).
+- **CU003 · Descargar los resultados en un formato** realiza RF-10.
+  - Slice básico único: `CU003_B` (elegir formato y descargar los resultados actualmente visibles).
+  - Slice alternativo: `CU003_A1` (descarga cuando ningún hit supera los filtros — entrega archivo con solo metadatos).
+- **HU detalladas en este TP:** las once, una por cada slice identificado: `HU01_CU001_B1`, `HU02_CU001_B2`, `HU03_CU001_A1`, `HU04_CU001_A2`, `HU05_CU001_E1`, `HU06_CU001_E2`, `HU07_CU001_E3`, `HU08_CU001_E4`, `HU09_CU002_B`, `HU10_CU003_B`, `HU11_CU003_A1`. El grupo decidió detallar todas ya —no solo el básico + una representativa— porque el modelo de ciclo de vida es ágil y la HU es la unidad mínima de sprint (ver justificación al comienzo de [`historias-usuario.md`](historias-usuario.md)).
 
 ## 8. Suposiciones y dependencias
 
 - El binario **BLAST+** (versión 2.14 o posterior) está disponible en el servidor donde corre el sistema. Es una dependencia externa: LocalBlast **usa** BLAST+, no lo empaqueta.
 - La API remota de NCBI (`https://blast.ncbi.nlm.nih.gov/Blast.cgi`) está disponible desde la red del servidor cuando el usuario elige modo remoto — **BLAST+ es quien la contacta**, no directamente nuestra GUI. Las políticas de uso responsable de NCBI (frecuencia de polling, límite de queries por unidad de tiempo) las respeta BLAST+, no nuestro código.
-- El servidor tiene espacio en disco suficiente para alojar las bases locales del laboratorio y los archivos temporales de las búsquedas.
+- El servidor tiene espacio en disco suficiente para alojar las bases locales del laboratorio, los archivos temporales de las búsquedas y el crecimiento del historial D2.
 - Los usuarios acceden por HTTPS desde navegadores modernos.
 - **Precondición de catálogo.** Como P3 (administración del catálogo) no se profundiza en el TP1, para las historias de usuario que dependen del modo local (por ejemplo `HU01_CU001_B1` con base de datos local) se asume que ya existe al menos una base de datos cargada en el catálogo D1. El mecanismo por el cual llega ahí queda fuera del alcance profundizado.
+- **Recuperación desde el historial D2.** El sistema persiste cada búsqueda ejecutada (RF-11), pero en esta primera versión **no** ofrece al investigador una forma de recuperar una búsqueda vieja para retomar sobre ella `CU002` o `CU003`. Esa capacidad —"cargar una búsqueda del historial"— aparece punteada en el DFD Nivel 1 como uso futuro y motiva parte de por qué `CU003` (descarga) se modela como CU separado: si en el futuro el investigador puede iniciar una descarga a partir de una búsqueda vieja sin re-ejecutar `CU001`, el modelado con `CU003` independiente ya lo soporta.
 
 ---
 
@@ -183,3 +188,4 @@ Las historias de usuario asociadas a cada slice (relación 1:1 slice ↔ HU), co
 | **Filtro pre-búsqueda** | Valor de un parámetro del algoritmo BLAST que se fija antes de ejecutar y que afecta al resultado (E-value máximo, matriz, tamaño de palabra, etc.). |
 | **Filtro post-búsqueda** | Criterio que se aplica sobre resultados ya calculados para restringir qué se muestra o descarga, sin volver a correr BLAST (umbral de % identidad, cobertura, taxón). |
 | **Slice** | Corte de un caso de uso que aporta valor por sí mismo hacia el objetivo del CU. Puede ser básico (parte del camino feliz), alternativo (camino alterno) o de excepción (terminación abrupta). Se corresponde 1:1 con una historia de usuario. |
+| **Historial (D2)** | Almacén interno donde se persisten las búsquedas ejecutadas y sus resultados crudos. En esta versión solo se escribe; la lectura queda como uso futuro. |
