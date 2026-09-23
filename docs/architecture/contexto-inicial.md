@@ -71,17 +71,16 @@ flowchart TD
     D2 -.->|historial consultable<br/>uso futuro| P2
 ```
 
-**Chequeo de balanceo:** los seis flujos externos aparecen en Nivel 1 con los mismos extremos externos que en Nivel 0. Los que van hacia BLAST+ se dividen entre P1 (para búsqueda) y P3 (para construir índices), pero desde afuera del sistema siguen siendo los dos mismos flujos.
+**Chequeo de balanceo:** los seis flujos externos aparecen en Nivel 1 con los mismos extremos externos que en Nivel 0.
 
-**Sobre la escritura en D2.** El flujo `guarda búsqueda + resultados crudos` sale de **P1** (no de P2) porque la persistencia debe ocurrir apenas la ejecución termina, independientemente de si el investigador luego filtra los resultados y/o los descarga. Esta decisión es consecuencia directa del modelado que hace el SRS: filtrar (`CU002`) y descargar (`CU003`) son capacidades opcionales que el investigador puede o no ejercer, y la búsqueda no debe perderse si no las ejerce. Ver la justificación completa en la sección [Selección de procesos a profundizar](../requeriments/srs.md#5-selección-de-procesos-a-profundizar) del SRS.
 
 ## Descripción de los procesos y almacenes
 
 ### Procesos
 
-- **P1 · Ejecutar búsqueda BLAST.** Recibe del investigador el archivo FASTA con la secuencia query, la elección del programa BLAST (`blastn`, `blastp`, `blastx`, `tblastn`, `tblastx`), el modo (local o remoto), la base de datos elegida y los parámetros pre-búsqueda que afectan al algoritmo (E-value, matriz de sustitución, tamaño de palabra, penalizaciones de gap, etc.). Verifica la compatibilidad entre el programa BLAST elegido, el tipo de la secuencia query y el tipo de la base de datos, valida el resto de la entrada e **invoca a BLAST+** con la combinación correcta de opciones — incluida la flag `-remote` cuando el modo es remoto. Recibe de vuelta el conjunto crudo de alineamientos y, al finalizar la ejecución, **persiste la búsqueda y sus resultados crudos en D2**, para que el investigador pueda recuperarla más tarde independientemente de si la refina o descarga.
+- **P1 · Ejecutar búsqueda BLAST.** Recibe del investigador el archivo FASTA con la secuencia query, la elección del programa BLAST (`blastn`, `blastp`, `blastx`, `tblastn`, `tblastx`), el modo (local o remoto), la base de datos elegida y los parámetros pre-búsqueda que afectan al algoritmo (E-value, matriz de sustitución, tamaño de palabra, penalizaciones de gap, etc.). Verifica la compatibilidad entre el programa BLAST elegido, el tipo de la secuencia query y el tipo de la base de datos, valida el resto de la entrada e **invoca a BLAST+** con la combinación correcta de opciones, incluida la flag `-remote` cuando el modo es remoto. Recibe de vuelta el conjunto crudo de alineamientos y, al finalizar la ejecución, persiste la búsqueda y sus resultados crudos en D2, para que el investigador pueda recuperarla más tarde independientemente de si la refina o descarga.
 
-- **P2 · Filtrar y entregar resultados.** Recibe los resultados crudos y los criterios de filtrado post-búsqueda que el usuario definió (por ejemplo umbrales de % identidad, cobertura, E-value, taxones), aplica esos filtros, arma la vista de resultados que se muestra en la interfaz y prepara el archivo descargable en el formato pedido (CSV, JSON, FASTA, tabular BLAST, XML). P2 **no** escribe en D2: la persistencia ya la hizo P1 cuando terminó la ejecución.
+- **P2 · Filtrar y entregar resultados.** Recibe los resultados crudos y los criterios de filtrado post-búsqueda que el usuario definió (por ejemplo umbrales de % identidad, cobertura, E-value, taxones), aplica esos filtros, arma la vista de resultados que se muestra en la interfaz y prepara el archivo descargable en el formato pedido (CSV, JSON, FASTA, tabular BLAST, XML). 
 
 - **P3 · Administrar bases de datos.** Es el proceso del rol Administrador. Recibe el archivo FASTA subido por el admin y el tipo declarado (nucleótidos o proteínas), junto con las órdenes de alta, actualización o baja de una base de datos local. **Invoca a BLAST+** con `makeblastdb` para construir los índices, y mantiene actualizado en D1 el catálogo de bases de datos disponibles (nombre visible, tipo, ubicación del índice, fecha) que P1 va a ofrecer al investigador. Devuelve al administrador el estado del proceso (base de datos creada, actualizada, con errores, etc.).
 
@@ -89,12 +88,12 @@ flowchart TD
 
 - **D1 · Catálogo de bases de datos.** Contiene los **metadatos** de cada base de datos local disponible: nombre visible, tipo (nucleótidos / proteínas), ruta al conjunto de archivos de índice que produjo `makeblastdb`, fecha de alta, tamaño. Los archivos físicos de índice (`.nhr`, `.nin`, `.nsq`, etc.) los escribe y los lee **BLAST+**; nuestro sistema los registra en D1 pero no los interpreta.
 
-- **D2 · Búsquedas y resultados históricos.** Guarda la traza de cada búsqueda ejecutada (parámetros, base de datos usada, timestamp) junto con su resultado **crudo** (antes de aplicar filtros post-búsqueda), para que el usuario pueda volver a consultar o descargar sin repetir la ejecución. En esta primera versión del sistema solo se **escribe** en D2 (flujo lleno, desde P1); la lectura (flujo punteado, hacia P2) queda documentada como uso futuro — no está en el alcance profundizado del cuatrimestre. Cuando esa lectura se profundice, permitirá al investigador iniciar `CU003` (descarga) directamente sobre una búsqueda del historial, sin ejecutar `CU001` de nuevo.
+- **D2 · Búsquedas y resultados históricos.** Guarda la traza de cada búsqueda ejecutada (parámetros, base de datos usada, timestamp) junto con su resultado crudo (antes de aplicar filtros post-búsqueda), para que el usuario pueda volver a consultar o descargar sin repetir la ejecución.
 ---
 
 ## Nota sobre el alcance profundizado
 
-De los tres procesos identificados, el grupo lleva a profundidad **P1 (Ejecutar búsqueda BLAST) y P2 (Filtrar y entregar resultados)** durante el cuatrimestre. Ambos son necesarios para completar una interacción típica del investigador con el sistema: P1 se ocupa de ejecutar la búsqueda y persistirla, y P2 se ocupa de dejar al investigador trabajar con esos resultados (filtrarlos y descargarlos). El proceso **P3 (Administrar bases de datos)** queda documentado a nivel de alcance en este DFD y en el modelo de dominio, pero **no** se detalla como casos de uso ni historias de usuario propios: no tiene RF profundizados en el SRS y no forma parte de la cadena `RF → CU → slice → HU` de este TP.
+De los tres procesos identificados, el grupo lleva a profundidad **P1 (Ejecutar búsqueda BLAST) y P2 (Filtrar y entregar resultados)** durante el cuatrimestre. Ambos son necesarios para completar una interacción típica del investigador con el sistema: P1 se ocupa de ejecutar la búsqueda y persistirla, y P2 se ocupa de dejar al investigador trabajar con esos resultados (filtrarlos y descargarlos). El proceso **P3 (Administrar bases de datos)**, junto con el rol Administrador y sus flujos hacia BLAST+ (invocación de `makeblastdb`) y hacia D1, **queda documentado a nivel conceptual en este DFD y en el modelo de dominio para dejar la visión integral del producto, pero fuera del alcance de implementación del cuatrimestre por restricciones de tiempo**: no tiene RF profundizados en el SRS, no se detalla como casos de uso ni historias de usuario propios, y no forma parte de la cadena `RF → CU → slice → HU` de este TP. Para las funcionalidades de P1 en modo local se asume que el catálogo D1 ya está poblado por fuera del sistema.
 
 Los casos de uso escritos en `docs/requeriments/casos-de-uso.md` se distribuyen así entre los procesos profundizados:
 
@@ -103,3 +102,5 @@ Los casos de uso escritos en `docs/requeriments/casos-de-uso.md` se distribuyen 
 - `CU003 · Descargar los resultados en un formato` **deriva de P2**.
 
 Ver la justificación completa en la sección [Selección de procesos a profundizar](../requeriments/srs.md#5-selección-de-procesos-a-profundizar) del SRS.
+
+Los casos de uso escritos en `docs/requirements/casos-de-uso.md` son **todos** derivados del proceso P1. Ver la justificación completa en la sección [Selección de procesos a profundizar](../requirements/srs.md#5-selección-de-procesos-a-profundizar) del SRS.

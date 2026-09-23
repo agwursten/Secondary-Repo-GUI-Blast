@@ -1,11 +1,27 @@
 # LocalBlast_2026
 
 ## Integrantes
-* Agustin Facundo Gaitan
-* Wursten Augusto
 * Farias Valentin
+* Gaitan Agustin Facundo
+* Wursten Augusto
 
 ---
+## Estructura del Repositorio
+
+````
+LocalBlast_2026/
+├── .gitignore
+├── README.md
+└── docs/
+    ├── architecture/
+    │   └── contexto-inicial.md
+    ├── requeriments/
+    │   ├── casos-de-uso.md
+    │   ├── historias-usuario.md
+    │   ├── modelo-dominio.md
+    │   └── srs.md
+    └── uso-ia.md
+````
 
 ## 1. Canvas de Descubrimiento (Síntesis)
 
@@ -27,7 +43,7 @@ Actualmente, la realización de alineamientos locales de secuencias mediante BLA
 #### Fuera del Alcance (Out of Scope)
 * Reescritura o modificación del algoritmo de alineamiento subyacente de BLAST.
 * Implementación de herramientas de alineamiento múltiple (como ClustalW o Muscle) o modelado 3D de estructuras.
-* Creación o administración de bases de datos genómicas complejas desde la aplicación.
+* **Administración de bases de datos locales desde la aplicación (rol Administrador).** El diseño integral del sistema contempla un rol Administrador que dé de alta, actualice y baje bases de datos BLAST locales a partir de archivos FASTA. Esta capacidad **se documenta a nivel de diagramas** (DFD Nivel 0/1, modelo de dominio) para dejar la visión completa del producto, pero **queda fuera del alcance de este cuatrimestre** por restricciones de tiempo: no se profundiza como casos de uso ni historias de usuario, no tiene requerimientos funcionales asociados y no se implementará. Para las historias de usuario del modo local se asume que ya existe al menos una base de datos cargada en el catálogo.
 
 ---
 

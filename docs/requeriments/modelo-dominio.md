@@ -64,3 +64,8 @@ classDiagram
 **FormatoDescarga** — el formato en que se puede exportar un reporte (CSV, JSON, FASTA, tabular BLAST, XML).
 
 ---
+
+## Nota sobre el alcance de este TP
+
+El modelo incluye deliberadamente al **Administrador** y su relación `administra` con **BaseDeDatos** para dejar registrada la visión integral del dominio. Esa parte del modelo corresponde al proceso **P3 (Administrar bases de datos)** del DFD y **queda fuera del alcance de implementación del cuatrimestre por restricciones de tiempo** (ver [SRS §1.4](srs.md#14-fuera-del-alcance)). En el TP se profundiza la mitad del modelo que rodea a **Búsqueda** —Investigador, SecuenciaQuery, ParametrosPreBusqueda, ModoEjecucion, BaseDeDatos (como entidad ya existente en el catálogo), Alineamiento, FiltroPostBusqueda, Reporte, FormatoDescarga— y se asume que las instancias de BaseDeDatos ya existen, cargadas por fuera del sistema.
+

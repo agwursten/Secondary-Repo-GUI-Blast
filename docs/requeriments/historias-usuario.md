@@ -11,8 +11,6 @@ Formato de cada HU:
 
 Para el TP1 se detallan las HU de **todos los slices identificados en los casos de uso** — los cuatro básicos (`CU001_B1`, `CU001_B2`, `CU002_B`, `CU003_B`), las tres alternativas (`CU001_A1`, `CU001_A2`, `CU003_A1`) y las cuatro excepciones (`CU001_E1`, `CU001_E2`, `CU001_E3`, `CU001_E4`). En total, 11 historias de usuario.
 
-La guía del TP1 dice que "un slice se detalla como historia de usuario recién cuando algún TP posterior lo necesita, no todos de una vez"; el grupo decidió, sin embargo, detallar todas ya. Motivo: seguimos un modelo de ciclo de vida iterativo-incremental con prácticas ágiles (ver [README](../../README.md#3-modelo-de-ciclo-de-vida-específico)), y en ágil la HU es la unidad mínima de sprint — la que efectivamente se planifica y se implementa. Dejar slices "nombrados sin criterios de aceptación" implicaría, al llegar al sprint correspondiente, no tener forma objetiva de decidir cuándo el trabajo del slice está terminado. Es más trabajo ahora, pero pone piso concreto a lo que después hay que construir y probar en TP4 y TP5.
-
 **Numeración:** las HU se enumeran de forma consecutiva por CU y, dentro de cada CU, en el orden: slices básicos (`B` / `B1`, `B2`) → slices alternativos (`A1`, `A2`, …) → slices de excepción (`E1`, `E2`, …). Así los identificadores acompañan el orden en el que aparecen los slices en [`casos-de-uso.md`](casos-de-uso.md).
 
 ---
@@ -293,7 +291,7 @@ La guía del TP1 dice que "un slice se detalla como historia de usuario recién 
   - **Given** una búsqueda cuya descarga se hizo con filtros que dejaron cero hits visibles,
   - **When** el sistema termina de entregar el archivo,
   - **Then** la entrada en D2 permanece igual que antes: contiene el conjunto **completo** de resultados crudos que devolvió BLAST+ (persistido en `CU001_B2`), no la lista vacía que quedó tras el filtro, de forma que el investigador pueda volver más tarde y probar filtros distintos sin re-ejecutar BLAST.
-
+    
 ---
 
 ## Tabla de trazabilidad completa `RF → CU → slice → HU`
@@ -312,13 +310,7 @@ La guía del TP1 dice que "un slice se detalla como historia de usuario recién 
 | RF-10 | CU003 | CU003_B | **HU10_CU003_B** |
 | RF-10 | CU003 | CU003_A1 (resultado vacío) | **HU11_CU003_A1** |
 
-**Todos los slices identificados en los casos de uso tienen HU detallada.** Esta decisión responde a que el proyecto sigue un enfoque ágil, y en ágil la HU es la unidad mínima de sprint — la que efectivamente se implementa. Dejar slices "nombrados pero sin criterios de aceptación" implicaría, al llegar el sprint correspondiente, no tener forma objetiva de decidir cuándo el trabajo está terminado. Es más trabajo ahora, pero le pone piso concreto a lo que después hay que construir y probar.
-
----
-
 ## Notas sobre el enfoque de este TP
 
 - **Un CU puede implementar varios RF**, y viceversa un mismo RF puede estar realizado por varios slices del mismo CU — por ejemplo RF-06 (validación pre-ejecución) aparece en el slice `B1` de `CU001` cuando la validación pasa y también en los slices `E1` y `E2` cuando falla y corta el flujo. La trazabilidad refleja esa realidad.
 - **La unidad mínima de sprint es la HU**, no el CU ni el slice. Por eso las HU tienen un identificador propio (`HU01`, `HU02`, …) además del sufijo de trazabilidad — para que la planificación de sprints pueda referirse a ellas sin ambigüedad.
-- **Los criterios de aceptación en formato Given-When-Then** son la semilla de los casos de prueba de TP5 (Módulo 6). Cada `Then` describe un resultado observable — un mensaje puntual, una columna que debe aparecer, un archivo que se entrega — nunca una descripción de implementación interna.
-- **Un CU no es una secuencia de pasos del actor, sino una capacidad discreta del sistema.** Por eso los dos procesos profundizados dan lugar a **tres** casos de uso — `CU001` (deriva de **P1**: ejecutar una búsqueda), `CU002` (deriva de **P2**: refinar con filtros post-búsqueda) y `CU003` (deriva de **P2**: descargar los resultados en un formato) — en vez de a un único CU largo. El investigador puede quedarse en `CU002` sin descargar, o descargar sin haber filtrado, o solo ejecutar y volver más tarde (la búsqueda queda en el historial gracias a la persistencia automática de `CU001_B2` / RF-11).

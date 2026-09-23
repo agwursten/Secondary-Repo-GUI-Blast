@@ -1,6 +1,6 @@
 # Casos de Uso — LocalBlast
 
-Los casos de uso se redactan en **formato textual estructurado (Cockburn)** — actor, objetivo, precondición, flujo principal, alternativos, excepciones, postcondición — según pide el TP1, y **no** como diagrama gráfico (Mermaid no incluye un tipo de diagrama de casos de uso nativo).
+Los casos de uso se redactan en **formato textual estructurado (Cockburn)**, actor, objetivo, precondición, flujo principal, alternativos, excepciones, postcondición, según pide el TP1, y **no** como diagrama gráfico (Mermaid no incluye un tipo de diagrama de casos de uso nativo).
 
 Los casos de uso de este documento derivan de los dos procesos profundizados del DFD Nivel 1:
 
@@ -13,9 +13,9 @@ Cada caso de uso declara qué requerimientos funcionales realiza. La cadena comp
 
 **RF → CU → slice → HU**
 
-## Enfoque de los casos de uso — qué es un CU y qué no
+## Enfoque de los casos de uso
 
-Un caso de uso representa **una capacidad discreta que el sistema le brinda al actor** — un objetivo alcanzable —, no un trazo secuencial de pasos que el actor tiene que recorrer de punta a punta. Dos consecuencias prácticas de esa definición para este TP:
+Un caso de uso representa **una capacidad discreta que el sistema le brinda al actor** , un objetivo alcanzable, no un trazo secuencial de pasos que el actor tiene que recorrer de punta a punta. Dos consecuencias prácticas de esa definición para este TP:
 
 - **De los procesos profundizados salen tres CU, no uno solo largo.** El investigador tiene tres objetivos distintos que el sistema le habilita, y que puede combinar como necesite:
   - `CU001` (ejecutar una búsqueda, deriva de **P1**) — obtener alineamientos crudos visibles en la interfaz.
@@ -30,9 +30,8 @@ Un caso de uso representa **una capacidad discreta que el sistema le brinda al a
 
 - Un **CU** puede realizar uno o varios RF, y a la inversa un RF puede estar realizado por varios slices del mismo CU (por ejemplo la validación previa aparece tanto en el camino feliz como en los slices de excepción).
 - El identificador del **slice básico** es la letra `B` (`CU00X_B`); si además se subdivide, pasa a `B1`, `B2`, … Los **slices alternativos** se numeran `A1`, `A2`, … y los **de excepción** `E1`, `E2`, …
-- La relación **slice ↔ HU es 1:1**. La HU conserva el identificador de trazabilidad del slice: `HU01_CU001_B1` detalla el slice `CU001_B1`; `HU10_CU003_B` detalla el (único) slice básico de `CU003`.
-- Los once slices identificados en los tres CU tienen **cada uno** su HU detallada en [`historias-usuario.md`](historias-usuario.md), con criterios Given-When-Then. El grupo decidió detallarlos a todos ya (en lugar de dejar algunos "nombrados sin detallar", que sería la opción mínima de la guía) porque el modelo de ciclo de vida es ágil y la HU es la unidad mínima de sprint — la explicación completa está al comienzo del `historias-usuario.md`.
-
+- La relación **slice ↔ HU es 1:1**. La HU conserva el identificador de trazabilidad del slice: `HU01_CU001_B1` detalla el slice `CU001_B1`; `HU09_CU002_B` detalla el (único) slice básico de `CU002`.
+- Los diez slices identificados en los dos CU tienen **cada uno** su HU detallada en [`historias-usuario.md`](historias-usuario.md), con criterios Given-When-Then. 
 ---
 
 ## CU001 · Ejecutar una búsqueda BLAST
@@ -173,8 +172,6 @@ CU003 · Descargar los resultados en un formato
 
 - **`CU003_A1` · Ningún resultado supera los filtros post-búsqueda.** El investigador aplicó filtros que dejan la tabla vacía y de todos modos pide descargar. El sistema no impide la descarga: entrega un archivo con encabezados y la sección de metadatos de la búsqueda (parámetros, base de datos, timestamp, filtros aplicados) pero sin filas de hits, para que el investigador tenga constancia del intento. No hay persistencia adicional (la búsqueda ya está en D2 con sus resultados crudos, desde `CU001_B2`). **Realiza:** RF-10.
 
----
-
 ## Trazabilidad RF → CU → slice
 
 La tabla `RF → CU → slice → HU` (con las HU incluidas) está en [`historias-usuario.md`](historias-usuario.md). Acá se resume la parte `RF → CU → slice`:
@@ -194,5 +191,3 @@ La tabla `RF → CU → slice → HU` (con las HU incluidas) está en [`historia
 | RF-11 | CU001 | CU001_B2 |
 
 Un mismo RF puede aparecer en varios slices del mismo CU — por ejemplo RF-06 (validación pre-ejecución) se realiza en el camino feliz `B1` (cuando la validación pasa) y también en `E1` y `E2` (cuando falla y corta el flujo). Esa dispersión es esperable: los slices de excepción son otra forma en que se cumple el RF de validación.
-
-Ningún RF cruza entre los tres CU: los RF de ejecución y persistencia (RF-01 a RF-08, RF-11) son todos de `CU001` (derivado de P1), RF-09 es exclusivo de `CU002` y RF-10 es exclusivo de `CU003` (ambos derivados de P2). Esa separación limpia es una consecuencia directa de haber separado los CU por capacidad y no por trazo secuencial: cada CU realiza el subconjunto de RF que le corresponde a su objetivo, y ese subconjunto se corresponde a su vez con el proceso del que deriva.
