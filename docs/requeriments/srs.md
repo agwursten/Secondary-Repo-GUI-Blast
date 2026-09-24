@@ -32,13 +32,13 @@ Ninguna de las dos permite hoy, con una sola herramienta: correr BLAST **local o
 
 ### 1.2 Propuesta de valor
 
-LocalBlast es una **interfaz gráfica para BLAST+** que resuelve las carencias identificadas:
+LocalBlast es una **interfaz gráfica para BLAST+** que resuelve las tres carencias:
 
-- El **investigador** decide con un botón si el alineamiento se corre localmente (contra bases de datos del laboratorio ya cargadas en el catálogo) o remotamente. En ambos casos el sistema invoca a BLAST+; en modo remoto le pasa la flag `-remote` y es BLAST+ quien se comunica con NCBI del otro lado.
+- El **investigador** decide con un botón si el alineamiento se corre localmente (contra bases de datos del laboratorio) o remotamente. En ambos casos el sistema invoca a BLAST+; en modo remoto le pasa la flag `-remote` y es BLAST+ quien se comunica con NCBI del otro lado.
 - Los **filtros pre-búsqueda** se cargan en un formulario con valores por defecto sensatos; los **filtros post-búsqueda** se aplican en la tabla de resultados sin volver a correr BLAST.
 - Los **resultados** se descargan en CSV, JSON, FASTA, tabular BLAST o XML.
 
-> **Nota sobre el rol Administrador.** El diseño integral del sistema contempla también un **rol Administrador** encargado de subir archivos FASTA (del propio laboratorio o de bases públicas como SwissProt) para dejarlos disponibles como bases de datos locales. Esta capacidad aparece en los diagramas de contexto y en el modelo de dominio para dejar la visión completa del producto, pero **queda fuera del alcance del TP1 de este cuatrimestre por restricciones de tiempo** (ver §1.4). Para las funcionalidades de modo local se asume que el catálogo ya está poblado por fuera del sistema.
+> **Nota sobre el rol Administrador.** El diseño integral del sistema contempla también un **rol Administrador** encargado de subir archivos FASTA (del propio laboratorio o de bases públicas como SwissProt) para dejarlos disponibles como bases de datos locales. Esta capacidad aparece en los diagramas de contexto y en el modelo de dominio para dejar la visión completa del producto, pero **queda fuera del alcance del TP1 de este cuatrimestre por restricciones de tiempo** (ver 1.4). Para las funcionalidades de modo local se asume que el catálogo ya está poblado por fuera del sistema.
 
 ### 1.3 Dentro del alcance
 
@@ -103,15 +103,15 @@ De los tres procesos identificados en el DFD Nivel 1 (P1, P2, P3), el grupo elig
 
 ### 5.1 Qué se profundiza y por qué
 
-- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra la complejidad interesante del dominio (dos modos de invocación a BLAST+ — con o sin `-remote` —, validación de parámetros pre-búsqueda, verificación de compatibilidad programa/query/base de datos, ejecución asíncrona con cancelación y persistencia automática en el historial). Da lugar a **un caso de uso**, `CU001 · Ejecutar una búsqueda BLAST`, descompuesto en dos slices básicos `B1` (cargar, configurar y validar) y `B2` (ejecutar, presentar resultados y persistir), más sus alternativas y excepciones.
+- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra la complejidad interesante del dominio (dos modos de invocación a BLAST+ — con o sin `-remote` —, validación de parámetros pre-búsqueda, verificación de compatibilidad programa/query/base de datos, ejecución asíncrona con cancelación y persistencia automática en el historial). Da lugar a **cinco casos de uso**, uno por cada capacidad discreta que el sistema le brinda al investigador dentro del ciclo de una búsqueda: `CU001 · Cargar la secuencia query` (dejar la secuencia disponible y chequeada sintácticamente), `CU002 · Configurar los parámetros de la búsqueda` (armar modo, base de datos, programa y parámetros pre-búsqueda), `CU003 · Validar la búsqueda` (obtener el visto bueno semántico del sistema), `CU004 · Ejecutar la búsqueda` (correr BLAST+ con progreso y cancelación) y `CU005 · Ver los resultados y persistir la búsqueda en el historial` (presentar la tabla de alineamientos y dejarla registrada en D2). La partición refleja que cada una de esas capacidades tiene valor propio y es ejercitable por separado: el investigador puede cargar una secuencia y usarla en varias configuraciones (`CU001` seguido de varios `CU002`), quedarse en la configuración sin validar, o validar sin lanzar, sin que el sistema lo obligue a completar el ciclo.
 
-- **P2 · Filtrar y entregar resultados — profundizado.** Es lo que le permite al investigador cerrar la interacción con valor real: sin filtrar ni descargar, la búsqueda queda "en el aire" en la interfaz. P2 se ejecuta sobre los datos ya devueltos por BLAST+ y su lógica es previsible (comparaciones numéricas para el filtro, serialización para la descarga), pero es indispensable para el flujo típico del usuario y por eso lo profundizamos. Da lugar a **dos casos de uso** con capacidades distintas para el mismo actor investigador: `CU002 · Refinar los resultados con filtros post-búsqueda` y `CU003 · Descargar los resultados en un formato`. Están detallados en [`docs/requeriments/casos-de-uso.md`](casos-de-uso.md).
+- **P2 · Filtrar y entregar resultados — profundizado.** Es lo que le permite al investigador cerrar la interacción con valor real: sin filtrar ni descargar, la búsqueda queda "en el aire" en la interfaz. P2 se ejecuta sobre los datos ya devueltos por BLAST+ y su lógica es previsible (comparaciones numéricas para el filtro, serialización para la descarga), pero es indispensable para el flujo típico del usuario y por eso lo profundizamos. Da lugar a **dos casos de uso** con capacidades distintas para el mismo actor investigador: `CU006 · Refinar los resultados con filtros post-búsqueda` y `CU007 · Descargar los resultados en un formato`. Están detallados en [`docs/requeriments/casos-de-uso.md`](casos-de-uso.md).
 
 ### 5.2 Qué queda fuera del profundizado y por qué
 
 - **P3 · Administrar bases de datos — no profundizado.** Es el proceso de un actor distinto (Administrador), con objetivo distinto y precondición distinta a los procesos anteriores. Un caso de uso derivado de P3, por ejemplo "Administrar base de datos BLAST local", pertenece conceptualmente a ese proceso, no a P1 ni a P2, y por lo tanto queda fuera de la cadena `RF → CU → slice → HU` de este TP. Se documenta a nivel de alcance en el DFD Nivel 1 (con sus flujos hacia BLAST+ y hacia D1) y sus entidades siguen presentes en el modelo de dominio, pero sin RF ni CU propios profundizados en este cuatrimestre.
 
-**Criterio general.** Esta decisión respeta la recomendación explícita de la cátedra: *"elegir uno bien resuelto vale más que varios a medio desarrollar"*. Concentrar el trabajo en los dos procesos que cubren una interacción completa del investigador (P1 y P2) nos permite descomponer esa interacción en las tres capacidades que el sistema le da —lanzar una búsqueda, refinar resultados, descargarlos—, y todavía dentro de `CU001` distinguir dos slices con valor incremental (dejar la búsqueda validada, versus ejecutar y ver resultados). Es más rico que dispersar el esfuerzo entre P3, que responde a un objetivo y a un actor diferentes.
+**Criterio general.** Esta decisión respeta la recomendación explícita de la cátedra: *"elegir uno bien resuelto vale más que varios a medio desarrollar"*. Concentrar el trabajo en los dos procesos que cubren una interacción completa del investigador (P1 y P2) nos permite descomponer esa interacción en las siete capacidades discretas que el sistema le da al investigador — cargar una secuencia, configurar los parámetros de una búsqueda, pedirle al sistema que la valide, ejecutarla, ver los resultados y dejarlos persistidos, refinarlos con filtros, y descargarlos en un formato —, cada una modelada como su propio CU con un objetivo bien delimitado y con un flujo principal de entre 1 y 4 pasos, implementable y probable de forma independiente. Es más rico que dispersar el esfuerzo entre P3, que responde a un objetivo y a un actor diferentes.
 
 ---
 
@@ -120,7 +120,7 @@ Los RF-01 a RF-11 corresponden a los procesos profundizados P1 y P2. La tabla de
 
 ### 6.1 Proceso P1 — Ejecución de búsqueda BLAST
 
-Realizados por `CU001` (ejecutar una búsqueda).
+Realizados por `CU001` (cargar la secuencia query), `CU002` (configurar los parámetros), `CU003` (validar la búsqueda), `CU004` (ejecutar) y `CU005` (ver resultados y persistir).
 
 | ID | Requerimiento |
 |---|---|
@@ -136,7 +136,7 @@ Realizados por `CU001` (ejecutar una búsqueda).
 
 ### 6.2 Proceso P2 — Filtrado y entrega de resultados
 
-Realizados por `CU002` (refinar con filtros post-búsqueda) y `CU003` (descargar en un formato).
+Realizados por `CU006` (refinar con filtros post-búsqueda) y `CU007` (descargar en un formato).
 
 | ID | Requerimiento |
 |---|---|
@@ -160,7 +160,7 @@ Las historias de usuario asociadas a cada slice (relación 1:1 slice ↔ HU), co
 - El binario **BLAST+** (versión 2.14 o posterior) está disponible en el servidor donde corre el sistema. Es una dependencia externa: LocalBlast **usa** BLAST+, no lo empaqueta.
 - La API remota de NCBI (`https://blast.ncbi.nlm.nih.gov/Blast.cgi`) está disponible desde la red del servidor cuando el usuario elige modo remoto — **BLAST+ es quien la contacta**, no directamente nuestra GUI. Las políticas de uso responsable de NCBI (frecuencia de polling, límite de queries por unidad de tiempo) las respeta BLAST+, no nuestro código.
 - El sistema tiene espacio suficiente para alojar las bases locales del laboratorio y los archivos temporales de las búsquedas.
-- **Precondición de catálogo.** Como P3 (administración del catálogo) no se profundiza en el TP1, para las historias de usuario que dependen del modo local (por ejemplo `HU01_CU001_B1` con base de datos local) se asume que ya existe al menos una base de datos cargada en el catálogo D1. El mecanismo por el cual llega ahí queda fuera del alcance profundizado.
+- **Precondición de catálogo.** Como P3 (administración del catálogo) no se profundiza en el TP1, para las historias de usuario que dependen del modo local (por ejemplo `HU03_CU002_B` con base de datos local, o `HU04_CU002_A1` que trata específicamente el caso de base local no disponible) se asume que ya existe al menos una base de datos cargada en el catálogo D1. El mecanismo por el cual llega ahí queda fuera del alcance profundizado.
 
 ---
 

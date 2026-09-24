@@ -93,14 +93,16 @@ flowchart TD
 
 ## Nota sobre el alcance profundizado
 
-De los tres procesos identificados, el grupo lleva a profundidad **P1 (Ejecutar búsqueda BLAST) y P2 (Filtrar y entregar resultados)** durante el cuatrimestre. Ambos son necesarios para completar una interacción típica del investigador con el sistema: P1 se ocupa de ejecutar la búsqueda y persistirla, y P2 se ocupa de dejar al investigador trabajar con esos resultados (filtrarlos y descargarlos). El proceso **P3 (Administrar bases de datos)**, junto con el rol Administrador y sus flujos hacia BLAST+ (invocación de `makeblastdb`) y hacia D1, **queda documentado a nivel conceptual en este DFD y en el modelo de dominio para dejar la visión integral del producto, pero fuera del alcance de implementación del cuatrimestre por restricciones de tiempo**: no tiene RF profundizados en el SRS, no se detalla como casos de uso ni historias de usuario propios, y no forma parte de la cadena `RF → CU → slice → HU` de este TP. Para las funcionalidades de P1 en modo local se asume que el catálogo D1 ya está poblado por fuera del sistema.
+De los tres procesos identificados, el grupo lleva a profundidad **P1 (Ejecutar búsqueda BLAST) y P2 (Filtrar y entregar resultados)** durante el cuatrimestre. Ambos son necesarios para completar una interacción típica del investigador con el sistema: P1 se ocupa de ejecutar la búsqueda y persistirla, y P2 se ocupa de dejar al investigador trabajar con esos resultados (filtrarlos y descargarlos). El proceso **P3 (Administrar bases de datos)** queda documentado a nivel de alcance en este DFD y en el modelo de dominio, pero **no** se detalla como casos de uso ni historias de usuario propios: no tiene RF profundizados en el SRS y no forma parte de la cadena `RF → CU → slice → HU` de este TP.
 
 Los casos de uso escritos en `docs/requeriments/casos-de-uso.md` se distribuyen así entre los procesos profundizados:
 
-- `CU001 · Ejecutar una búsqueda BLAST` **deriva de P1**.
-- `CU002 · Refinar los resultados con filtros post-búsqueda` **deriva de P2**.
-- `CU003 · Descargar los resultados en un formato` **deriva de P2**.
+- `CU001 · Cargar la secuencia query` **deriva de P1**.
+- `CU002 · Configurar los parámetros de la búsqueda` **deriva de P1**.
+- `CU003 · Validar la búsqueda` **deriva de P1**.
+- `CU004 · Ejecutar la búsqueda` **deriva de P1**.
+- `CU005 · Ver los resultados y persistir la búsqueda en el historial` **deriva de P1**.
+- `CU006 · Refinar los resultados con filtros post-búsqueda` **deriva de P2**.
+- `CU007 · Descargar los resultados en un formato` **deriva de P2**.
 
 Ver la justificación completa en la sección [Selección de procesos a profundizar](../requeriments/srs.md#5-selección-de-procesos-a-profundizar) del SRS.
-
-Los casos de uso escritos en `docs/requirements/casos-de-uso.md` son **todos** derivados del proceso P1. Ver la justificación completa en la sección [Selección de procesos a profundizar](../requirements/srs.md#5-selección-de-procesos-a-profundizar) del SRS.
