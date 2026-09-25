@@ -20,7 +20,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU01_CU001_B · Cargar la secuencia query y chequear su formato
 
 - **Deriva de:** `CU001`, slice `B` (pasos 1-2 del camino feliz)
-- **Realiza:** RF-01, RF-06
+- **Realiza:** RF-01, RF-02
 
 > **Como** investigador/a,
 > **quiero** subir un archivo FASTA o pegar la secuencia como texto y que el sistema la deje disponible con su alfabeto inferido,
@@ -48,7 +48,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU02_CU001_E1 · Rechazo de secuencia query con formato inválido
 
 - **Deriva de:** `CU001`, slice `E1` (terminación abrupta detectada en el paso 2)
-- **Realiza:** RF-06
+- **Realiza:** RF-02
 
 > **Como** investigador/a,
 > **quiero** recibir un mensaje claro cuando la secuencia que subo o pego no es reconocible,
@@ -73,7 +73,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU03_CU002_B · Configurar modo, base de datos, programa y parámetros pre-búsqueda
 
 - **Deriva de:** `CU002`, slice `B` (pasos 1-4 del camino feliz)
-- **Realiza:** RF-02, RF-03, RF-04, RF-05
+- **Realiza:** RF-03, RF-04, RF-05, RF-06
 
 > **Como** investigador/a,
 > **quiero** elegir el modo (local o remoto), la base de datos, el programa BLAST y los parámetros pre-búsqueda sobre la secuencia que ya cargué,
@@ -101,7 +101,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU04_CU002_A1 · Manejo de base de datos local no disponible
 
 - **Deriva de:** `CU002`, slice `A1` (camino alternativo en el paso 2)
-- **Realiza:** RF-03
+- **Realiza:** RF-04
 
 > **Como** investigador/a,
 > **quiero** que el sistema me informe claramente cuando la base de datos local que elegí no está en condiciones de ser usada, y me devuelva la lista actualizada para que yo decida,
@@ -126,7 +126,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU05_CU003_B · Obtener el visto bueno del sistema sobre la búsqueda configurada
 
 - **Deriva de:** `CU003`, slice `B` (pasos 1-2 del camino feliz)
-- **Realiza:** RF-04, RF-05, RF-12
+- **Realiza:** RF-05, RF-06, RF-07
 
 > **Como** investigador/a,
 > **quiero** disparar la validación semántica de mi configuración y recibir el visto bueno explícito del sistema antes de comprometer tiempo de BLAST+,
@@ -149,7 +149,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU06_CU003_E1 · Rechazo de parámetros pre-búsqueda fuera de rango
 
 - **Deriva de:** `CU003`, slice `E1` (terminación abrupta detectada en el paso 2)
-- **Realiza:** RF-04, RF-12
+- **Realiza:** RF-06, RF-07
 
 > **Como** investigador/a,
 > **quiero** que el sistema me señale exactamente qué parámetro está fuera de rango y cuál es el rango válido para el programa BLAST que elegí,
@@ -172,7 +172,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU07_CU003_E2 · Rechazo de combinación programa / query / base de datos incompatible
 
 - **Deriva de:** `CU003`, slice `E2` (terminación abrupta detectada en el paso 2)
-- **Realiza:** RF-05, RF-12
+- **Realiza:** RF-05, RF-07
 
 > **Como** investigador/a,
 > **quiero** que el sistema me impida validar una combinación de programa BLAST y tipos de secuencia/base incompatibles, y me sugiera qué combinaciones sí funcionan con lo que ya cargué,
@@ -197,7 +197,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU08_CU004_B · Ejecutar la búsqueda validada de forma asíncrona
 
 - **Deriva de:** `CU004`, slice `B` (pasos 1-3 del camino feliz)
-- **Realiza:** RF-07
+- **Realiza:** RF-08
 
 > **Como** investigador/a,
 > **quiero** que el sistema invoque a BLAST+ en segundo plano sobre mi búsqueda validada, con indicador de progreso y opción de cancelar,
@@ -220,7 +220,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU09_CU004_A1 · Cancelación manual de una búsqueda en curso
 
 - **Deriva de:** `CU004`, slice `A1` (camino alternativo durante el paso 2)
-- **Realiza:** RF-07
+- **Realiza:** RF-08
 
 > **Como** investigador/a,
 > **quiero** poder cancelar una búsqueda que está en ejecución,
@@ -243,7 +243,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU10_CU004_E1 · Manejo de fallo del modo remoto de BLAST+
 
 - **Deriva de:** `CU004`, slice `E1` (terminación abrupta durante el paso 2)
-- **Realiza:** RF-07
+- **Realiza:** RF-08
 
 > **Como** investigador/a,
 > **quiero** que cuando la búsqueda remota falla el sistema me muestre el error tal como lo devolvió BLAST+ (o NCBI a través de BLAST+),
@@ -268,7 +268,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU11_CU005_B · Presentar la tabla de alineamientos y guardar la búsqueda en el historial
 
 - **Deriva de:** `CU005`, slice `B` (pasos 1-2 del camino feliz)
-- **Realiza:** RF-08, RF-11
+- **Realiza:** RF-09, RF-10
 
 > **Como** investigador/a,
 > **quiero** ver los alineamientos en una tabla dentro de la misma vista apenas termina la ejecución, y que el sistema guarde automáticamente la búsqueda en el historial,
@@ -293,7 +293,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU12_CU006_B · Refinar la vista con filtros post-búsqueda
 
 - **Deriva de:** `CU006`, slice `B` (único slice básico; el camino feliz no se subdivide)
-- **Realiza:** RF-09
+- **Realiza:** RF-11
 
 > **Como** investigador/a,
 > **quiero** aplicar filtros post-búsqueda sobre la tabla de resultados y verla refrescada en el momento, sin correr BLAST otra vez,
@@ -323,7 +323,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU13_CU007_B · Descargar los alineamientos actualmente visibles en un formato
 
 - **Deriva de:** `CU007`, slice `B` (único slice básico; el camino feliz no se subdivide)
-- **Realiza:** RF-10
+- **Realiza:** RF-12
 
 > **Como** investigador/a,
 > **quiero** descargar los alineamientos que estoy viendo en la tabla —filtrados o no— en el formato que necesite,
@@ -351,7 +351,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ### HU14_CU007_A1 · Descarga cuando ningún resultado supera los filtros
 
 - **Deriva de:** `CU007`, slice `A1` (camino alternativo dentro del slice `B`)
-- **Realiza:** RF-10
+- **Realiza:** RF-12
 
 > **Como** investigador/a,
 > **quiero** poder descargar el archivo aunque los filtros post-búsqueda dejen la tabla vacía,
@@ -375,23 +375,23 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 
 | RF | CU | Slice | HU |
 |---|---|---|---|
-| RF-01, RF-06 | CU001 | CU001_B | **HU01_CU001_B** |
-| RF-06 | CU001 | CU001_E1 (secuencia inválida) | **HU02_CU001_E1** |
-| RF-02, RF-03, RF-04, RF-05 | CU002 | CU002_B | **HU03_CU002_B** |
-| RF-03 | CU002 | CU002_A1 (BD local no disponible) | **HU04_CU002_A1** |
-| RF-04, RF-05, RF-12 | CU003 | CU003_B | **HU05_CU003_B** |
-| RF-04, RF-12 | CU003 | CU003_E1 (parámetros fuera de rango) | **HU06_CU003_E1** |
-| RF-05, RF-12 | CU003 | CU003_E2 (combinación incompatible) | **HU07_CU003_E2** |
-| RF-07 | CU004 | CU004_B | **HU08_CU004_B** |
-| RF-07 | CU004 | CU004_A1 (cancelación manual) | **HU09_CU004_A1** |
-| RF-07 | CU004 | CU004_E1 (fallo modo remoto) | **HU10_CU004_E1** |
-| RF-08, RF-11 | CU005 | CU005_B | **HU11_CU005_B** |
-| RF-09 | CU006 | CU006_B | **HU12_CU006_B** |
-| RF-10 | CU007 | CU007_B | **HU13_CU007_B** |
-| RF-10 | CU007 | CU007_A1 (resultado vacío) | **HU14_CU007_A1** |
+| RF-01, RF-02 | CU001 | CU001_B | **HU01_CU001_B** |
+| RF-02 | CU001 | CU001_E1 (secuencia inválida) | **HU02_CU001_E1** |
+| RF-03, RF-04, RF-05, RF-06 | CU002 | CU002_B | **HU03_CU002_B** |
+| RF-04 | CU002 | CU002_A1 (BD local no disponible) | **HU04_CU002_A1** |
+| RF-05, RF-06, RF-07 | CU003 | CU003_B | **HU05_CU003_B** |
+| RF-06, RF-07 | CU003 | CU003_E1 (parámetros fuera de rango) | **HU06_CU003_E1** |
+| RF-05, RF-07 | CU003 | CU003_E2 (combinación incompatible) | **HU07_CU003_E2** |
+| RF-08 | CU004 | CU004_B | **HU08_CU004_B** |
+| RF-08 | CU004 | CU004_A1 (cancelación manual) | **HU09_CU004_A1** |
+| RF-08 | CU004 | CU004_E1 (fallo modo remoto) | **HU10_CU004_E1** |
+| RF-09, RF-10 | CU005 | CU005_B | **HU11_CU005_B** |
+| RF-11 | CU006 | CU006_B | **HU12_CU006_B** |
+| RF-12 | CU007 | CU007_B | **HU13_CU007_B** |
+| RF-12 | CU007 | CU007_A1 (resultado vacío) | **HU14_CU007_A1** |
 
 ## Notas sobre el enfoque de este TP
 
-- **Un CU puede implementar varios RF**, y viceversa un mismo RF puede estar realizado por varios slices del mismo CU. Por ejemplo RF-12 (validación semántica) aparece en el camino feliz `CU003_B` cuando la validación pasa, y también en `CU003_E1` y `CU003_E2` cuando falla y corta el flujo. Esa dispersión es esperable: los slices de excepción son otra forma en que se cumple el RF.
-- **La validación tiene dos RFs distintos, no uno solo con dos facetas.** RF-06 cubre la validación sintáctica del formato del FASTA (al cargar la secuencia, cae en `CU001`) y RF-12 cubre la validación semántica de coherencia entre secuencia, programa, base de datos y parámetros (al pedir el visto bueno, cae en `CU003`). Son RFs emparentados conceptualmente pero se disparan en momentos distintos del flujo y con criterios de aceptación distintos, por eso los tenemos separados (ver Entrada 12 de la bitácora de IA).
+- **Un CU puede implementar varios RF**, y viceversa un mismo RF puede estar realizado por varios slices del mismo CU. Por ejemplo RF-07 (validación semántica) aparece en el camino feliz `CU003_B` cuando la validación pasa, y también en `CU003_E1` y `CU003_E2` cuando falla y corta el flujo. Esa dispersión es esperable: los slices de excepción son otra forma en que se cumple el RF.
+- **La validación tiene dos RFs distintos, no uno solo con dos facetas.** RF-02 cubre la validación sintáctica del formato del FASTA (al cargar la secuencia, cae en `CU001`) y RF-07 cubre la validación semántica de coherencia entre secuencia, programa, base de datos y parámetros (al pedir el visto bueno, cae en `CU003`). Son RFs emparentados conceptualmente pero se disparan en momentos distintos del flujo y con criterios de aceptación distintos, por eso los tenemos separados (ver Entrada 12 de la bitácora de IA).
 - **La unidad mínima de sprint es la HU**, no el CU ni el slice. Por eso las HU tienen un identificador propio (`HU01`, `HU02`, …) además del sufijo de trazabilidad — para que la planificación de sprints pueda referirse a ellas sin ambigüedad.

@@ -34,7 +34,7 @@ Un caso de uso representa **una capacidad discreta que el sistema le brinda al a
 **Cadena de trazabilidad:** `RF → CU → slice → HU`.
 
 - Un **CU** puede realizar uno o varios RF, y a la inversa un RF puede estar realizado por varios slices del mismo CU (por ejemplo la validación semántica aparece tanto en el camino feliz de `CU003` como en sus slices de excepción).
-- Un **RF** puede además estar realizado por varios CU distintos cuando el requerimiento tiene facetas separables, aunque en general en ese caso preferimos escribir dos RFs distintos y no uno con dos caras: por ejemplo, el chequeo sintáctico del formato del FASTA (RF-06, que se dispara al cargar la secuencia y cae en `CU001`) y el chequeo semántico de coherencia entre secuencia, programa, base de datos y parámetros (RF-12, que se dispara en la validación explícita y cae en `CU003`) originalmente eran un mismo RF-06 con dos facetas; los separamos en dos RFs distintos porque se disparan en momentos distintos, con criterios de aceptación distintos, y se realizan en CUs distintos.
+- Un **RF** puede además estar realizado por varios CU distintos cuando el requerimiento tiene facetas separables, aunque en general en ese caso preferimos escribir dos RFs distintos y no uno con dos caras: por ejemplo, el chequeo sintáctico del formato del FASTA (RF-02, que se dispara al cargar la secuencia y cae en `CU001`) y el chequeo semántico de coherencia entre secuencia, programa, base de datos y parámetros (RF-07, que se dispara en la validación explícita y cae en `CU003`) originalmente eran un mismo RF con dos facetas; los separamos en dos RFs distintos porque se disparan en momentos distintos, con criterios de aceptación distintos, y se realizan en CUs distintos. Ver las Entradas 12 y 13 de la bitácora de IA para el detalle histórico.
 - El identificador del **slice básico** es la letra `B` (`CU00X_B`). Los **slices alternativos** se numeran `A1`, `A2`, … y los **de excepción** `E1`, `E2`, …
 - La relación **slice ↔ HU es 1:1**. La HU conserva el identificador de trazabilidad del slice: `HU01_CU001_B` detalla el slice `CU001_B`; `HU12_CU006_B` detalla el (único) slice básico de `CU006`.
 - Los catorce slices identificados en los siete CU tienen **cada uno** su HU detallada en [`historias-usuario.md`](historias-usuario.md), con criterios Given-When-Then.
@@ -45,7 +45,7 @@ Un caso de uso representa **una capacidad discreta que el sistema le brinda al a
 - **Deriva del proceso:** P1 · Ejecutar búsqueda BLAST
 - **Actor principal:** Investigador/a
 - **Objetivo:** Dejar una secuencia query disponible en la sesión, con su formato sintáctico chequeado, para ser usada por una o varias búsquedas subsiguientes.
-- **Realiza:** RF-01, RF-06
+- **Realiza:** RF-01, RF-02
 - **Precondición:** El investigador accedió a la interfaz web.
 - **Disparador:** El investigador quiere trabajar con una secuencia biológica.
 - **Garantía de éxito:** La secuencia queda cargada en la sesión, con su alfabeto inferido preliminarmente (ADN / ARN / proteína) y disponible para el resto del flujo.
@@ -70,11 +70,11 @@ CU001 · Cargar la secuencia query
 
 ### Slice básico — descripción
 
-- **`CU001_B` · Cargar y chequear sintácticamente la secuencia query (pasos 1-2).** El investigador ingresa la secuencia (archivo o texto pegado) y el sistema verifica formato FASTA y alfabeto reconocible. **Valor entregado:** una secuencia queda disponible en la sesión para ser usada por `CU002` y los CU siguientes. **Realiza:** RF-01, RF-06.
+- **`CU001_B` · Cargar y chequear sintácticamente la secuencia query (pasos 1-2).** El investigador ingresa la secuencia (archivo o texto pegado) y el sistema verifica formato FASTA y alfabeto reconocible. **Valor entregado:** una secuencia queda disponible en la sesión para ser usada por `CU002` y los CU siguientes. **Realiza:** RF-01, RF-02.
 
 ### Slice de excepción — descripción
 
-- **`CU001_E1` · Secuencia query con formato inválido.** En el paso 2, el chequeo sintáctico detecta que el contenido no tiene formato reconocible (caracteres fuera del alfabeto de ADN/ARN/proteína en cantidad significativa, FASTA mal formado, encabezado sin cuerpo, longitud fuera de rango, archivo vacío). El sistema no marca la secuencia como cargada, corta el flujo y muestra un mensaje que indica exactamente el problema y dónde aparece. **Realiza:** RF-06.
+- **`CU001_E1` · Secuencia query con formato inválido.** En el paso 2, el chequeo sintáctico detecta que el contenido no tiene formato reconocible (caracteres fuera del alfabeto de ADN/ARN/proteína en cantidad significativa, FASTA mal formado, encabezado sin cuerpo, longitud fuera de rango, archivo vacío). El sistema no marca la secuencia como cargada, corta el flujo y muestra un mensaje que indica exactamente el problema y dónde aparece. **Realiza:** RF-02.
 
 ---
 
@@ -83,7 +83,7 @@ CU001 · Cargar la secuencia query
 - **Deriva del proceso:** P1 · Ejecutar búsqueda BLAST
 - **Actor principal:** Investigador/a
 - **Objetivo:** Armar el resto de la configuración de una búsqueda BLAST (modo de ejecución, base de datos, programa BLAST y parámetros pre-búsqueda) sobre una secuencia ya cargada, dejando el formulario listo para que `CU003` lo valide.
-- **Realiza:** RF-02, RF-03, RF-04, RF-05. La verificación de que la elección quedó dentro de rangos válidos (RF-04) y de que la combinación es compatible (RF-05) se completa en `CU003` como parte de RF-12; en `CU002` cae la parte de "elegir".
+- **Realiza:** RF-03, RF-04, RF-05, RF-06. La verificación de que la elección quedó dentro de rangos válidos (RF-06) y de que la combinación es compatible (RF-05) se completa en `CU003` como parte de RF-07; en `CU002` cae la parte de "elegir".
 - **Precondición:** Existe una secuencia query cargada en la sesión (postcondición de `CU001`).
 - **Disparador:** El investigador quiere parametrizar la búsqueda que va a lanzar sobre esa secuencia.
 - **Garantía de éxito:** El formulario de la búsqueda queda armado con modo, base de datos, programa y parámetros pre-búsqueda; la interfaz habilita el botón "Validar búsqueda" que dispara `CU003`.
@@ -110,7 +110,7 @@ CU002 · Configurar los parámetros de la búsqueda
 
 ### Slice alternativo — descripción
 
-- **`CU002_A1` · Base de datos local no disponible.** En el paso 2, el investigador seleccionó modo local y una base de datos que en ese momento no está lista en D1 (por ejemplo, se está actualizando desde P3, o su índice quedó marcado con error). El sistema informa el estado de esa base de datos y su motivo, y devuelve al investigador al paso 2 con la lista de bases de datos locales actualizada. El investigador decide por su cuenta qué hacer a continuación (elegir otra base local, cambiar de modo, o abandonar); el sistema **no** propone equivalencias entre bases locales y remotas, porque no las hay: una base propia del laboratorio no es intercambiable con las bases estándar de NCBI. **Realiza:** RF-03.
+- **`CU002_A1` · Base de datos local no disponible.** En el paso 2, el investigador seleccionó modo local y una base de datos que en ese momento no está lista en D1 (por ejemplo, se está actualizando desde P3, o su índice quedó marcado con error). El sistema informa el estado de esa base de datos y su motivo, y devuelve al investigador al paso 2 con la lista de bases de datos locales actualizada. El investigador decide por su cuenta qué hacer a continuación (elegir otra base local, cambiar de modo, o abandonar); el sistema **no** propone equivalencias entre bases locales y remotas, porque no las hay: una base propia del laboratorio no es intercambiable con las bases estándar de NCBI. **Realiza:** RF-04.
 
 ---
 
@@ -119,7 +119,7 @@ CU002 · Configurar los parámetros de la búsqueda
 - **Deriva del proceso:** P1 · Ejecutar búsqueda BLAST
 - **Actor principal:** Investigador/a
 - **Objetivo:** Obtener del sistema una verificación semántica de la configuración armada en `CU002` (alfabeto de la secuencia compatible con el programa elegido, parámetros dentro de los rangos válidos del programa, combinación programa/query/base de datos compatible), y dejar la búsqueda marcada como "válida y ejecutable" para que `CU004` la pueda lanzar.
-- **Realiza:** RF-12 (validación semántica completa), y por su relación con los campos del formulario también RF-04 (verificar rangos de parámetros) y RF-05 (verificar compatibilidad programa/query/base de datos)
+- **Realiza:** RF-05 (verificar compatibilidad programa/query/base de datos), RF-06 (verificar rangos de parámetros) y RF-07 (validación semántica completa, el RF principal del CU)
 - **Precondición:** Existe una secuencia cargada (postcondición de `CU001`) y un formulario de búsqueda completo (postcondición de `CU002`).
 - **Disparador:** El investigador quiere confirmar que la búsqueda armada es lanzable, antes de comprometer tiempo de BLAST+.
 - **Garantía de éxito:** La configuración de búsqueda queda marcada como "válida y lista para ejecutar" en la sesión; la interfaz habilita el botón "Ejecutar búsqueda" que dispara `CU004`.
@@ -145,14 +145,14 @@ CU003 · Validar la búsqueda
 
 ### Slice básico — descripción
 
-- **`CU003_B` · Validar semánticamente la búsqueda (pasos 1-2).** El investigador dispara la validación y el sistema chequea alfabeto, rangos y compatibilidad. Al pasar, marca la configuración como ejecutable y habilita el disparador de `CU004`. **Valor entregado:** el investigador tiene la confirmación explícita del sistema de que su búsqueda es lanzable, y `CU004` queda habilitado. **Realiza:** RF-04, RF-05, RF-12.
+- **`CU003_B` · Validar semánticamente la búsqueda (pasos 1-2).** El investigador dispara la validación y el sistema chequea alfabeto, rangos y compatibilidad. Al pasar, marca la configuración como ejecutable y habilita el disparador de `CU004`. **Valor entregado:** el investigador tiene la confirmación explícita del sistema de que su búsqueda es lanzable, y `CU004` queda habilitado. **Realiza:** RF-05, RF-06, RF-07.
 
 ### Slices de excepción — descripción
 
 Son terminaciones abruptas del flujo: el sistema detecta una condición que impide marcar la búsqueda como válida, corta la ejecución del CU y notifica al investigador. La postcondición del CU no se alcanza (la configuración no queda marcada como ejecutable) y BLAST+ no es invocado.
 
-- **`CU003_E1` · Parámetros pre-búsqueda fuera de rango.** En el paso 2, la validación detecta al menos un parámetro con valor imposible para el programa elegido (E-value negativo, tamaño de palabra fuera del rango soportado por el programa, penalización de gap fuera de escala). El sistema corta el flujo y señala qué campo corregir y cuál es el rango esperado. **Realiza:** RF-04, RF-12.
-- **`CU003_E2` · Combinación programa / query / base de datos incompatible.** En el paso 2, la verificación de compatibilidad detecta que el programa BLAST elegido no coincide con el tipo de la secuencia query o con el tipo de la base de datos (por ejemplo `blastp` con query de nucleótidos, o `blastn` contra una base de datos de proteínas). El sistema corta el flujo, indica el motivo y sugiere qué combinaciones sí son válidas para lo que el usuario ya cargó. **Realiza:** RF-05, RF-12.
+- **`CU003_E1` · Parámetros pre-búsqueda fuera de rango.** En el paso 2, la validación detecta al menos un parámetro con valor imposible para el programa elegido (E-value negativo, tamaño de palabra fuera del rango soportado por el programa, penalización de gap fuera de escala). El sistema corta el flujo y señala qué campo corregir y cuál es el rango esperado. **Realiza:** RF-06, RF-07.
+- **`CU003_E2` · Combinación programa / query / base de datos incompatible.** En el paso 2, la verificación de compatibilidad detecta que el programa BLAST elegido no coincide con el tipo de la secuencia query o con el tipo de la base de datos (por ejemplo `blastp` con query de nucleótidos, o `blastn` contra una base de datos de proteínas). El sistema corta el flujo, indica el motivo y sugiere qué combinaciones sí son válidas para lo que el usuario ya cargó. **Realiza:** RF-05, RF-07.
 
 ---
 
@@ -162,7 +162,7 @@ Son terminaciones abruptas del flujo: el sistema detecta una condición que impi
 - **Actor principal:** Investigador/a
 - **Actor secundario:** Motor **BLAST+** (invocado por el sistema en ambos modos: local, y remoto con la flag `-remote` — es BLAST+ el que se comunica con NCBI del otro lado, nunca directamente nuestra GUI)
 - **Objetivo:** Correr la búsqueda ya validada en `CU003`, en segundo plano, con indicador de progreso y opción de cancelación, hasta obtener el conjunto crudo de alineamientos que devuelve BLAST+.
-- **Realiza:** RF-07
+- **Realiza:** RF-08
 - **Precondición:** Existe en la sesión una configuración de búsqueda validada (postcondición de `CU003`); el botón "Ejecutar búsqueda" está habilitado.
 - **Disparador:** El investigador decide lanzar la búsqueda ya validada.
 - **Garantía de éxito:** BLAST+ terminó la ejecución exitosamente y el conjunto crudo de alineamientos queda disponible en la sesión para que `CU005` lo presente y persista.
@@ -190,15 +190,15 @@ CU004 · Ejecutar la búsqueda
 
 ### Slice básico — descripción
 
-- **`CU004_B` · Invocar BLAST+ y obtener resultados crudos (pasos 1-3).** El sistema invoca a BLAST+ en segundo plano, muestra progreso, permite cancelar y, al terminar exitosamente, deja el conjunto crudo de alineamientos disponible en la sesión y dispara `CU005`. **Valor entregado:** BLAST+ hizo el trabajo pesado y sus resultados quedan disponibles para el siguiente CU. **Realiza:** RF-07.
+- **`CU004_B` · Invocar BLAST+ y obtener resultados crudos (pasos 1-3).** El sistema invoca a BLAST+ en segundo plano, muestra progreso, permite cancelar y, al terminar exitosamente, deja el conjunto crudo de alineamientos disponible en la sesión y dispara `CU005`. **Valor entregado:** BLAST+ hizo el trabajo pesado y sus resultados quedan disponibles para el siguiente CU. **Realiza:** RF-08.
 
 ### Slice alternativo — descripción
 
-- **`CU004_A1` · Cancelación manual de la búsqueda.** Mientras la búsqueda está en ejecución (durante el paso 2 del camino feliz), el investigador presiona **Cancelar**. El sistema aborta el subproceso local o cancela la solicitud remota a través de BLAST+, y deja la interfaz lista para iniciar una nueva búsqueda. La postcondición del CU no se alcanza; es una decisión explícita del actor de abandonar el objetivo actual. Al no haber ejecución exitosa, `CU005` no se dispara y no hay persistencia en D2. **Realiza:** RF-07.
+- **`CU004_A1` · Cancelación manual de la búsqueda.** Mientras la búsqueda está en ejecución (durante el paso 2 del camino feliz), el investigador presiona **Cancelar**. El sistema aborta el subproceso local o cancela la solicitud remota a través de BLAST+, y deja la interfaz lista para iniciar una nueva búsqueda. La postcondición del CU no se alcanza; es una decisión explícita del actor de abandonar el objetivo actual. Al no haber ejecución exitosa, `CU005` no se dispara y no hay persistencia en D2. **Realiza:** RF-08.
 
 ### Slice de excepción — descripción
 
-- **`CU004_E1` · Fallo del modo remoto de BLAST+.** Durante el paso 2, con modo remoto seleccionado, BLAST+ reporta un error de comunicación con NCBI (sin respuesta, timeout, o error explícito devuelto por la API). El sistema captura el error, corta el flujo del CU e informa al investigador con el detalle recibido. Un reintento posterior es un CU nuevo, no la continuación de este. Al no haber ejecución exitosa, `CU005` no se dispara y no hay persistencia en D2. **Realiza:** RF-07.
+- **`CU004_E1` · Fallo del modo remoto de BLAST+.** Durante el paso 2, con modo remoto seleccionado, BLAST+ reporta un error de comunicación con NCBI (sin respuesta, timeout, o error explícito devuelto por la API). El sistema captura el error, corta el flujo del CU e informa al investigador con el detalle recibido. Un reintento posterior es un CU nuevo, no la continuación de este. Al no haber ejecución exitosa, `CU005` no se dispara y no hay persistencia en D2. **Realiza:** RF-08.
 
 ---
 
@@ -207,7 +207,7 @@ CU004 · Ejecutar la búsqueda
 - **Deriva del proceso:** P1 · Ejecutar búsqueda BLAST
 - **Actor principal:** Investigador/a
 - **Objetivo:** Presentar los alineamientos crudos que dejó `CU004` en una tabla visible para el investigador, y dejar la búsqueda registrada en el historial D2 para uso posterior.
-- **Realiza:** RF-08, RF-11
+- **Realiza:** RF-09, RF-10
 - **Precondición:** Existe en memoria de la sesión un conjunto crudo de alineamientos, entregado por una ejecución exitosa de `CU004`.
 - **Disparador:** `CU004` termina exitosamente y libera los resultados crudos.
 - **Garantía de éxito:** El investigador ve la tabla de alineamientos en la interfaz, y la búsqueda (con sus resultados crudos) queda persistida en D2. Esos resultados quedan disponibles en la sesión para que el investigador los procese después con `CU006` (refinar) o `CU007` (descargar), si así lo decide.
@@ -239,7 +239,7 @@ CU005 · Ver los resultados y persistir la búsqueda en el historial
 - **Deriva del proceso:** P2 · Filtrar y entregar resultados
 - **Actor principal:** Investigador/a
 - **Objetivo:** Ver la lista de alineamientos filtrada por criterios post-búsqueda (identidad, cobertura, E-value observado, taxonomía), sin re-ejecutar BLAST.
-- **Realiza:** RF-09
+- **Realiza:** RF-11
 - **Precondición:** Existe una búsqueda con resultados visibles en la interfaz (postcondición de `CU005`). En una versión futura del sistema, cuando D2 sea legible desde la interfaz, esos resultados también podrán provenir del historial sin haber ejecutado `CU004`/`CU005` en la sesión actual.
 - **Disparador:** El investigador quiere restringir la vista a un subconjunto de los alineamientos según criterios post-búsqueda.
 - **Garantía de éxito:** La tabla muestra los alineamientos que superan los criterios elegidos. No se ejecuta BLAST+ ni se persiste nada nuevo en D2 (la búsqueda ya quedó registrada en `CU005` con sus resultados crudos).
@@ -271,7 +271,7 @@ CU006 · Refinar los resultados con filtros post-búsqueda
 - **Deriva del proceso:** P2 · Filtrar y entregar resultados
 - **Actor principal:** Investigador/a
 - **Objetivo:** Obtener, en su equipo, un archivo con los alineamientos actualmente visibles en la interfaz, en el formato adecuado para su análisis posterior.
-- **Realiza:** RF-10
+- **Realiza:** RF-12
 - **Precondición:** Existe una búsqueda con resultados visibles en la interfaz (postcondición de `CU005`). Los resultados pueden estar filtrados (postcondición de `CU006`) o no; en ambos casos `CU007` descarga lo que está a la vista. En una versión futura del sistema, cuando D2 sea legible desde la interfaz, `CU007` también podrá iniciarse a partir de una búsqueda cargada del historial, sin haber ejecutado `CU004`/`CU005` en la sesión actual.
 - **Disparador:** El investigador quiere llevarse un archivo con los resultados.
 - **Garantía de éxito:** El investigador tiene, en su equipo, un archivo en el formato pedido con los alineamientos que estaban visibles al momento de presionar **Descargar**.
@@ -301,7 +301,7 @@ CU007 · Descargar los resultados en un formato
 
 ### Slices alternativos — descripción
 
-- **`CU007_A1` · Ningún resultado supera los filtros post-búsqueda.** El investigador aplicó filtros que dejan la tabla vacía y de todos modos pide descargar. El sistema no impide la descarga: entrega un archivo con encabezados y la sección de metadatos de la búsqueda (parámetros, base de datos, timestamp, filtros aplicados) pero sin filas de hits, para que el investigador tenga constancia del intento. No hay persistencia adicional (la búsqueda ya está en D2 con sus resultados crudos, desde `CU005_B`). **Realiza:** RF-10.
+- **`CU007_A1` · Ningún resultado supera los filtros post-búsqueda.** El investigador aplicó filtros que dejan la tabla vacía y de todos modos pide descargar. El sistema no impide la descarga: entrega un archivo con encabezados y la sección de metadatos de la búsqueda (parámetros, base de datos, timestamp, filtros aplicados) pero sin filas de hits, para que el investigador tenga constancia del intento. No hay persistencia adicional (la búsqueda ya está en D2 con sus resultados crudos, desde `CU005_B`). **Realiza:** RF-12.
 
 ## Trazabilidad RF → CU → slice
 
@@ -310,23 +310,23 @@ La tabla `RF → CU → slice → HU` (con las HU incluidas) está en [`historia
 | RF | CU | Slice(s) que lo realizan |
 |---|---|---|
 | RF-01 | CU001 | CU001_B |
-| RF-02 | CU002 | CU002_B |
-| RF-03 | CU002 | CU002_B, CU002_A1 |
-| RF-04 | CU002, CU003 | CU002_B, CU003_B, CU003_E1 |
+| RF-02 | CU001 | CU001_B, CU001_E1 |
+| RF-03 | CU002 | CU002_B |
+| RF-04 | CU002 | CU002_B, CU002_A1 |
 | RF-05 | CU002, CU003 | CU002_B, CU003_B, CU003_E2 |
-| RF-06 | CU001 | CU001_B, CU001_E1 |
-| RF-07 | CU004 | CU004_B, CU004_A1, CU004_E1 |
-| RF-08 | CU005 | CU005_B |
-| RF-09 | CU006 | CU006_B |
-| RF-10 | CU007 | CU007_B, CU007_A1 |
-| RF-11 | CU005 | CU005_B |
-| RF-12 | CU003 | CU003_B, CU003_E1, CU003_E2 |
+| RF-06 | CU002, CU003 | CU002_B, CU003_B, CU003_E1 |
+| RF-07 | CU003 | CU003_B, CU003_E1, CU003_E2 |
+| RF-08 | CU004 | CU004_B, CU004_A1, CU004_E1 |
+| RF-09 | CU005 | CU005_B |
+| RF-10 | CU005 | CU005_B |
+| RF-11 | CU006 | CU006_B |
+| RF-12 | CU007 | CU007_B, CU007_A1 |
 
 Dos RFs cruzan más de un CU:
 
-- **RF-04** (rangos de parámetros) aparece en `CU002` (donde el investigador los elige, con los defaults del programa) y en `CU003` (donde el sistema verifica que estén dentro del rango válido del programa).
+- **RF-06** (rangos de parámetros) aparece en `CU002` (donde el investigador los elige, con los defaults del programa) y en `CU003` (donde el sistema verifica que estén dentro del rango válido del programa).
 - **RF-05** (compatibilidad programa/query/BD) aparece en `CU002` (donde el investigador elige el programa) y en `CU003` (donde el sistema verifica la coherencia con la query y la BD ya elegidas).
 
-Además, `RF-06` (validación sintáctica) y `RF-12` (validación semántica) son dos RFs conceptualmente emparentados pero **separados**: cubren facetas distintas de "el sistema debe validar antes de ejecutar" que ocurren en momentos distintos del flujo (al cargar la secuencia vs. al pedir el visto bueno), en CUs distintos (`CU001` vs. `CU003`), y con criterios de aceptación distintos. En una versión temprana del SRS eran un mismo RF con dos facetas anotadas como sufijo `(sint.)/(sem.)`; ver la Entrada 12 de la bitácora de IA para el detalle de por qué los separamos.
+Además, `RF-02` (validación sintáctica) y `RF-07` (validación semántica) son dos RFs conceptualmente emparentados pero **separados**: cubren facetas distintas de "el sistema debe validar antes de ejecutar" que ocurren en momentos distintos del flujo (al cargar la secuencia vs. al pedir el visto bueno), en CUs distintos (`CU001` vs. `CU003`), y con criterios de aceptación distintos. En una versión temprana del SRS eran un mismo RF con dos facetas anotadas como sufijo `(sint.)/(sem.)`; ver la Entrada 12 de la bitácora de IA para el detalle de por qué los separamos.
 
-Un mismo RF puede aparecer también en varios slices del mismo CU — por ejemplo RF-12 se realiza en el camino feliz `CU003_B` (cuando la validación semántica pasa) y también en `CU003_E1` y `CU003_E2` (cuando falla y corta el flujo). Esa dispersión es esperable: los slices de excepción son otra forma en que se cumple el RF de validación.
+Un mismo RF puede aparecer también en varios slices del mismo CU — por ejemplo RF-07 se realiza en el camino feliz `CU003_B` (cuando la validación semántica pasa) y también en `CU003_E1` y `CU003_E2` (cuando falla y corta el flujo). Esa dispersión es esperable: los slices de excepción son otra forma en que se cumple el RF de validación.

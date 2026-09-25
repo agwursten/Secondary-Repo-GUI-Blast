@@ -116,7 +116,7 @@ De los tres procesos identificados en el DFD Nivel 1 (P1, P2, P3), el grupo elig
 ---
 
 ## 6. Requerimientos funcionales
-Los RF-01 a RF-11 corresponden a los procesos profundizados P1 y P2. La tabla de trazabilidad detallada por slice está en [`casos-de-uso.md`](casos-de-uso.md).
+Los RF-01 a RF-10 corresponden al proceso profundizado P1 y los RF-11 y RF-12 al proceso profundizado P2. La tabla de trazabilidad detallada por slice está en [`casos-de-uso.md`](casos-de-uso.md).
 
 ### 6.1 Proceso P1 — Ejecución de búsqueda BLAST
 
@@ -125,15 +125,15 @@ Realizados por `CU001` (cargar la secuencia query), `CU002` (configurar los par�
 | ID | Requerimiento |
 |---|---|
 | **RF-01** | El sistema debe permitir al usuario ingresar la secuencia query como texto pegado en el formulario o como archivo FASTA subido. |
-| **RF-02** | El sistema debe permitir al usuario elegir entre dos modos de ejecución mutuamente excluyentes: **local** (invoca a BLAST+ contra una base de datos del catálogo del laboratorio) o **remoto** (invoca a BLAST+ con la flag `-remote`, y es BLAST+ el que se comunica con NCBI). |
-| **RF-03** | El sistema debe permitir al usuario seleccionar una base de datos disponible para el modo elegido: en modo local, las que figuran en el catálogo administrado por P3; en modo remoto, las bases estándar de NCBI. |
-| **RF-04** | El sistema debe permitir al usuario configurar los parámetros pre-búsqueda que afectan al algoritmo: **E-value máximo**, **matriz de sustitución** (para BLAST de proteínas), **tamaño de palabra** y **penalización de gaps** (apertura y extensión). El sistema debe ofrecer valores por defecto sensatos según el programa BLAST correspondiente. |
+| **RF-02** | El sistema debe validar el formato sintáctico de la secuencia query al momento de cargarla: que se pueda parsear como FASTA (o como secuencia plana), que el alfabeto observado sea reconocible como ADN, ARN o proteína, y que no tenga violaciones de formato obvias (encabezado sin cuerpo, caracteres no imprimibles, archivo vacío). Este chequeo no depende del programa BLAST elegido y ocurre antes de cualquier configuración de búsqueda. |
+| **RF-03** | El sistema debe permitir al usuario elegir entre dos modos de ejecución mutuamente excluyentes: **local** (invoca a BLAST+ contra una base de datos del catálogo del laboratorio) o **remoto** (invoca a BLAST+ con la flag `-remote`, y es BLAST+ el que se comunica con NCBI). |
+| **RF-04** | El sistema debe permitir al usuario seleccionar una base de datos disponible para el modo elegido: en modo local, las que figuran en el catálogo administrado por P3; en modo remoto, las bases estándar de NCBI. |
 | **RF-05** | El sistema debe permitir al usuario elegir el programa BLAST a ejecutar (`blastn`, `blastp`, `blastx`, `tblastn`, `tblastx`) y debe verificar que esa elección sea compatible con el tipo de la secuencia query y con el tipo de la base de datos seleccionada. Si la combinación no es compatible, no permite lanzar la búsqueda e indica el motivo. |
-| **RF-06** | El sistema debe validar el formato sintáctico de la secuencia query al momento de cargarla: que se pueda parsear como FASTA (o como secuencia plana), que el alfabeto observado sea reconocible como ADN, ARN o proteína, y que no tenga violaciones de formato obvias (encabezado sin cuerpo, caracteres no imprimibles, archivo vacío). Este chequeo no depende del programa BLAST elegido y ocurre antes de cualquier configuración de búsqueda. |
-| **RF-07** | El sistema debe ejecutar la búsqueda de forma asíncrona, mostrando un indicador de progreso, sin bloquear la interfaz de usuario, y debe permitir cancelar una búsqueda en curso. |
-| **RF-08** | El sistema debe mostrar los resultados en una tabla con, como mínimo: identificador del hit, score, E-value observado, porcentaje de identidad y porcentaje de cobertura. |
-| **RF-11** | El sistema debe persistir automáticamente en el historial (D2) cada búsqueda que termine su ejecución exitosamente, incluyendo parámetros pre-búsqueda, base de datos usada, timestamp y el conjunto **crudo** de resultados que devolvió BLAST+ |
-| **RF-12** | El sistema debe validar semánticamente la coherencia de la búsqueda antes de habilitar su ejecución: que el alfabeto de la secuencia query sea compatible con el programa BLAST elegido, que los parámetros pre-búsqueda estén dentro de los rangos válidos del programa, y que la combinación programa / tipo de query / tipo de base de datos sea compatible. Este chequeo depende de que el investigador ya haya elegido programa, base de datos y parámetros. |
+| **RF-06** | El sistema debe permitir al usuario configurar los parámetros pre-búsqueda que afectan al algoritmo: **E-value máximo**, **matriz de sustitución** (para BLAST de proteínas), **tamaño de palabra** y **penalización de gaps** (apertura y extensión). El sistema debe ofrecer valores por defecto sensatos según el programa BLAST correspondiente. |
+| **RF-07** | El sistema debe validar semánticamente la coherencia de la búsqueda antes de habilitar su ejecución: que el alfabeto de la secuencia query sea compatible con el programa BLAST elegido, que los parámetros pre-búsqueda estén dentro de los rangos válidos del programa, y que la combinación programa / tipo de query / tipo de base de datos sea compatible. Este chequeo depende de que el investigador ya haya elegido programa, base de datos y parámetros. |
+| **RF-08** | El sistema debe ejecutar la búsqueda de forma asíncrona, mostrando un indicador de progreso, sin bloquear la interfaz de usuario, y debe permitir cancelar una búsqueda en curso. |
+| **RF-09** | El sistema debe mostrar los resultados en una tabla con, como mínimo: identificador del hit, score, E-value observado, porcentaje de identidad y porcentaje de cobertura. |
+| **RF-10** | El sistema debe persistir automáticamente en el historial (D2) cada búsqueda que termine su ejecución exitosamente, incluyendo parámetros pre-búsqueda, base de datos usada, timestamp y el conjunto **crudo** de resultados que devolvió BLAST+ |
 
 ### 6.2 Proceso P2 — Filtrado y entrega de resultados
 
@@ -141,8 +141,8 @@ Realizados por `CU006` (refinar con filtros post-búsqueda) y `CU007` (descargar
 
 | ID | Requerimiento |
 |---|---|
-| **RF-09** | El sistema debe permitir aplicar filtros post-búsqueda sobre la tabla de resultados (al menos: umbrales de porcentaje de identidad, porcentaje de cobertura, E-value observado y filtro por taxonomía cuando la información esté disponible) sin volver a ejecutar la búsqueda. |
-| **RF-10** | El sistema debe permitir al usuario descargar los resultados actualmente visibles en la tabla (filtrados o sin filtrar) en al menos los formatos: CSV, JSON, FASTA, tabular BLAST (`-outfmt 6`) y XML. |
+| **RF-11** | El sistema debe permitir aplicar filtros post-búsqueda sobre la tabla de resultados (al menos: umbrales de porcentaje de identidad, porcentaje de cobertura, E-value observado y filtro por taxonomía cuando la información esté disponible) sin volver a ejecutar la búsqueda. |
+| **RF-12** | El sistema debe permitir al usuario descargar los resultados actualmente visibles en la tabla (filtrados o sin filtrar) en al menos los formatos: CSV, JSON, FASTA, tabular BLAST (`-outfmt 6`) y XML. |
 
 ---
 
