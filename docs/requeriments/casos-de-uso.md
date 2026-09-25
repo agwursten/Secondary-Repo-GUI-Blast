@@ -34,7 +34,7 @@ Un caso de uso representa **una capacidad discreta que el sistema le brinda al a
 **Cadena de trazabilidad:** `RF → CU → slice → HU`.
 
 - Un **CU** puede realizar uno o varios RF, y a la inversa un RF puede estar realizado por varios slices del mismo CU (por ejemplo la validación semántica aparece tanto en el camino feliz de `CU003` como en sus slices de excepción).
-- Un **RF** puede además estar realizado por varios CU distintos cuando el requerimiento tiene dos facetas separables: por ejemplo RF-06 (validación pre-ejecución) tiene una faceta sintáctica que se dispara al cargar la secuencia (`CU001`) y una faceta semántica que se dispara en la validación explícita (`CU003`).
+- Un **RF** puede además estar realizado por varios CU distintos cuando el requerimiento tiene facetas separables, aunque en general en ese caso preferimos escribir dos RFs distintos y no uno con dos caras: por ejemplo, el chequeo sintáctico del formato del FASTA (RF-06, que se dispara al cargar la secuencia y cae en `CU001`) y el chequeo semántico de coherencia entre secuencia, programa, base de datos y parámetros (RF-12, que se dispara en la validación explícita y cae en `CU003`) originalmente eran un mismo RF-06 con dos facetas; los separamos en dos RFs distintos porque se disparan en momentos distintos, con criterios de aceptación distintos, y se realizan en CUs distintos.
 - El identificador del **slice básico** es la letra `B` (`CU00X_B`). Los **slices alternativos** se numeran `A1`, `A2`, … y los **de excepción** `E1`, `E2`, …
 - La relación **slice ↔ HU es 1:1**. La HU conserva el identificador de trazabilidad del slice: `HU01_CU001_B` detalla el slice `CU001_B`; `HU12_CU006_B` detalla el (único) slice básico de `CU006`.
 - Los catorce slices identificados en los siete CU tienen **cada uno** su HU detallada en [`historias-usuario.md`](historias-usuario.md), con criterios Given-When-Then.
@@ -45,7 +45,7 @@ Un caso de uso representa **una capacidad discreta que el sistema le brinda al a
 - **Deriva del proceso:** P1 · Ejecutar búsqueda BLAST
 - **Actor principal:** Investigador/a
 - **Objetivo:** Dejar una secuencia query disponible en la sesión, con su formato sintáctico chequeado, para ser usada por una o varias búsquedas subsiguientes.
-- **Realiza:** RF-01, RF-06 (parcial: chequeo sintáctico del FASTA)
+- **Realiza:** RF-01, RF-06
 - **Precondición:** El investigador accedió a la interfaz web.
 - **Disparador:** El investigador quiere trabajar con una secuencia biológica.
 - **Garantía de éxito:** La secuencia queda cargada en la sesión, con su alfabeto inferido preliminarmente (ADN / ARN / proteína) y disponible para el resto del flujo.
@@ -70,11 +70,11 @@ CU001 · Cargar la secuencia query
 
 ### Slice básico — descripción
 
-- **`CU001_B` · Cargar y chequear sintácticamente la secuencia query (pasos 1-2).** El investigador ingresa la secuencia (archivo o texto pegado) y el sistema verifica formato FASTA y alfabeto reconocible. **Valor entregado:** una secuencia queda disponible en la sesión para ser usada por `CU002` y los CU siguientes. **Realiza:** RF-01, RF-06 (parcial).
+- **`CU001_B` · Cargar y chequear sintácticamente la secuencia query (pasos 1-2).** El investigador ingresa la secuencia (archivo o texto pegado) y el sistema verifica formato FASTA y alfabeto reconocible. **Valor entregado:** una secuencia queda disponible en la sesión para ser usada por `CU002` y los CU siguientes. **Realiza:** RF-01, RF-06.
 
 ### Slice de excepción — descripción
 
-- **`CU001_E1` · Secuencia query con formato inválido.** En el paso 2, el chequeo sintáctico detecta que el contenido no tiene formato reconocible (caracteres fuera del alfabeto de ADN/ARN/proteína en cantidad significativa, FASTA mal formado, encabezado sin cuerpo, longitud fuera de rango, archivo vacío). El sistema no marca la secuencia como cargada, corta el flujo y muestra un mensaje que indica exactamente el problema y dónde aparece. **Realiza:** RF-06 (parcial: faceta sintáctica).
+- **`CU001_E1` · Secuencia query con formato inválido.** En el paso 2, el chequeo sintáctico detecta que el contenido no tiene formato reconocible (caracteres fuera del alfabeto de ADN/ARN/proteína en cantidad significativa, FASTA mal formado, encabezado sin cuerpo, longitud fuera de rango, archivo vacío). El sistema no marca la secuencia como cargada, corta el flujo y muestra un mensaje que indica exactamente el problema y dónde aparece. **Realiza:** RF-06.
 
 ---
 
@@ -83,7 +83,7 @@ CU001 · Cargar la secuencia query
 - **Deriva del proceso:** P1 · Ejecutar búsqueda BLAST
 - **Actor principal:** Investigador/a
 - **Objetivo:** Armar el resto de la configuración de una búsqueda BLAST (modo de ejecución, base de datos, programa BLAST y parámetros pre-búsqueda) sobre una secuencia ya cargada, dejando el formulario listo para que `CU003` lo valide.
-- **Realiza:** RF-02, RF-03, RF-04, RF-05 (faceta de configuración: elegir el programa; la faceta de compatibilidad la maneja `CU003`)
+- **Realiza:** RF-02, RF-03, RF-04, RF-05. La verificación de que la elección quedó dentro de rangos válidos (RF-04) y de que la combinación es compatible (RF-05) se completa en `CU003` como parte de RF-12; en `CU002` cae la parte de "elegir".
 - **Precondición:** Existe una secuencia query cargada en la sesión (postcondición de `CU001`).
 - **Disparador:** El investigador quiere parametrizar la búsqueda que va a lanzar sobre esa secuencia.
 - **Garantía de éxito:** El formulario de la búsqueda queda armado con modo, base de datos, programa y parámetros pre-búsqueda; la interfaz habilita el botón "Validar búsqueda" que dispara `CU003`.
@@ -119,7 +119,7 @@ CU002 · Configurar los parámetros de la búsqueda
 - **Deriva del proceso:** P1 · Ejecutar búsqueda BLAST
 - **Actor principal:** Investigador/a
 - **Objetivo:** Obtener del sistema una verificación semántica de la configuración armada en `CU002` (alfabeto de la secuencia compatible con el programa elegido, parámetros dentro de los rangos válidos del programa, combinación programa/query/base de datos compatible), y dejar la búsqueda marcada como "válida y ejecutable" para que `CU004` la pueda lanzar.
-- **Realiza:** RF-06 (faceta semántica: alfabeto vs. programa, rangos, compatibilidad), RF-04 (validación de rangos), RF-05 (validación de compatibilidad programa/query/base de datos)
+- **Realiza:** RF-12 (validación semántica completa), y por su relación con los campos del formulario también RF-04 (verificar rangos de parámetros) y RF-05 (verificar compatibilidad programa/query/base de datos)
 - **Precondición:** Existe una secuencia cargada (postcondición de `CU001`) y un formulario de búsqueda completo (postcondición de `CU002`).
 - **Disparador:** El investigador quiere confirmar que la búsqueda armada es lanzable, antes de comprometer tiempo de BLAST+.
 - **Garantía de éxito:** La configuración de búsqueda queda marcada como "válida y lista para ejecutar" en la sesión; la interfaz habilita el botón "Ejecutar búsqueda" que dispara `CU004`.
@@ -145,14 +145,14 @@ CU003 · Validar la búsqueda
 
 ### Slice básico — descripción
 
-- **`CU003_B` · Validar semánticamente la búsqueda (pasos 1-2).** El investigador dispara la validación y el sistema chequea alfabeto, rangos y compatibilidad. Al pasar, marca la configuración como ejecutable y habilita el disparador de `CU004`. **Valor entregado:** el investigador tiene la confirmación explícita del sistema de que su búsqueda es lanzable, y `CU004` queda habilitado. **Realiza:** RF-04, RF-05, RF-06.
+- **`CU003_B` · Validar semánticamente la búsqueda (pasos 1-2).** El investigador dispara la validación y el sistema chequea alfabeto, rangos y compatibilidad. Al pasar, marca la configuración como ejecutable y habilita el disparador de `CU004`. **Valor entregado:** el investigador tiene la confirmación explícita del sistema de que su búsqueda es lanzable, y `CU004` queda habilitado. **Realiza:** RF-04, RF-05, RF-12.
 
 ### Slices de excepción — descripción
 
 Son terminaciones abruptas del flujo: el sistema detecta una condición que impide marcar la búsqueda como válida, corta la ejecución del CU y notifica al investigador. La postcondición del CU no se alcanza (la configuración no queda marcada como ejecutable) y BLAST+ no es invocado.
 
-- **`CU003_E1` · Parámetros pre-búsqueda fuera de rango.** En el paso 2, la validación detecta al menos un parámetro con valor imposible para el programa elegido (E-value negativo, tamaño de palabra fuera del rango soportado por el programa, penalización de gap fuera de escala). El sistema corta el flujo y señala qué campo corregir y cuál es el rango esperado. **Realiza:** RF-04, RF-06.
-- **`CU003_E2` · Combinación programa / query / base de datos incompatible.** En el paso 2, la verificación de compatibilidad detecta que el programa BLAST elegido no coincide con el tipo de la secuencia query o con el tipo de la base de datos (por ejemplo `blastp` con query de nucleótidos, o `blastn` contra una base de datos de proteínas). El sistema corta el flujo, indica el motivo y sugiere qué combinaciones sí son válidas para lo que el usuario ya cargó. **Realiza:** RF-05.
+- **`CU003_E1` · Parámetros pre-búsqueda fuera de rango.** En el paso 2, la validación detecta al menos un parámetro con valor imposible para el programa elegido (E-value negativo, tamaño de palabra fuera del rango soportado por el programa, penalización de gap fuera de escala). El sistema corta el flujo y señala qué campo corregir y cuál es el rango esperado. **Realiza:** RF-04, RF-12.
+- **`CU003_E2` · Combinación programa / query / base de datos incompatible.** En el paso 2, la verificación de compatibilidad detecta que el programa BLAST elegido no coincide con el tipo de la secuencia query o con el tipo de la base de datos (por ejemplo `blastp` con query de nucleótidos, o `blastn` contra una base de datos de proteínas). El sistema corta el flujo, indica el motivo y sugiere qué combinaciones sí son válidas para lo que el usuario ya cargó. **Realiza:** RF-05, RF-12.
 
 ---
 
@@ -314,17 +314,19 @@ La tabla `RF → CU → slice → HU` (con las HU incluidas) está en [`historia
 | RF-03 | CU002 | CU002_B, CU002_A1 |
 | RF-04 | CU002, CU003 | CU002_B, CU003_B, CU003_E1 |
 | RF-05 | CU002, CU003 | CU002_B, CU003_B, CU003_E2 |
-| RF-06 | CU001, CU003 | CU001_B, CU001_E1, CU003_B, CU003_E1 |
+| RF-06 | CU001 | CU001_B, CU001_E1 |
 | RF-07 | CU004 | CU004_B, CU004_A1, CU004_E1 |
 | RF-08 | CU005 | CU005_B |
 | RF-09 | CU006 | CU006_B |
 | RF-10 | CU007 | CU007_B, CU007_A1 |
 | RF-11 | CU005 | CU005_B |
+| RF-12 | CU003 | CU003_B, CU003_E1, CU003_E2 |
 
 Dos RFs cruzan más de un CU:
 
 - **RF-04** (rangos de parámetros) aparece en `CU002` (donde el investigador los elige, con los defaults del programa) y en `CU003` (donde el sistema verifica que estén dentro del rango válido del programa).
 - **RF-05** (compatibilidad programa/query/BD) aparece en `CU002` (donde el investigador elige el programa) y en `CU003` (donde el sistema verifica la coherencia con la query y la BD ya elegidas).
-- **RF-06** (validación) tiene dos facetas separadas: **sintáctica** (chequeo del formato del FASTA al cargar la secuencia, cae en `CU001`) y **semántica** (chequeo del alfabeto vs. programa, rangos y compatibilidad, cae en `CU003`).
 
-Un mismo RF puede aparecer también en varios slices del mismo CU — por ejemplo RF-06 se realiza en el camino feliz `CU003_B` (cuando la validación semántica pasa) y también en `CU003_E1` (cuando la validación de rangos falla y corta el flujo). Esa dispersión es esperable: los slices de excepción son otra forma en que se cumple el RF de validación.
+Además, `RF-06` (validación sintáctica) y `RF-12` (validación semántica) son dos RFs conceptualmente emparentados pero **separados**: cubren facetas distintas de "el sistema debe validar antes de ejecutar" que ocurren en momentos distintos del flujo (al cargar la secuencia vs. al pedir el visto bueno), en CUs distintos (`CU001` vs. `CU003`), y con criterios de aceptación distintos. En una versión temprana del SRS eran un mismo RF con dos facetas anotadas como sufijo `(sint.)/(sem.)`; ver la Entrada 12 de la bitácora de IA para el detalle de por qué los separamos.
+
+Un mismo RF puede aparecer también en varios slices del mismo CU — por ejemplo RF-12 se realiza en el camino feliz `CU003_B` (cuando la validación semántica pasa) y también en `CU003_E1` y `CU003_E2` (cuando falla y corta el flujo). Esa dispersión es esperable: los slices de excepción son otra forma en que se cumple el RF de validación.
