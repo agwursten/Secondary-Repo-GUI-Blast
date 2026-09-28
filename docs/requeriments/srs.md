@@ -44,6 +44,7 @@ LocalBlast es una **interfaz gráfica para BLAST+** que resuelve las tres carenc
 ### 1.3 Dentro del alcance
 
 - Interfaz web para el rol **Investigador**.
+- **Autenticación básica** de investigadores (login/logout con usuario y contraseña, gestión de sesión con timeout) para asociar cada búsqueda con su usuario y proteger la confidencialidad del historial personal.
 - Ejecución de búsquedas BLAST local (`blastn`, `blastp`, `blastx`, `tblastn`, `tblastx`) y remota (`-remote`).
 - Formulario de parámetros pre-búsqueda con valores por defecto.
 - Aplicación interactiva de filtros post-búsqueda sobre la tabla de resultados.
@@ -53,7 +54,7 @@ LocalBlast es una **interfaz gráfica para BLAST+** que resuelve las tres carenc
 ### 1.4 Fuera del alcance
 
 - **Administración de bases de datos locales por parte del rol Administrador (proceso P3).** El diseño integral del sistema contempla un rol Administrador que da de alta, actualiza y da de baja bases de datos BLAST locales a partir de archivos FASTA subidos desde su equipo, invocando internamente a `makeblastdb`. Esta capacidad **se documenta a nivel conceptual** en el DFD (Nivel 0 y Nivel 1, ver [`docs/architecture/contexto-inicial.md`](../architecture/contexto-inicial.md)) y en el modelo de dominio, para dejar registrada la visión completa del producto, pero **queda fuera del alcance de este cuatrimestre por restricciones de tiempo**: no tiene requerimientos funcionales asociados, no se detalla como casos de uso ni historias de usuario, y no se implementará en el TP. Para las funcionalidades del modo local se asume que el catálogo D1 ya contiene al menos una base de datos, cargada por fuera del sistema.
-- **Autenticación y gestión de usuarios/roles.** Dado que en el cuatrimestre solo se profundiza el rol Investigador, no se implementa autenticación ni gestión de sesiones. Queda para versiones futuras junto con la incorporación del rol Administrador.
+- **Gestión avanzada de usuarios desde la interfaz.** Queda fuera del alcance el registro autoservicio de investigadores, la recuperación de contraseñas por email, la administración de múltiples roles (más allá del rol Investigador único) y la edición del perfil de usuario. En el alcance del TP1 se contempla únicamente la **autenticación básica** (ver 1.3), suficiente para que cada investigador tenga su propia sesión y su propio historial protegido: los usuarios se dan de alta por fuera del sistema (por ejemplo, un responsable del laboratorio los crea directamente en la base de datos de usuarios). El rol Administrador — que gestionaría usuarios y también el catálogo de bases de datos — no se implementa en este cuatrimestre.
 - Modificación del algoritmo BLAST subyacente. LocalBlast **usa** el motor BLAST+; no lo reimplementa.
 - Herramientas de alineamiento múltiple (ClustalW, Muscle) o modelado 3D de estructuras.
 - Búsquedas en lote con múltiples queries simultáneas en una sola ejecución (queda como posible ampliación en el Trabajo Integrador).
@@ -152,15 +153,15 @@ Realizados por `CU006` (refinar con filtros post-búsqueda) y `CU007` (descargar
 
 Los requerimientos no funcionales del sistema se expresan como atributos de calidad según el modelo **ISO/IEC 25010** y se concretan en **escenarios de calidad** con seis campos (fuente–estímulo–artefacto–entorno–respuesta–medida), cubriendo tres condiciones de entorno por atributo (normal, sobrecarga y degradado).
 
-El grupo aplicó un proceso en dos etapas para llegar a los cinco atributos priorizados. El **filtrado inicial** se mantuvo deliberadamente liviano: solo se descartaron los atributos manifiestamente inaplicables al dominio (Portabilidad, Reusabilidad, Administrabilidad) y se colapsaron los solapamientos evidentes (Robustez dentro de Confiabilidad; Capacidad dentro de Escalabilidad; Extensibilidad y Flexibilidad dentro de Mantenibilidad). Con eso quedaron **once atributos** en la etapa de priorización, para que fuera la **matriz de comparación pareada** (`^`/`<`) — no el criterio a priori del grupo — la que hiciera el trabajo efectivo de discriminación. La matriz descartó seis atributos por debajo del umbral (Mantenibilidad, Disponibilidad, Testeabilidad, Recuperación, Escalabilidad y Seguridad) y dejó los cinco siguientes, en orden de prioridad:
+El grupo aplicó un proceso en dos etapas para llegar a los cinco atributos priorizados. El **filtrado inicial** se mantuvo deliberadamente liviano: solo se descartaron los atributos manifiestamente inaplicables al dominio (Portabilidad, Reusabilidad, Administrabilidad) y se colapsaron los solapamientos evidentes (Robustez dentro de Confiabilidad; Capacidad dentro de Escalabilidad; Extensibilidad y Flexibilidad dentro de Mantenibilidad). Con eso quedaron **once atributos** en la etapa de priorización, para que fuera la **matriz de comparación pareada** (`^`/`<`) — no el criterio a priori del grupo — la que hiciera el trabajo efectivo de discriminación. La matriz descartó seis atributos por debajo del umbral (Performance, Mantenibilidad, Disponibilidad, Testeabilidad, Recuperación y Escalabilidad) y dejó los cinco siguientes, en orden de prioridad:
 
 1. **Interoperabilidad** (10 victorias) — compatibilidad correcta con BLAST+ en modo local y remoto.
 2. **Usabilidad** (9) — el diferenciador central del proyecto sobre las alternativas existentes (CLI y web NCBI).
 3. **Integridad** (8) — consistencia del historial D2 ante concurrencia, cancelaciones y fallos.
 4. **Confiabilidad** (7) — tolerancia a fallos del pipeline P1.
-5. **Performance** (6) — reactividad de la UI y overhead atribuible a LocalBlast.
+5. **Seguridad** (6) — autenticación del investigador, confidencialidad del historial personal, cifrado en tránsito y advertencia informada al enviar secuencias sensibles a NCBI en modo remoto.
 
-Es notable que **Seguridad** cerró la matriz con 0 victorias, lo que valida a posteriori que su exclusión del alcance ([SRS 1.4](#14-fuera-del-alcance)) es consistente con las prioridades reales del dominio, no una simplificación arbitraria del equipo.
+Es notable que **Performance** quedó apenas por debajo del umbral (5 victorias). No se pierde del análisis: aspectos de rendimiento reaparecen como parte de los escenarios de sobrecarga de Confiabilidad (reactividad de la UI) y de Usabilidad (tiempo de aplicación de filtros), de modo que Performance se manifiesta transversalmente sin necesitar una sección propia.
 
 El detalle completo (filtrado con motivos, fusiones justificadas, matriz `^`/`<` completa con conteo de victorias, ranking, y los quince escenarios) está en:
 
