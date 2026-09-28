@@ -263,7 +263,7 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 
 ---
 
-## HU derivadas de CU005 · Ver los resultados y persistir la búsqueda en el historial
+## HU derivadas de CU005 - Ver los resultados y persistir la búsqueda en el historial
 
 ### HU11_CU005_B · Presentar la tabla de alineamientos y guardar la búsqueda en el historial
 
@@ -370,7 +370,6 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
   - **Then** la entrada en D2 permanece igual que antes: contiene el conjunto **completo** de resultados crudos que devolvió BLAST+ (persistido en `CU005_B`), no la lista vacía que quedó tras el filtro, de forma que el investigador pueda volver más tarde y probar filtros distintos sin re-ejecutar BLAST.
 
 ---
-
 ## Tabla de trazabilidad completa `RF → CU → slice → HU`
 
 | RF | CU | Slice | HU |
@@ -393,5 +392,4 @@ Para el TP1 se detallan las HU de **todos los slices identificados en los casos 
 ## Notas sobre el enfoque de este TP
 
 - **Un CU puede implementar varios RF**, y viceversa un mismo RF puede estar realizado por varios slices del mismo CU. Por ejemplo RF-07 (validación semántica) aparece en el camino feliz `CU003_B` cuando la validación pasa, y también en `CU003_E1` y `CU003_E2` cuando falla y corta el flujo. Esa dispersión es esperable: los slices de excepción son otra forma en que se cumple el RF.
-- **La validación tiene dos RFs distintos, no uno solo con dos facetas.** RF-02 cubre la validación sintáctica del formato del FASTA (al cargar la secuencia, cae en `CU001`) y RF-07 cubre la validación semántica de coherencia entre secuencia, programa, base de datos y parámetros (al pedir el visto bueno, cae en `CU003`). Son RFs emparentados conceptualmente pero se disparan en momentos distintos del flujo y con criterios de aceptación distintos, por eso los tenemos separados (ver Entrada 12 de la bitácora de IA).
 - **La unidad mínima de sprint es la HU**, no el CU ni el slice. Por eso las HU tienen un identificador propio (`HU01`, `HU02`, …) además del sufijo de trazabilidad — para que la planificación de sprints pueda referirse a ellas sin ambigüedad.

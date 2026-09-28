@@ -16,6 +16,7 @@ LocalBlast_2026/
     ├── architecture/
     │   └── contexto-inicial.md
     ├── requeriments/
+    │   ├── atributos-calidad.md
     │   ├── casos-de-uso.md
     │   ├── historias-usuario.md
     │   ├── modelo-dominio.md

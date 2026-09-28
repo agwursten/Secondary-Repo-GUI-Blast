@@ -13,9 +13,10 @@ Este documento es la línea base del proyecto **LocalBlast** al cierre del TP1. 
 4. [Modelo de dominio](#4-modelo-de-dominio)
 5. [Selección de procesos a profundizar](#5-selección-de-procesos-a-profundizar)
 6. [Requerimientos funcionales](#6-requerimientos-funcionales)
-7. [Casos de uso e historias de usuario](#7-casos-de-uso-e-historias-de-usuario)
-8. [Suposiciones y dependencias](#8-suposiciones-y-dependencias)
-9. [Glosario](#9-glosario)
+7. [Atributos de calidad y escenarios](#7-atributos-de-calidad-y-escenarios)
+8. [Casos de uso e historias de usuario](#8-casos-de-uso-e-historias-de-usuario)
+9. [Suposiciones y dependencias](#9-suposiciones-y-dependencias)
+10. [Glosario](#10-glosario)
 
 ---
 
@@ -103,7 +104,7 @@ De los tres procesos identificados en el DFD Nivel 1 (P1, P2, P3), el grupo elig
 
 ### 5.1 Qué se profundiza y por qué
 
-- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra la complejidad interesante del dominio (dos modos de invocación a BLAST+ — con o sin `-remote` —, validación de parámetros pre-búsqueda, verificación de compatibilidad programa/query/base de datos, ejecución asíncrona con cancelación y persistencia automática en el historial). Da lugar a **cinco casos de uso**, uno por cada capacidad discreta que el sistema le brinda al investigador dentro del ciclo de una búsqueda: `CU001 · Cargar la secuencia query` (dejar la secuencia disponible y chequeada sintácticamente), `CU002 · Configurar los parámetros de la búsqueda` (armar modo, base de datos, programa y parámetros pre-búsqueda), `CU003 · Validar la búsqueda` (obtener el visto bueno semántico del sistema), `CU004 · Ejecutar la búsqueda` (correr BLAST+ con progreso y cancelación) y `CU005 · Ver los resultados y persistir la búsqueda en el historial` (presentar la tabla de alineamientos y dejarla registrada en D2). La partición refleja que cada una de esas capacidades tiene valor propio y es ejercitable por separado: el investigador puede cargar una secuencia y usarla en varias configuraciones (`CU001` seguido de varios `CU002`), quedarse en la configuración sin validar, o validar sin lanzar, sin que el sistema lo obligue a completar el ciclo.
+- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra la complejidad interesante del dominio (dos modos de invocación a BLAST+ con o sin `-remote`, validación de parámetros pre-búsqueda, verificación de compatibilidad programa/query/base de datos, ejecución asíncrona con cancelación y persistencia automática en el historial). Da lugar a **cinco casos de uso**, uno por cada capacidad discreta que el sistema le brinda al investigador dentro del ciclo de una búsqueda: `CU001 · Cargar la secuencia query` (dejar la secuencia disponible y chequeada sintácticamente), `CU002 · Configurar los parámetros de la búsqueda` (armar modo, base de datos, programa y parámetros pre-búsqueda), `CU003 · Validar la búsqueda` (obtener el visto bueno semántico del sistema), `CU004 · Ejecutar la búsqueda` (correr BLAST+ con progreso y cancelación) y `CU005 · Ver los resultados y persistir la búsqueda en el historial` (presentar la tabla de alineamientos y dejarla registrada en D2). La partición refleja que cada una de esas capacidades tiene valor propio y es ejercitable por separado.
 
 - **P2 · Filtrar y entregar resultados — profundizado.** Es lo que le permite al investigador cerrar la interacción con valor real: sin filtrar ni descargar, la búsqueda queda "en el aire" en la interfaz. P2 se ejecuta sobre los datos ya devueltos por BLAST+ y su lógica es previsible (comparaciones numéricas para el filtro, serialización para la descarga), pero es indispensable para el flujo típico del usuario y por eso lo profundizamos. Da lugar a **dos casos de uso** con capacidades distintas para el mismo actor investigador: `CU006 · Refinar los resultados con filtros post-búsqueda` y `CU007 · Descargar los resultados en un formato`. Están detallados en [`docs/requeriments/casos-de-uso.md`](casos-de-uso.md).
 
@@ -146,17 +147,38 @@ Realizados por `CU006` (refinar con filtros post-búsqueda) y `CU007` (descargar
 
 ---
 
-## 7. Casos de uso e historias de usuario
 
-Los casos de uso en formato Cockburn (flujo principal detallado y slices secundarios nombrados), todos derivados del proceso profundizado P1, están en:
+## 7. Atributos de calidad y escenarios
 
-👉 [`docs/requirements/casos-de-uso.md`](casos-de-uso.md)
+Los requerimientos no funcionales del sistema se expresan como atributos de calidad según el modelo **ISO/IEC 25010** y se concretan en **escenarios de calidad** con seis campos (fuente–estímulo–artefacto–entorno–respuesta–medida), cubriendo tres condiciones de entorno por atributo (normal, sobrecarga y degradado).
+
+El grupo aplicó un proceso en dos etapas para llegar a los cinco atributos priorizados. El **filtrado inicial** se mantuvo deliberadamente liviano: solo se descartaron los atributos manifiestamente inaplicables al dominio (Portabilidad, Reusabilidad, Administrabilidad) y se colapsaron los solapamientos evidentes (Robustez dentro de Confiabilidad; Capacidad dentro de Escalabilidad; Extensibilidad y Flexibilidad dentro de Mantenibilidad). Con eso quedaron **once atributos** en la etapa de priorización, para que fuera la **matriz de comparación pareada** (`^`/`<`) — no el criterio a priori del grupo — la que hiciera el trabajo efectivo de discriminación. La matriz descartó seis atributos por debajo del umbral (Mantenibilidad, Disponibilidad, Testeabilidad, Recuperación, Escalabilidad y Seguridad) y dejó los cinco siguientes, en orden de prioridad:
+
+1. **Interoperabilidad** (10 victorias) — compatibilidad correcta con BLAST+ en modo local y remoto.
+2. **Usabilidad** (9) — el diferenciador central del proyecto sobre las alternativas existentes (CLI y web NCBI).
+3. **Integridad** (8) — consistencia del historial D2 ante concurrencia, cancelaciones y fallos.
+4. **Confiabilidad** (7) — tolerancia a fallos del pipeline P1.
+5. **Performance** (6) — reactividad de la UI y overhead atribuible a LocalBlast.
+
+Es notable que **Seguridad** cerró la matriz con 0 victorias, lo que valida a posteriori que su exclusión del alcance ([SRS 1.4](#14-fuera-del-alcance)) es consistente con las prioridades reales del dominio, no una simplificación arbitraria del equipo.
+
+El detalle completo (filtrado con motivos, fusiones justificadas, matriz `^`/`<` completa con conteo de victorias, ranking, y los quince escenarios) está en:
+
+👉 [`docs/requeriments/atributos-calidad.md`](atributos-calidad.md)
+
+---
+
+## 8. Casos de uso e historias de usuario
+
+Los casos de uso en formato Cockburn (flujo principal detallado y slices secundarios nombrados), derivados de los procesos profundizados P1 (`CU001` a `CU005`) y P2 (`CU006` y `CU007`), están en:
+
+👉 [`docs/requeriments/casos-de-uso.md`](casos-de-uso.md)
 
 Las historias de usuario asociadas a cada slice (relación 1:1 slice ↔ HU), con criterios de aceptación en formato **Given-When-Then**, están en:
 
-👉 [`docs/requirements/historias-usuario.md`](historias-usuario.md)
+👉 [`docs/requeriments/historias-usuario.md`](historias-usuario.md)
 
-## 8. Suposiciones y dependencias
+## 9. Suposiciones y dependencias
 
 - El binario **BLAST+** (versión 2.14 o posterior) está disponible en el servidor donde corre el sistema. Es una dependencia externa: LocalBlast **usa** BLAST+, no lo empaqueta.
 - La API remota de NCBI (`https://blast.ncbi.nlm.nih.gov/Blast.cgi`) está disponible desde la red del servidor cuando el usuario elige modo remoto — **BLAST+ es quien la contacta**, no directamente nuestra GUI. Las políticas de uso responsable de NCBI (frecuencia de polling, límite de queries por unidad de tiempo) las respeta BLAST+, no nuestro código.
@@ -165,7 +187,7 @@ Las historias de usuario asociadas a cada slice (relación 1:1 slice ↔ HU), co
 
 ---
 
-## 9. Glosario
+## 10. Glosario
 
 | Término | Significado |
 |---|---|
