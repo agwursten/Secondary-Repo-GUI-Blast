@@ -108,20 +108,6 @@ Las filas llevan el nombre completo del atributo; las columnas se identifican co
 
 **Verificación.** Suma total de puntajes = 3 + 2 + 6 + 1 + 7 + 0 + 8 + 4 + 9 + 5 = **45**, que coincide con la cantidad total de comparaciones C(10,2) = 10·9/2 = 45. ✓
 
-### 3.2 Justificación de las comparaciones clave
-
-Se registra la justificación de las comparaciones que determinaron el top 5. El resto siguen la misma lógica (importancia relativa en el alcance del proyecto).
-
-- **Interoperabilidad gana al resto casi siempre.** LocalBlast es, por definición, una interfaz gráfica para BLAST+: toda ejecución, local o remota, es una invocación a BLAST+. Sin esa interoperabilidad el producto no existe, por más bueno que sea en los otros aspectos. Pierde únicamente frente a Modularidad porque, en el horizonte del proyecto, extender el sistema sin romperlo es un requerimiento transversal que condiciona también cómo se integra BLAST+ en el futuro.
-- **Operabilidad vs Interoperabilidad: gana Interoperabilidad.** Una interfaz excelente sobre un motor que no responde no entrega ningún valor; sin BLAST+ no hay búsquedas.
-- **Operabilidad vs Comportamiento temporal: gana Operabilidad.** La propuesta de valor completa de LocalBlast frente a la línea de comandos es "ágil e intuitiva". Si la interfaz es rápida pero el investigador no la entiende, vuelve a la terminal.
-- **Operabilidad vs Protección frente a errores del usuario: gana Operabilidad.** Son dos caras de la capacidad de interacción, pero la operabilidad es la que concreta la propuesta de valor; la protección frente a errores apoya la operabilidad, no al revés.
-- **Confidencialidad vs Operabilidad: gana Operabilidad.** Decisión difícil, con contexto: las secuencias que carga un investigador pueden provenir de muestras humanas y son datos sensibles, por lo que la confidencialidad es imprescindible. Pero una interfaz que no se puede usar no genera siquiera tráfico que proteger. Operabilidad gana por un margen chico (una posición en el ranking); Confidencialidad queda inmediatamente abajo y mantiene su carácter crítico.
-- **Confidencialidad vs Tolerancia a fallos: gana Confidencialidad.** Un fallo de BLAST+ es reintentable; una fuga de una secuencia sensible, no. Las consecuencias de un error en confidencialidad son irreversibles, las de un fallo externo no.
-- **Confidencialidad vs Protección frente a errores del usuario: gana Confidencialidad.** Prevenir configuraciones inválidas evita desperdiciar cómputo; proteger datos sensibles evita un incidente de privacidad. La asimetría de consecuencias inclina la balanza.
-- **Tolerancia a fallos vs Protección frente a errores del usuario: gana Tolerancia a fallos.** Los fallos externos (BLAST+ y NCBI) son frecuentes, impredecibles y pueden ocurrir después de minutos de ejecución; las malas configuraciones del usuario ya quedan filtradas por la validación semántica previa a la ejecución y no desperdician cómputo real.
-- **Modularidad vs los otros atributos del medio.** Modularidad gana contra Comportamiento temporal, Disponibilidad, Capacidad de recuperación, Autenticidad y Protección frente a errores del usuario porque el proyecto tiene un enfoque de ciclo de vida explícitamente **incremental con prácticas ágiles** (ver README): hay un rol administrador documentado pero fuera de alcance en esta iteración, hay formatos adicionales previstos, hay filtros adicionales previstos. Si el diseño no soporta esta evolución planeada, el enfoque incremental se vuelve impracticable.
-- **Modularidad pierde contra Interoperabilidad, Operabilidad, Confidencialidad y Tolerancia a fallos.** Son todos atributos con exigencia *hoy* (hacen al funcionamiento, uso, protección de datos y robustez del sistema actual), mientras que Modularidad es exigencia *para la evolución* del sistema. Importante pero de segundo orden frente a los cuatro anteriores.
 
 ---
 
