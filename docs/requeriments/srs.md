@@ -173,11 +173,11 @@ Los cinco atributos seleccionados —ordenados por el puntaje obtenido en la mat
 |---|---|---|
 | 1 | Interoperabilidad | Compatibilidad |
 | 2 | Operabilidad | Capacidad de interacción |
-| 3 | Tolerancia a fallos | Fiabilidad |
-| 4 | Protección frente a errores del usuario | Capacidad de interacción |
-| 5 | Comportamiento temporal | Eficiencia de desempeño |
+| 3 | Confidencialidad | Seguridad |
+| 4 | Tolerancia a fallos | Fiabilidad |
+| 5 | Modularidad | Mantenibilidad |
 
-La trazabilidad entre cada escenario y los artefactos del TP1 (RF, CU, slices y HU) se detalla dentro del documento referenciado.
+Cada atributo cuenta con dos escenarios de calidad, redactados en entornos de sobrecarga, degradados o significativos (sin escenarios en condición normal), siguiendo la indicación de la guía del TP2.
 
 ---
 
