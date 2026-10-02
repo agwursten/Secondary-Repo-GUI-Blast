@@ -215,7 +215,7 @@ Para cada uno de los cinco atributos seleccionados se definen **dos escenarios**
 | Respuesta | Cada cambio de filtro refresca la tabla en el momento sobre el conjunto crudo original (nunca sobre un resultado filtrado previo), los filtros aplicados quedan siempre visibles y editables, y el investigador puede combinarlos, aflojarlos, endurecerlos o quitarlos en cualquier orden sin tener que reiniciar nada y sin esperas significativas entre cambios |
 | Medida de la respuesta | Cada actualización de la tabla ante un cambio de filtro se refleja en menos de **1 segundo** con tablas de hasta 500 hits; el estado de los filtros aplicados permanece visible y editable durante toda la sesión |
 
-*Criticidad:* el filtrado interactivo posterior a la búsqueda es una de las dos capacidades que diferencian a LocalBlast de la interfaz web oficial de NCBI. Si no responde ágilmente en escenarios con muchos hits —que son los más interesantes desde el punto de vista biológico— el investigador vuelve a parsear la salida tabular a mano en Excel y pierde la ventaja del producto.
+*Criticidad:* el filtrado interactivo posterior a la búsqueda es una de las dos capacidades que diferencian a LocalBlast de la interfaz web oficial de NCBI. Si no responde ágilmente en escenarios con muchos hits —que son los más interesantes desde el punto de vista biológico— el investigador vuelve a parsear la salida tabular a mano y pierde la ventaja del producto.
 
 **Escenario 2 — degradado por modificación posterior a la validación de la configuración**
 
