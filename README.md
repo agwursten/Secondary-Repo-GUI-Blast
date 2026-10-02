@@ -16,11 +16,12 @@ LocalBlast_2026/
     ├── architecture/
     │   └── contexto-inicial.md
     ├── requeriments/
-    │   ├── atributos-calidad.md
     │   ├── casos-de-uso.md
     │   ├── historias-usuario.md
     │   ├── modelo-dominio.md
-    │   └── srs.md
+    │   ├── srs.md
+    │   └── quality-scenarios/
+    │       └── escenarios-calidad.md
     └── uso-ia.md
 ````
 
@@ -52,6 +53,9 @@ Actualmente, la realización de alineamientos locales de secuencias mediante BLA
 ## 2. Documentación del Proyecto
 Para consultar la Especificación de Requisitos de Software (SRS) completa, visión, casos de uso y escenarios de calidad, diríjase a:
 👉 [`docs/requeriments/srs.md`](docs/requeriments/srs.md)
+
+Los escenarios de atributo de calidad (TP2 — Parte A), con su proceso de priorización y los 15 escenarios en formato ISO 25010, están en:
+👉 [`docs/requeriments/quality-scenarios/escenarios-calidad.md`](docs/requeriments/quality-scenarios/escenarios-calidad.md)
 
 ---
 

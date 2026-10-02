@@ -13,8 +13,8 @@ Este documento es la línea base del proyecto **LocalBlast** al cierre del TP1. 
 4. [Modelo de dominio](#4-modelo-de-dominio)
 5. [Selección de procesos a profundizar](#5-selección-de-procesos-a-profundizar)
 6. [Requerimientos funcionales](#6-requerimientos-funcionales)
-7. [Atributos de calidad y escenarios](#7-atributos-de-calidad-y-escenarios)
-8. [Casos de uso e historias de usuario](#8-casos-de-uso-e-historias-de-usuario)
+7. [Casos de uso e historias de usuario](#7-casos-de-uso-e-historias-de-usuario)
+8. [Atributos de calidad (requerimientos no funcionales)](#8-atributos-de-calidad-requerimientos-no-funcionales)
 9. [Suposiciones y dependencias](#9-suposiciones-y-dependencias)
 10. [Glosario](#10-glosario)
 
@@ -149,27 +149,7 @@ Realizados por `CU006` (refinar con filtros post-búsqueda) y `CU007` (descargar
 ---
 
 
-## 7. Atributos de calidad y escenarios
-
-Los requerimientos no funcionales del sistema se expresan como atributos de calidad según el modelo **ISO/IEC 25010** y se concretan en **escenarios de calidad** con seis campos (fuente–estímulo–artefacto–entorno–respuesta–medida), cubriendo tres condiciones de entorno por atributo (normal, sobrecarga y degradado).
-
-El grupo aplicó un proceso en dos etapas para llegar a los cinco atributos priorizados. El **filtrado inicial** se mantuvo deliberadamente liviano: solo se descartaron los atributos manifiestamente inaplicables al dominio (Portabilidad, Reusabilidad, Administrabilidad) y se colapsaron los solapamientos evidentes (Robustez dentro de Confiabilidad; Capacidad dentro de Escalabilidad; Extensibilidad y Flexibilidad dentro de Mantenibilidad). Con eso quedaron **once atributos** en la etapa de priorización, para que fuera la **matriz de comparación pareada** (`^`/`<`) — no el criterio a priori del grupo — la que hiciera el trabajo efectivo de discriminación. La matriz descartó seis atributos por debajo del umbral (Performance, Mantenibilidad, Disponibilidad, Testeabilidad, Recuperación y Escalabilidad) y dejó los cinco siguientes, en orden de prioridad:
-
-1. **Interoperabilidad** (10 victorias) — compatibilidad correcta con BLAST+ en modo local y remoto.
-2. **Usabilidad** (9) — el diferenciador central del proyecto sobre las alternativas existentes (CLI y web NCBI).
-3. **Integridad** (8) — consistencia del historial D2 ante concurrencia, cancelaciones y fallos.
-4. **Confiabilidad** (7) — tolerancia a fallos del pipeline P1.
-5. **Seguridad** (6) — autenticación del investigador, confidencialidad del historial personal, cifrado en tránsito y advertencia informada al enviar secuencias sensibles a NCBI en modo remoto.
-
-Es notable que **Performance** quedó apenas por debajo del umbral (5 victorias). No se pierde del análisis: aspectos de rendimiento reaparecen como parte de los escenarios de sobrecarga de Confiabilidad (reactividad de la UI) y de Usabilidad (tiempo de aplicación de filtros), de modo que Performance se manifiesta transversalmente sin necesitar una sección propia.
-
-El detalle completo (filtrado con motivos, fusiones justificadas, matriz `^`/`<` completa con conteo de victorias, ranking, y los quince escenarios) está en:
-
-👉 [`docs/requeriments/atributos-calidad.md`](atributos-calidad.md)
-
----
-
-## 8. Casos de uso e historias de usuario
+## 7. Casos de uso e historias de usuario
 
 Los casos de uso en formato Cockburn (flujo principal detallado y slices secundarios nombrados), derivados de los procesos profundizados P1 (`CU001` a `CU005`) y P2 (`CU006` y `CU007`), están en:
 
@@ -178,6 +158,28 @@ Los casos de uso en formato Cockburn (flujo principal detallado y slices secunda
 Las historias de usuario asociadas a cada slice (relación 1:1 slice ↔ HU), con criterios de aceptación en formato **Given-When-Then**, están en:
 
 👉 [`docs/requeriments/historias-usuario.md`](historias-usuario.md)
+
+---
+
+## 8. Atributos de calidad (requerimientos no funcionales)
+
+Los atributos de calidad críticos para LocalBlast, el proceso de filtrado y priorización aplicado para seleccionarlos (matriz comparativa por pares), y los escenarios de calidad en los seis componentes de la plantilla ISO (fuente del estímulo, estímulo, artefacto, entorno, respuesta, medida de respuesta) están en:
+
+👉 [`docs/requeriments/quality-scenarios/escenarios-calidad.md`](quality-scenarios/escenarios-calidad.md)
+
+Los cinco atributos seleccionados —ordenados por el puntaje obtenido en la matriz comparativa— son:
+
+| # | Atributo (subcaracterística ISO 25010:2023) | Característica |
+|---|---|---|
+| 1 | Interoperabilidad | Compatibilidad |
+| 2 | Operabilidad | Capacidad de interacción |
+| 3 | Tolerancia a fallos | Fiabilidad |
+| 4 | Protección frente a errores del usuario | Capacidad de interacción |
+| 5 | Comportamiento temporal | Eficiencia de desempeño |
+
+La trazabilidad entre cada escenario y los artefactos del TP1 (RF, CU, slices y HU) se detalla dentro del documento referenciado.
+
+---
 
 ## 9. Suposiciones y dependencias
 
