@@ -25,8 +25,7 @@ LocalBlast_2026/
     ├── ui/
     │   └── user-profiles/
     │       ├── README.md
-    │       ├── investigador-estudiante.md
-    │       └── investigador-senior.md
+    │       └── investigador.md
     └── uso-ia.md
 ````
 
