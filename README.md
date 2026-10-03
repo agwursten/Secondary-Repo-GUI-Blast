@@ -22,6 +22,11 @@ LocalBlast_2026/
     │   ├── srs.md
     │   └── quality-scenarios/
     │       └── escenarios-calidad.md
+    ├── ui/
+    │   └── user-profiles/
+    │       ├── README.md
+    │       ├── investigador-estudiante.md
+    │       └── investigador-senior.md
     └── uso-ia.md
 ````
 
@@ -56,6 +61,9 @@ Para consultar la Especificación de Requisitos de Software (SRS) completa, visi
 
 Los escenarios de atributo de calidad (TP2 — Parte A), con su proceso de priorización y los 15 escenarios en formato ISO 25010, están en:
 👉 [`docs/requeriments/quality-scenarios/escenarios-calidad.md`](docs/requeriments/quality-scenarios/escenarios-calidad.md)
+
+Los perfiles de usuario, escenarios de uso y flujos de navegación que guían el maquetado (TP2 — Parte B, sección 4.2) están en:
+👉 [`docs/ui/user-profiles/`](docs/ui/user-profiles/)
 
 ---
 

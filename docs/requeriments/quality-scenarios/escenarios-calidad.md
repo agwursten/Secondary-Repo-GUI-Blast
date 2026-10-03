@@ -326,4 +326,5 @@ Para cada uno de los cinco atributos seleccionados se definen **dos escenarios**
 - [`casos-de-uso.md`](../casos-de-uso.md) — Casos de uso en formato Cockburn.
 - [`historias-usuario.md`](../historias-usuario.md) — Historias de usuario con criterios Given-When-Then.
 - [`../../uso-ia.md`](../../uso-ia.md) — Bitácora de uso de IA, con las entradas correspondientes al TP2 Parte A.
-- Anexo A de la guía del TP2 (taxonomía de atributos de calidad ISO/IEC 25010:2023).
+- Anexo A de la guía de cátedra del TP2 (taxonomía de atributos de calidad ISO/IEC 25010:2023).
+

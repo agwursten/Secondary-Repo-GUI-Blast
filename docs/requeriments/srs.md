@@ -159,8 +159,6 @@ Las historias de usuario asociadas a cada slice (relación 1:1 slice ↔ HU), co
 
 👉 [`docs/requeriments/historias-usuario.md`](historias-usuario.md)
 
----
-
 ## 8. Atributos de calidad (requerimientos no funcionales)
 
 Los atributos de calidad críticos para LocalBlast, el proceso de filtrado y priorización aplicado para seleccionarlos (matriz comparativa por pares), y los escenarios de calidad en los seis componentes de la plantilla ISO (fuente del estímulo, estímulo, artefacto, entorno, respuesta, medida de respuesta) están en:
