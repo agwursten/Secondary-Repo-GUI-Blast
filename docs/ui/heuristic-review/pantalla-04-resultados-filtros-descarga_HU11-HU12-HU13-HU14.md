@@ -1,156 +1,86 @@
-# Evaluación heurística — Pantalla 4: Resultados · filtros · descarga
+# Evaluación heurística — Pantalla 4: Resultados, filtros y descarga
 
-- **Mockup inicial evaluado:** [`../mockups/pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_inicial.html`](../mockups/pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_inicial.html)
-- **Mockup final tras ciclo adicional:** [`../mockups/pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_final.html`](../mockups/pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_final.html)
-- **HUs cubiertas:** `HU11_CU005_B` (tabla y persistencia automática), `HU12_CU006_B` (filtros post-búsqueda), `HU13_CU007_B` (descarga en formato), `HU14_CU007_A1` (descarga con tabla vacía)
-- **Perfil y escenario de referencia:** `docs/ui/user-profiles/investigador.md`
+- **Mockup inicial:** [`../mockups/pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_inicial.html`](../mockups/pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_inicial.html)
+- **Mockup final:** [`../mockups/pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_final.html`](../mockups/pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_final.html)
+- **HUs cubiertas:** `HU11_CU005_B`, `HU12_CU006_B`, `HU13_CU007_B`, `HU14_CU007_A1`
 
 ---
 
-## 1. Primer ciclo — Generación del HTML (resumen)
+## 1. Primer ciclo (generación del HTML)
 
-El prompt completo y los criterios del grupo del primer ciclo están registrados en [`../mockups/README.md`](../mockups/README.md).
-
-La IA entregó [`pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_inicial.html`](../mockups/pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_inicial.html) con dos estados apilados: estado primario con 12 de 54 alineamientos visibles bajo filtros de identidad ≥ 80% y cobertura ≥ 60%, y estado alternativo de HU14 con cero hits visibles por filtros demasiado estrictos (identidad ≥ 99%).
+Prompt y resumen de la generación: ver [`../mockups/README.md`](../mockups/README.md). La salida es `_inicial.html`.
 
 ---
 
 ## 2. Segundo ciclo — Evaluación heurística con IA
 
-### 2.1 Prompt utilizado
+### 2.1 Prompt que le pasamos a la IA
 
-Conversación nueva. Adjuntos: HTML inicial, perfil del Investigador/a y las cuatro HU cubiertas.
+> Actuá como especialista en interfaz de usuario. Te paso el HTML de la pantalla de **resultados, filtros y descarga** de LocalBlast, el perfil del Investigador/a y las 4 HU cubiertas. Evaluala **heurística por heurística** según las 10 heurísticas de Nielsen, con este perfil concreto. Para cada una: **cumple / parcial / incumple**, por qué, y una mejora si corresponde. La pantalla muestra 2 estados apilados: tabla filtrada con 12/54 hits visibles, y tabla vacía por filtros estrictos. Evaluá los dos.
 
-> **Prompt:**
->
-> Actuá como especialista en interfaces de usuario. Te paso tres archivos:
->
-> 1. `pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_inicial.html` — pantalla de LocalBlast (GUI para BLAST+) correspondiente a **resultados**, **filtros post-búsqueda** y **descarga**. Cubre cuatro HU: HU11 (tabla con columnas mínimas y persistencia automática en el historial), HU12 (filtros interactivos que se aplican sin re-ejecutar BLAST), HU13 (descarga del subconjunto visible en el formato elegido), HU14 (descarga válida aunque la tabla esté vacía por filtros). El archivo muestra apilados dos estados: tabla filtrada con 12/54 hits visibles, y tabla vacía por filtros demasiado estrictos.
-> 2. `investigador.md` — perfil del único actor principal, con su rango de nivel técnico.
-> 3. `historias-usuario.md` — las cuatro HU con criterios Given-When-Then.
->
-> Puntos de dominio importantes que vas a necesitar al evaluar:
->
-> - Los filtros se aplican **sobre el conjunto crudo original**, no sobre el filtro anterior. Es una decisión fuerte del dominio: aflojar un filtro recupera hits previos sin re-ejecutar BLAST.
-> - El **historial (D2) nunca se modifica** por filtros ni por descarga: siempre guarda los 54 crudos.
-> - Los **cinco formatos** de descarga tienen propósitos distintos (CSV, JSON, FASTA, BLAST XML, Tabular `-outfmt 6`); el usuario sénior sabe distinguirlos de memoria, el estudiante quizás no.
->
-> Evaluá la pantalla **heurística por heurística** según las **10 heurísticas de Nielsen**, con el perfil concreto en mente. Para cada una: **cumple / parcial / incumple**, por qué, y una mejora si corresponde. Evaluá los dos estados.
+### 2.2 Respuesta de la IA
 
-### 2.2 Respuesta de la IA (completa)
-
-**H1 — Visibilidad del estado del sistema. Cumple.**
-Mucha señalización explícita: "Mostrando 12 de 54 alineamientos", el badge "2 filtros activos", el chip verde "Guardado en el historial · 14:34:21", la línea de metadatos superior (query, programa, base, E-value máx, matriz, timestamp), y el botón "Descargar 12 hits visibles" que cambia el número según los filtros. En el estado alternativo (tabla vacía), "Mostrando 0 de 54" es igualmente explícito. La separación entre conjunto crudo y vista filtrada se ve a simple vista.
-
-**H2 — Correspondencia entre el sistema y el mundo real. Cumple.**
-Las columnas son las que el investigador espera (Hit ID, Descripción, Score, E-value obs., % Identidad, % Cobertura). Los filtros usan los nombres de siempre. Los formatos de descarga también (BLAST XML, Tabular `-outfmt 6`).
-
-**H3 — Control y libertad del usuario. Cumple parcialmente.**
-El panel de filtros deja al investigador ajustar cualquier umbral en cualquier momento, bien. Lo que falta en jerarquía visual es el **deshacer de filtros**: "Limpiar filtros" aparece como un link pequeño subrayado, abajo a la derecha del panel, con la misma tipografía que los textos de ayuda. Para el escenario donde el investigador se da cuenta de que apretó demasiado y quiere empezar de nuevo, ese link es demasiado tímido. Sugerencia: botón real, con jerarquía propia.
-
-**H4 — Consistencia y estándares. Cumple.**
-Los componentes son los esperados: panel lateral de filtros + tabla principal, sliders de rango para umbrales porcentuales, input de texto para E-value y taxonomía, radio buttons para formatos, botón de descarga primario. Las barras horizontales junto a los porcentajes son un refuerzo visual del número, no un reemplazo — bien.
-
-**H5 — Prevención de errores. Cumple parcialmente.**
-El input del E-value es un campo de texto libre (`value="1e-10"`) sin validación visible — un valor como `abc` o `-5` no se rechaza en el formulario. Para el estudiante del extremo bajo del perfil, es fácil escribir algo que después no filtre nada. En producción esto se maneja con validación en vivo, pero al menos el placeholder podría guiar más. El resto de los filtros (sliders de porcentaje) sí previenen rangos inválidos por diseño.
-
-**H6 — Reconocimiento en lugar de recuerdo. Cumple parcialmente.**
-Las columnas de la tabla tienen nombre pero no definición: "E-value obs." es el E-value **observado** (distinto del E-value máximo que fue filtro pre-búsqueda), y esa distinción es relevante para no confundirse al leer. El estudiante quizás no la haga. Lo mismo con "Score" (bruto, no E-value). Sugerencia: tooltip con una línea definitoria en cada encabezado. Igual con los cinco formatos de descarga: los nombres son autoevidentes para el sénior, no para el estudiante — un tooltip con "cuándo usar cada uno" sería valioso.
-
-**H7 — Flexibilidad y eficiencia de uso. Cumple.**
-Para el sénior: cinco formatos de descarga cubren todos los pipelines plausibles. Los sliders son más rápidos que escribir números. La descarga con metadatos permite reconstruir el contexto fuera del sistema (lo pide HU13 CA-01). Para el estudiante: el camino por default (CSV, defaults, descarga) funciona sin tener que decidir nada técnico.
-
-**H8 — Diseño estético y minimalista. Cumple parcialmente.**
-El layout de dos columnas (filtros a la izquierda, tabla a la derecha) es claro y jerárquico. La tabla no abusa de colores. Las barras horizontales de identidad y cobertura, muy chicas, podrían dividir atención con el número al lado — en una revisión en papel se ven algo cargadas, pero en pantalla ayudan a comparar hits de un vistazo. En equilibrio, aceptable.
-
-**H9 — Ayudar al usuario a reconocer, diagnosticar y recuperarse de errores. Cumple parcialmente.**
-El estado alternativo de tabla vacía por filtros es informativo ("Ningún hit supera los filtros vigentes. La búsqueda devolvió 54 alineamientos crudos — podés aflojar los filtros para verlos de nuevo") y sugiere qué hacer ("probá bajar el umbral de identidad o quitar el filtro taxonómico"). Lo que no está es un camino de **un click** para salir de ese estado: el investigador tiene que ir al panel de filtros y ajustar manualmente los umbrales. Para un error del propio usuario (apretó demasiado), eso es tolerable; para la frustración de ver cero resultados sin saber por qué fallaron los umbrales, sumar botones de sugerencia accionables ("Bajar identidad a ≥ 80%", "Aflojar E-value a ≤ 1e-10", "Limpiar todos los filtros") cerraría el ciclo rápido.
-
-**H10 — Ayuda y documentación. Incumple.**
-Igual que en pantallas anteriores, no hay documentación contextual. Los conceptos "E-value observado", "Score", "Tabular (-outfmt 6)", "BLAST XML" son recordados por el sénior y poco por el estudiante. Un tooltip breve en cada encabezado de columna y en cada opción de formato cerraría el gap sin romper la estética sobria.
-
----
-
-## 3. Revisión crítica del grupo
-
-### H3 — Jerarquía visual del botón "Limpiar filtros"
-
-- **Decisión del grupo:** **aceptado.** Es un caso claro del principio "una acción destructiva de alta frecuencia merece su botón". En el escenario del perfil el investigador ajusta y afloja filtros con fluidez; necesita que "volver a cero" sea tan visible como "aplicar". Entra al ciclo adicional.
-
-### H5 — Validación del input de E-value
-
-- **Decisión del grupo:** **rechazado para esta iteración.** Mismo motivo que en la pantalla 1: la validación en vivo requiere JavaScript, y el maquetado del TP2 se acordó sin JS. Lo anotamos como requerimiento del front en la implementación.
-
-### H6 + H10 — Tooltips en encabezados de columna y en formatos de descarga
-
-- **Decisión del grupo:** **aceptado.** Es la misma decisión que tomamos en la pantalla 2 para los parámetros pre-búsqueda, aplicada ahora a resultados. Los dos hallazgos piden lo mismo desde ángulos distintos (reconocimiento vs. documentación) y se resuelven con una sola acción: íconos `?` + tooltips CSS. Entra al ciclo adicional, fusionados.
-
-### H9 — Sugerencias accionables en el estado vacío
-
-- **Decisión del grupo:** **aceptado.** El hallazgo encaja con el perfil: el investigador sénior quiere velocidad para iterar sobre umbrales, no quiere mover tres sliders a mano cuando ve una tabla vacía. Y para el estudiante, el hallazgo tiene además valor pedagógico: ver qué filtro se sugiere aflojar primero le enseña por dónde empezar a aflojar. Entra al ciclo adicional.
-
-### H8 — Barras horizontales de identidad y cobertura
-
-- **Decisión del grupo:** **rechazado como hallazgo**, pero con matiz. La propia IA se contradice ("en papel se ven cargadas, en pantalla ayudan a comparar") y el grupo coincide con la lectura en pantalla: las mini-barras son un refuerzo visual útil para comparar hits de un vistazo (el ojo detecta el patrón antes que leer el número). No las sacamos. Lo registramos como ejemplo donde la crítica se contradice sola.
-
-### Heurísticas donde la IA dijo "cumple" (H1, H2, H4, H7)
-
-- **Decisión del grupo:** acordamos. En particular H1 y H4 refuerzan dos decisiones del primer ciclo que nos interesaba validar: (a) la línea de metadatos arriba de la tabla, que coincide con la que después aparece en el archivo descargado — eso ancla el chip "Guardado en el historial" y el requerimiento de persistencia de HU11; (b) el botón "Descargar N hits visibles" con el contador dinámico, que materializa HU13 CA-01/CA-02 ("entrega los hits visibles al momento del click").
-
-### Resumen de la revisión
-
-| Heurística | Veredicto IA | Decisión grupo | Entra al ciclo adicional |
+| # | Heurística | Veredicto | Fundamento (resumen) |
 |---|---|---|---|
-| H1 — Visibilidad | cumple | — | — |
-| H2 — Mundo real | cumple | — | — |
-| H3 — Control y libertad | parcial | **aceptado** ("Limpiar filtros" como botón real) | **sí** |
-| H4 — Consistencia | cumple | — | — |
-| H5 — Prevención de errores | parcial | rechazado (requiere JS) | no |
-| H6 — Reconocimiento | parcial | **aceptado** (fusionado con H10) | **sí** |
-| H7 — Flexibilidad | cumple | — | — |
-| H8 — Minimalista | parcial | rechazado (contradicción interna del hallazgo; en pantalla ayudan) | no |
-| H9 — Recuperación de errores | parcial | **aceptado** (sugerencias accionables en tabla vacía) | **sí** |
-| H10 — Ayuda y documentación | incumple | **aceptado** (fusionado con H6) | **sí** |
+| 1 | Visibilidad del estado | cumple | "12 de 54", badge de filtros activos, chip "Guardado en el historial", botón "Descargar N visibles" dinámico. |
+| 2 | Mundo real | cumple | Columnas y filtros con los nombres esperados; formatos con nombres del dominio. |
+| 3 | Control y libertad | parcial | "Limpiar filtros" es un link subrayado chico, poco visible. |
+| 4 | Consistencia | cumple | Panel lateral + tabla + radios + botón primario. Componentes esperables. |
+| 5 | Prevención de errores | parcial | El input de E-value es texto libre sin validación visible. |
+| 6 | Reconocimiento | parcial | Columnas y formatos tienen nombre pero no definición. |
+| 7 | Flexibilidad | cumple | Cinco formatos, sliders rápidos, descarga con metadatos. |
+| 8 | Minimalista | parcial | Las mini-barras junto a los porcentajes podrían competir con el número. (La IA aclara: en pantalla ayudan, en papel se ven cargadas.) |
+| 9 | Recuperación de errores | parcial | El banner de tabla vacía informa, pero no da un click para salir del estado. |
+| 10 | Ayuda y documentación | incumple | Sin tooltips ni ayuda contextual para formatos y columnas. |
+
+### 2.3 Lo que la IA sugirió para los parciales / incumplidos
+
+- H3: "Limpiar filtros" como botón real con jerarquía propia.
+- H5: validación del input de E-value.
+- H6 + H10: tooltips en columnas de la tabla y en los formatos de descarga.
+- H9: botones de sugerencia accionables en el estado vacío.
 
 ---
 
-## 4. Ciclo adicional — Ajuste de la interfaz
+## 3. Revisión del grupo
+
+| Hallazgo | Decisión | Por qué |
+|---|---|---|
+| H3 — "Limpiar filtros" como botón real | **aceptado** | El investigador afloja y aprieta filtros con fluidez; "volver a cero" tiene que ser tan visible como aplicar. Entra al ajuste. |
+| H5 — validación del input de E-value | **rechazado** | Requiere JS. Backlog para la implementación. |
+| H6 + H10 — tooltips en columnas y formatos | **aceptado** (fusionados) | Igual criterio que en pantalla 2. Hacemos tooltips CSS puros. Entra al ajuste. |
+| H8 — mini-barras cargadas | **rechazado** | La propia IA aclara que en pantalla ayudan. Las dejamos. |
+| H9 — sugerencias accionables en tabla vacía | **aceptado** | Un click para salir del estado vacío, en vez de mover tres sliders a mano. Entra al ajuste. |
+
+**Cambios que entran al ciclo adicional:** tooltips en encabezados de tabla y formatos de descarga, "Limpiar filtros" como botón de ancho completo, chips de sugerencia en el estado vacío.
+
+---
+
+## 4. Ciclo adicional (ajuste del HTML)
 
 ### 4.1 Prompt del ajuste
 
-> **Prompt:**
+> Sobre `_inicial.html`, aplicá tres cambios y devolvemelo como `_final.html`, con la regla "sin JS":
 >
-> Sobre `pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_inicial.html`, aplicá tres cambios y devolveme `_final.html`. Mantené todo lo demás y la regla "sin JS":
->
-> 1. **H6 + H10.** Agregá un ícono `?` tipo tooltip CSS (mismo patrón `::after` + `attr(data-tip)` que usamos en la pantalla 2) en los cinco encabezados de columna de la tabla (Hit ID, Score, E-value obs., % Identidad, % Cobertura) y al lado de cada una de las cinco opciones de formato de descarga (CSV, JSON, FASTA, BLAST XML, Tabular). El tooltip tiene que ser una línea breve y accionable: para columnas, definición breve; para formatos, "cuándo usarlo". Dejá al menos un tooltip expandido por default (clase `show-tip`) para que el revisor del maquetado lo vea en papel; sugerimos el de E-value obs., que es el que más confunde.
->
-> 2. **H3.** Reemplazá el link "Limpiar filtros" (que hoy es `<button class="reset-btn">` con estilo de link subrayado) por un botón real, con jerarquía propia, estilo secundario (fondo claro, borde, no subrayado), al final del panel de filtros. Que ocupe el ancho del panel para que sea imposible pasarlo por alto. Aplicá el mismo cambio en el estado alternativo (HU14) donde el link también aparece.
->
-> 3. **H9.** En el estado alternativo HU14 (tabla vacía por filtros estrictos), debajo del texto "Sin hits visibles — probá bajar el umbral de identidad o aflojar el E-value", agregá una fila de tres botones de sugerencia accionables: "Bajar identidad a ≥ 80%", "Aflojar E-value a ≤ 1e-10", "↺ Limpiar todos los filtros". Estilo "chip botón" claro (fondo celeste suave, borde, texto azul), no botones primarios.
->
-> Actualizá la nota del maquetado para que explique los tres cambios y referencie este documento.
+> 1. Tooltips CSS (`?` con `::after` + `attr(data-tip)`, mismo patrón que la pantalla 2) en los cinco encabezados de columna (Hit ID, Score, E-value obs., % Identidad, % Cobertura) y en los cinco formatos de descarga (CSV, JSON, FASTA, BLAST XML, Tabular). Para columnas: definición breve. Para formatos: "cuándo usarlo". Dejá expandido por default el de E-value obs.
+> 2. Reemplazá el link "Limpiar filtros" por un botón real de ancho completo al final del panel de filtros. Aplicá el cambio en los dos estados apilados.
+> 3. En el estado de tabla vacía (HU14), debajo del banner, agregá una fila con tres chips de sugerencia accionables: "Bajar identidad a ≥ 80%", "Aflojar E-value a ≤ 1e-10", "↺ Limpiar todos los filtros".
 
-### 4.2 Respuesta de la IA (resumen y modificaciones aplicadas)
+### 4.2 Qué quedó en el `_final.html`
 
-La IA devolvió el HTML con los tres cambios. Lo que quedó en [`pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_final.html`](../mockups/pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_final.html):
+- 10 tooltips `?` en total (5 columnas + 5 formatos). El de E-value obs. expandido por default.
+- "Limpiar filtros" como botón de ancho completo en los dos estados.
+- Tres chips de sugerencia accionables en el banner de tabla vacía.
+- Nota del maquetado al pie, reescrita.
 
-- **CSS nuevo:** `.help-icon` + `.help-icon::after` + `.help-icon.show-tip` (misma convención que la pantalla 2), con una regla extra `th .help-icon { background: #e2e8f0; color: var(--color-text-muted); }` para que en los encabezados de la tabla el ícono tenga menos peso visual y no compita con el nombre de la columna; `.clear-filters-btn` para el botón de limpiar; `.empty-suggest-row` + `.btn-sugg` para los chips de sugerencia; `.format-help` (reservado para un uso futuro, no se usó finalmente).
-- **Encabezados de la tabla:** cinco íconos `?` agregados, uno por columna. El del E-value obs. tiene la clase `show-tip` para que se vea expandido en el maquetado.
-- **Opciones de formato de descarga:** cinco íconos `?` agregados, con tooltips orientados a "cuándo usar".
-- **Botón "Limpiar filtros":** en los dos estados (primario y HU14) se reemplazó el link subrayado por el botón de ancho completo `clear-filters-btn`.
-- **Estado alternativo HU14:** se agregaron los tres chips de sugerencia debajo del banner `empty-table`.
-- **Nota del maquetado:** reescrita, lista los tres cambios y apunta a este documento.
+### 4.3 Qué cambiamos nosotros sobre lo que devolvió la IA
 
-### 4.3 Qué modificamos sobre la devolución de la IA
+- La IA escribió los primeros tooltips como definiciones de diccionario. Los reescribimos con lenguaje funcional (qué valor típico, cuándo bajarlo, cuándo usar cada formato).
+- El ícono `?` en los encabezados de tabla salía en azul brillante y competía con el nombre de la columna. Le pusimos una regla CSS específica para `th .help-icon` que lo pasa a gris claro.
+- En el chip "Aflojar E-value", la IA había puesto `≤ 0.001`. Lo cambiamos a `1e-10` para que fuera coherente con el valor del input de ese estado (`1e-50`): "aflojar" tiene que ser menos estricto pero no abrir del todo.
+- La IA, en una variante intermedia, propuso agregar al banner un botón "Ver todos los 54 hits sin filtros". Lo descartamos porque "Limpiar todos los filtros" ya hace eso y era redundante.
+- La IA en la primera pasada reemplazó el link por el botón solo en el estado primario, se olvidó del estado alternativo HU14. Lo detectamos al abrir el `_final.html` y le pedimos la segunda pasada.
 
-- **Textos de los tooltips de columnas.** La primera devolución tenía definiciones genéricas tomadas de Wikipedia ("E-value: expectation value, a parameter in sequence alignment"). Las reemplazamos por frases funcionales y específicas de BLAST ("E-value observado para este hit puntual: cuántas veces se esperaría un alineamiento de este score por azar en una base del mismo tamaño. Más bajo = más significativo."), que es lo que al investigador le sirve al leer la tabla.
-- **Peso visual del `?` en encabezados.** Reglamos el ícono para que en los `<th>` se vea en gris claro, no en azul, porque en azul compite con el nombre de la columna y rompe la jerarquía de lectura de la tabla. Fuera de la tabla sigue en azul.
-- **Sugerencia de "Aflojar E-value".** La IA había propuesto "Aflojar E-value a ≤ 0.001" en el chip del estado vacío. Lo cambiamos a `1e-10` para que sea coherente con el valor que el usuario inicialmente puso en el input de ese estado (`1e-50`): "aflojar" significa pasar a un umbral menos estricto, y `1e-10` es menos estricto que `1e-50` pero sigue siendo un valor típico de laboratorio. `0.001` es demasiado permisivo y daría la impresión de que estamos abriendo la compuerta.
+### 4.4 Resultado
 
-### 4.4 Qué descartamos del ajuste
-
-- Una propuesta de la IA de agregar, además de los chips, un botón "Ver todos los 54 hits sin filtros" en el banner del estado vacío. Lo descartamos como redundante: "Limpiar todos los filtros" ya hace eso, y es uno de los tres chips. Dos acciones con el mismo efecto a dos clicks de distancia solo generan dudas.
-
-### 4.5 Resultado
-
-El `_final.html` cubre los tres hallazgos aceptados. El `_inicial.html` queda como línea base verificable.
+El `_final.html` tiene los tres cambios aceptados. El `_inicial.html` queda para poder comparar.
