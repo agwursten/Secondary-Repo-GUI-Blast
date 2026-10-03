@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>LocalBlast · Nueva búsqueda — Secuencia query</title>
+<style>
+  :root {
+    --color-bg: #f6f8fb;
+    --color-panel: #ffffff;
+    --color-border: #e2e8f0;
+    --color-border-strong: #cbd5e0;
+    --color-text: #1a202c;
+    --color-text-muted: #4a5568;
+    --color-text-subtle: #718096;
+    --color-primary: #2c5282;
+    --color-primary-hover: #2a4e7a;
+    --color-primary-light: #ebf4ff;
+    --color-success: #276749;
+    --color-success-bg: #f0fff4;
+    --color-success-border: #9ae6b4;
+    --color-error: #9b2c2c;
+    --color-error-bg: #fff5f5;
+    --color-error-border: #feb2b2;
+    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Mono", "Roboto Mono", Consolas, monospace;
+    --radius: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-ui); background: var(--color-bg); color: var(--color-text); font-size: 14px; line-height: 1.5; }
+
+  /* Top bar */
+  .topbar { background: #1a365d; color: #fff; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { font-weight: 700; letter-spacing: 0.3px; font-size: 15px; }
+  .brand small { font-weight: 400; color: #a0aec0; margin-left: 8px; font-size: 12px; }
+  .user-chip { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #cbd5e0; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: #4a5568; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; }
+
+  /* Stepper */
+  .stepper { background: #fff; border-bottom: 1px solid var(--color-border); padding: 14px 24px; display: flex; gap: 24px; align-items: center; font-size: 13px; }
+  .step { display: flex; align-items: center; gap: 8px; color: var(--color-text-subtle); }
+  .step.active { color: var(--color-primary); font-weight: 600; }
+  .step.done { color: var(--color-success); }
+  .step .num { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: #edf2f7; color: var(--color-text-subtle); font-size: 12px; font-weight: 600; }
+  .step.active .num { background: var(--color-primary); color: #fff; }
+  .step.done .num { background: var(--color-success); color: #fff; }
+  .step-sep { color: #cbd5e0; }
+
+  /* Layout */
+  .shell { max-width: 1100px; margin: 24px auto; padding: 0 24px; }
+  .page-title { font-size: 20px; font-weight: 600; margin: 0 0 4px 0; }
+  .page-subtitle { color: var(--color-text-muted); margin: 0 0 20px 0; font-size: 13px; }
+
+  .panel { background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+  .panel h2 { font-size: 15px; font-weight: 600; margin: 0 0 4px 0; color: var(--color-text); }
+  .panel .hint { color: var(--color-text-subtle); font-size: 12px; margin: 0 0 16px 0; }
+
+  /* Dual input */
+  .dual { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 820px) { .dual { grid-template-columns: 1fr; } }
+
+  .drop-zone { border: 2px dashed var(--color-border-strong); border-radius: var(--radius); padding: 28px 20px; text-align: center; background: #fafbfc; }
+  .drop-zone .icon { font-size: 28px; color: var(--color-primary); margin-bottom: 8px; }
+  .drop-zone p { margin: 4px 0; color: var(--color-text-muted); }
+  .drop-zone .browse { color: var(--color-primary); text-decoration: underline; cursor: pointer; }
+  .drop-zone .fmt { color: var(--color-text-subtle); font-size: 12px; margin-top: 10px; }
+
+  .textarea-wrap { display: flex; flex-direction: column; }
+  .textarea-wrap label { font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--color-text-muted); }
+  .textarea-wrap textarea { font-family: var(--font-mono); font-size: 12.5px; min-height: 158px; padding: 10px 12px; border: 1px solid var(--color-border-strong); border-radius: var(--radius); resize: vertical; color: var(--color-text); background: #fff; line-height: 1.45; }
+  .textarea-wrap textarea:focus { outline: 2px solid var(--color-primary-light); border-color: var(--color-primary); }
+
+  .divider-or { text-align: center; color: var(--color-text-subtle); font-size: 12px; margin: 0; letter-spacing: 1px; }
+
+  /* Buttons */
+  .btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; gap: 12px; }
+  .btn { padding: 9px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; font-family: inherit; }
+  .btn-primary { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+  .btn-primary:hover { background: var(--color-primary-hover); }
+  .btn-primary[disabled] { background: #a0aec0; border-color: #a0aec0; cursor: not-allowed; }
+  .btn-secondary { background: #fff; color: var(--color-text); border-color: var(--color-border-strong); }
+  .btn-ghost { background: transparent; color: var(--color-text-muted); border-color: transparent; }
+
+  /* Feedback banners */
+  .banner { border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; font-size: 13px; }
+  .banner .ico { font-weight: 700; }
+  .banner.success { background: var(--color-success-bg); border: 1px solid var(--color-success-border); color: var(--color-success); }
+  .banner.error   { background: var(--color-error-bg);   border: 1px solid var(--color-error-border);   color: var(--color-error); }
+  .banner strong { font-weight: 600; }
+  .banner code { font-family: var(--font-mono); background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+
+  /* Loaded summary card */
+  .loaded-card { background: var(--color-success-bg); border: 1px solid var(--color-success-border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
+  .loaded-card .row1 { display: flex; align-items: center; justify-content: space-between; }
+  .loaded-card .title { color: var(--color-success); font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .loaded-card .meta { color: var(--color-text-muted); font-size: 12px; margin-top: 6px; display: flex; gap: 18px; flex-wrap: wrap; }
+  .loaded-card .meta b { color: var(--color-text); font-weight: 600; }
+  .btn-link { background: none; border: none; color: var(--color-primary); cursor: pointer; font-size: 12px; text-decoration: underline; padding: 0; }
+
+  /* State sections (variantes) */
+  .state-section { margin-top: 32px; }
+  .state-section .state-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--color-text-subtle); margin-bottom: 8px; font-weight: 600; }
+  .state-section .state-tag { display: inline-block; background: #edf2f7; color: var(--color-text-muted); padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 6px; font-weight: 500; }
+
+  .mock-note { background: #fffbea; border-left: 3px solid #d69e2e; padding: 10px 14px; font-size: 12px; color: #744210; border-radius: 0 4px 4px 0; margin-top: 24px; }
+  .mock-note strong { font-weight: 600; }
+
+  .inline-error-pos { font-family: var(--font-mono); font-size: 11px; background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">LocalBlast <small>· GUI para BLAST+</small></div>
+  <div class="user-chip">
+    <span>m.rodriguez</span>
+    <span class="avatar">MR</span>
+  </div>
+</div>
+
+<div class="stepper">
+  <div class="step active"><span class="num">1</span><span>Secuencia query</span></div>
+  <span class="step-sep">›</span>
+  <div class="step"><span class="num">2</span><span>Configuración</span></div>
+  <span class="step-sep">›</span>
+  <div class="step"><span class="num">3</span><span>Ejecución</span></div>
+  <span class="step-sep">›</span>
+  <div class="step"><span class="num">4</span><span>Resultados</span></div>
+</div>
+
+<div class="shell">
+
+  <h1 class="page-title">Nueva búsqueda — paso 1 de 4</h1>
+  <p class="page-subtitle">Subí un archivo FASTA o pegá la secuencia como texto plano. El sistema infiere el alfabeto (ADN, ARN o proteína) automáticamente.</p>
+
+  <!-- =============================================================
+       ESTADO PRIMARIO · HU01_CU001_B · Formulario de carga vacío
+       ============================================================= -->
+  <div class="panel">
+    <h2>Secuencia query</h2>
+    <p class="hint">Formato aceptado: FASTA con uno o más registros, o secuencia plana sin encabezado.</p>
+
+    <div class="dual">
+      <div>
+        <div class="drop-zone">
+          <div class="icon">⬆</div>
+          <p><strong>Arrastrá tu archivo FASTA acá</strong></p>
+          <p>o <span class="browse">seleccionalo desde tu equipo</span></p>
+          <p class="fmt">.fasta &middot; .fa &middot; .fna &middot; .faa &middot; .txt — hasta 10 MB</p>
+        </div>
+      </div>
+
+      <div class="textarea-wrap">
+        <label for="seq">Pegar secuencia como texto</label>
+        <textarea id="seq" placeholder=">optional_header&#10;MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPILSRVGDGTQDNLSGAEK&#10;..."></textarea>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost">Cancelar</button>
+      <div>
+        <button class="btn btn-secondary">Limpiar</button>
+        <button class="btn btn-primary">Confirmar carga</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       ESTADO POST-CARGA · HU01_CU001_B · CA-01 (FASTA proteína)
+       ============================================================= -->
+  <div class="state-section">
+    <div class="state-label">Estado posterior <span class="state-tag">HU01_CU001_B · CA-01</span></div>
+    <div class="panel">
+      <div class="loaded-card">
+        <div class="row1">
+          <div class="title">✓ Secuencia cargada correctamente</div>
+          <button class="btn-link">Reemplazar secuencia</button>
+        </div>
+        <div class="meta">
+          <span><b>Fuente:</b> archivo <code style="font-family:var(--font-mono);font-size:11px">sp_P0A6F5.fasta</code></span>
+          <span><b>Registros:</b> 1</span>
+          <span><b>Alfabeto inferido:</b> proteína</span>
+          <span><b>Longitud:</b> 548 aa</span>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost">Cancelar</button>
+        <button class="btn btn-primary">Continuar a configuración →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       ESTADO DE EXCEPCIÓN · HU02_CU001_E1 · CA-01 (caracter inválido)
+       ============================================================= -->
+  <div class="state-section">
+    <div class="state-label">Estado de excepción <span class="state-tag">HU02_CU001_E1 · CA-01</span></div>
+    <div class="panel">
+      <div class="banner error">
+        <span class="ico">✗</span>
+        <div>
+          <strong>La secuencia no pudo cargarse.</strong><br>
+          Se encontró el carácter <code>1</code> en la posición <span class="inline-error-pos">línea 3, columna 42</span>, que no pertenece a ninguno de los alfabetos reconocidos (ADN, ARN o proteína). Revisá que no haya quedado un número de posición o un carácter de puntuación al copiar.
+        </div>
+      </div>
+
+      <div class="textarea-wrap">
+        <label for="seq2">Pegar secuencia como texto</label>
+        <textarea id="seq2" style="border-color: var(--color-error-border); background: #fffafa;">&gt;mySequence
+MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPILSRVGDGTQDNLSGAEK
+LKRRLAVLADK1GGEALVHIFEANSIQHVTVLGEYPKDGPAETLLHLG</textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost">Cancelar</button>
+        <div>
+          <button class="btn btn-secondary">Limpiar</button>
+          <button class="btn btn-primary" disabled>Confirmar carga</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       ESTADO DE EXCEPCIÓN · HU02_CU001_E1 · CA-02 (FASTA sin cuerpo)
+       ============================================================= -->
+  <div class="state-section">
+    <div class="state-label">Estado de excepción <span class="state-tag">HU02_CU001_E1 · CA-02</span></div>
+    <div class="panel">
+      <div class="banner error">
+        <span class="ico">✗</span>
+        <div>
+          <strong>El FASTA contiene un encabezado pero ninguna secuencia asociada.</strong><br>
+          Verificá que debajo de la línea <code>&gt;ID</code> exista al menos una línea con la secuencia correspondiente.
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost">Cancelar</button>
+        <button class="btn btn-primary" disabled>Confirmar carga</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mock-note">
+    <strong>Nota del maquetado:</strong> esta pantalla cubre <code>HU01_CU001_B</code> (carga de la secuencia query con inferencia de alfabeto) y <code>HU02_CU001_E1</code> (rechazo con mensaje diagnóstico de la secuencia inválida). Los distintos estados (vacío, cargado, excepción por carácter inválido, excepción por FASTA sin cuerpo) se muestran apilados en el mismo archivo para que la evaluación visual pueda recorrerlos sin interacción. En la implementación final solo uno de estos estados es visible al mismo tiempo.
+  </div>
+
+</div>
+
+</body>
+</html>
