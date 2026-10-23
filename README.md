@@ -14,6 +14,7 @@ LocalBlast_2026/
 ├── README.md
 └── docs/
     ├── architecture/
+    │   ├── arquitectura.md
     │   └── contexto-inicial.md
     ├── requeriments/
     │   ├── casos-de-uso.md
@@ -83,8 +84,14 @@ Los perfiles de usuario, escenarios de uso y flujos de navegación que guían el
 El maquetado HTML del flujo de navegación (un archivo por pantalla con sus HU en el nombre, en dos versiones por pantalla: `_inicial.html` del primer ciclo de generación con IA, y `_final.html` tras aplicar los hallazgos aceptados de la evaluación heurística) está en:
 👉 [`docs/ui/mockups/`](docs/ui/mockups/)
 
-La evaluación heurística de usabilidad (TP2 — Parte B, segundo ciclo y ciclos adicionales), con los prompts enviados a la IA, su respuesta completa heurística por heurística, la revisión crítica del grupo sobre cada hallazgo y los ciclos de ajuste que terminaron en los `_final.html`, está en:
+La evaluación heurística de usabilidad, con los prompts enviados a la IA, su respuesta completa heurística por heurística, la revisión crítica del grupo sobre cada hallazgo y los ciclos de ajuste que terminaron en los `_final.html`, está en:
 👉 [`docs/ui/heuristic-review/`](docs/ui/heuristic-review/)
+
+El **Documento de Especificación de Arquitectura** (TP3), con la elección de interoperabilidad como driver único, la derivación hasta estilo cliente-servidor y patrón capas, las decisiones de arquitectura (`DA-01` a `DA-04`), las vistas de contenedores y componentes del modelo C4 con sus catálogos, y la trazabilidad escenario → táctica → estilo/patrón → decisión → elemento C4, está en:
+👉 [`docs/architecture/arquitectura.md`](docs/architecture/arquitectura.md)
+
+El diagrama de contexto completo del sistema (incluyendo el actor Administrador/a y el proceso P3, documentados pero fuera del alcance de este cuatrimestre) sigue en:
+👉 [`docs/architecture/contexto-inicial.md`](docs/architecture/contexto-inicial.md)
 
 ---
 

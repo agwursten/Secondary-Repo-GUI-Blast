@@ -84,3 +84,4 @@ El prompt usado para la generación del HTML y el resumen de la respuesta de la 
 ### 4.4 Resultado
 
 El `_final.html` tiene los tres cambios aceptados. El `_inicial.html` queda para poder comparar.
+

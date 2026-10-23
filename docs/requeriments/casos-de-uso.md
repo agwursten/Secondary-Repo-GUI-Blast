@@ -52,8 +52,9 @@ Un caso de uso representa **una capacidad discreta que el sistema le brinda al a
 
 ### Flujo principal
 
-1. El investigador ingresa la **secuencia query** subiendo un archivo FASTA desde su equipo o pegando la secuencia como texto en el formulario.
-2. El sistema verifica que el contenido tenga formato reconocible (encabezado FASTA con cuerpo, o secuencia plana con caracteres imprimibles válidos) e infiere preliminarmente si es ADN, ARN o proteína en base al alfabeto observado.
+1. El sistema muestra la interfaz con ayuda contextual sobre el formato FASTA y un ejemplo de secuencia persistente visible en pantalla
+2. El investigador ingresa la **secuencia query** subiendo un archivo FASTA desde su equipo o pegando la secuencia como texto en el formulario.
+3. El sistema verifica que el contenido tenga formato reconocible (encabezado FASTA con cuerpo, o secuencia plana con caracteres imprimibles válidos) e infiere preliminarmente si es ADN, ARN o proteína en base al alfabeto observado.
 
 **Postcondición:** La secuencia está cargada en la sesión y disponible para ser configurada en `CU002` (o para lanzar una nueva búsqueda sobre otra configuración, sin volver a cargarla).
 
@@ -62,14 +63,15 @@ Un caso de uso representa **una capacidad discreta que el sistema le brinda al a
 ```
 CU001 · Cargar la secuencia query
 ├─ Camino feliz
-│  └─ CU001_B    — pasos 1-2:  cargar la secuencia y verificar formato sintáctico
+│  └─ CU001_B    — pasos 1-2:  cargar la secuencia y verificar formato sintáctico con ayuda visual y ejemplo de
+.fasta persistente visible
 └─ Terminaciones abruptas (slices E)
-   └─ CU001_E1   — secuencia query con formato inválido
+   └─ CU001_E1   — Intento de carga de secuencia con errores. El sistema notifica el error mostrando la causa y despliega un ejemplo del formato correcto 
 ```
 
 ### Slice básico — descripción
 
-- **`CU001_B` · Cargar y chequear sintácticamente la secuencia query (pasos 1-2).** El investigador ingresa la secuencia (archivo o texto pegado) y el sistema verifica formato FASTA y alfabeto reconocible. **Valor entregado:** una secuencia queda disponible en la sesión para ser usada por `CU002` y los CU siguientes. **Realiza:** RF-01, RF-02.
+- **`CU001_B` · Cargar y chequear sintácticamente la secuencia query (pasos 1-2).** El investigador ingresa la secuencia (archivo o texto pegado) y el sistema verifica el formato FASTA y alfabeto reconocible, proporcionando ayuda visual. **Valor entregado:** una secuencia queda disponible en la sesión para ser usada por `CU002` y los CU siguientes. **Realiza:** RF-01, RF-02.
 
 ### Slice de excepción — descripción
 
@@ -81,7 +83,7 @@ CU001 · Cargar la secuencia query
 
 - **Deriva del proceso:** P1 · Ejecutar búsqueda BLAST
 - **Actor principal:** Investigador/a
-- **Objetivo:** Armar el resto de la configuración de una búsqueda BLAST (modo de ejecución, base de datos, programa BLAST y parámetros pre-búsqueda) sobre una secuencia ya cargada, dejando el formulario listo para que `CU003` lo valide.
+- **Objetivo:** Armar el resto de la configuración de una búsqueda BLAST (modo de ejecución, base de datos, programa BLAST y parámetros pre-búsqueda) sobre una secuencia ya cargada, contando con ayuda explicativa y prevencion de errores , dejando el formulario listo para que `CU003` lo valide.
 - **Realiza:** RF-03, RF-04, RF-05, RF-06. La verificación de que la elección quedó dentro de rangos válidos (RF-06) y de que la combinación es compatible (RF-05) se completa en `CU003` como parte de RF-07; en `CU002` cae la parte de "elegir".
 - **Precondición:** Existe una secuencia query cargada en la sesión (postcondición de `CU001`).
 - **Disparador:** El investigador quiere parametrizar la búsqueda que va a lanzar sobre esa secuencia.
@@ -92,8 +94,9 @@ CU001 · Cargar la secuencia query
 
 1. El investigador elige el **modo de ejecución**: local o remoto (NCBI). La interfaz muestra una única opción alternativa, para que la decisión sea clara.
 2. El investigador selecciona la **base de datos** de una lista: si eligió modo local, aparecen las bases de datos del catálogo del laboratorio (leídas de D1); si eligió modo remoto, las bases estándar de NCBI.
-3. El investigador elige el **programa BLAST** a ejecutar (`blastn`, `blastp`, `blastx`, `tblastn`, `tblastx`).
+3. El investigador elige el **programa BLAST** a ejecutar (`blastn`, `blastp`, `blastx`, `tblastn`, `tblastx`). Si cambia el programa, el sistema solicita confirmacion o notifica que los parametros se reajustaran a sus valores por defecto con opcion de cancelar.
 4. El investigador ajusta los **parámetros pre-búsqueda** (E-value máximo, matriz de sustitución, tamaño de palabra, penalización de gaps). La interfaz ofrece valores por defecto sensatos según el programa.
+5. En caso de ingresar un valor no valido, el sistema indica visualmente el error al perder el foco y proporciona un boton para restablecer el valor por defecto sugerido. 
 
 **Postcondición:** El formulario de la búsqueda está completo. El investigador puede iniciar `CU003` para validarla; nada obliga a hacerlo en ese momento (puede seguir tocando el formulario o abandonar).
 

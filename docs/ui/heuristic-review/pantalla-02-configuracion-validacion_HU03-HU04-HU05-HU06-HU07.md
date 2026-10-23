@@ -81,3 +81,4 @@ Prompt y resumen de la generación: ver [`../mockups/README.md`](../mockups/READ
 ### 4.4 Resultado
 
 El `_final.html` tiene los tres cambios aceptados. El `_inicial.html` queda para poder comparar.
+
