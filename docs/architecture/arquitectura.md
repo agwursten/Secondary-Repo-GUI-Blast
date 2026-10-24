@@ -33,7 +33,7 @@ La arquitectura se define para los dos procesos del sistema que se desarrollan e
 - **P1 · Ejecutar búsqueda BLAST** (casos de uso CU001 a CU005).
 - **P2 · Filtrar y entregar resultados** (casos de uso CU006 y CU007).
 
-El proceso **P3 · Administrar bases de datos** queda fuera del alcance del cuatrimestre (ver [SRS §1.4](../requeriments/srs.md#14-fuera-del-alcance)); su actor Administrador/a y el flujo de administración del catálogo no se detallan en estas vistas.
+El proceso **P3 · Administrar bases de datos** queda fuera del alcance del cuatrimestre (ver [SRS, sección 1.4](../requeriments/srs.md#14-fuera-del-alcance)); su actor Administrador/a y el flujo de administración del catálogo no se detallan en estas vistas.
 
 Las vistas de clases y de código, y los diagramas de despliegue, no forman parte de este documento: se desarrollarán en una iteración posterior.
 
@@ -89,9 +89,9 @@ De los cinco atributos de calidad priorizados en el documento de [escenarios de 
 - **Fue el atributo más crítico en la matriz comparativa**, con 9 victorias sobre 9 posibles. Ningún otro atributo lo venció en ningún par.
 - **Es el atributo que más condiciona la estructura.** La elección de cómo invocar a BLAST+, dónde alojar al adaptador, cómo aislar las versiones del binario del resto del código, y cómo manejar la concurrencia de subprocesos son decisiones estructurales. Los otros atributos se materializan sobre todo *dentro* de las piezas que la interoperabilidad obliga a crear:
   - *Operabilidad* se juega en la Aplicación Web (parte del cliente del estilo que vamos a elegir).
-  - *Confidencialidad* se resuelve con TLS en el canal cliente-servidor y con autorización en el servidor, aspectos que acompañan al estilo elegido pero no son estilos propios.
+  - *Confidencialidad* se resuelve con TLS en el canal cliente-servidor y con el componente **Autenticación y sesión** del API (ver sección 7.1), que acompaña al estilo elegido pero no es un estilo propio.
   - *Tolerancia a fallos* se trata, en nuestro caso, delegando a BLAST+ el reporte de errores remotos y propagándolos sin reinterpretarlos: una responsabilidad del adaptador que la interoperabilidad exige crear.
-  - *Modularidad* se obtiene en gran medida como consecuencia del patrón que la interoperabilidad justifica (ver [§5.3](#53-patrón-arquitectónico-capas)): aislar BLAST+ en una capa dedicada deja el resto del sistema modular por diseño.
+  - *Modularidad* se obtiene en gran medida como consecuencia del patrón que la interoperabilidad justifica (ver [sección 5.3](#53-patrón-arquitectónico-capas)): aislar BLAST+ en una capa dedicada deja el resto del sistema modular por diseño.
 
 **Qué hacen los otros atributos en esta arquitectura.** No se descartan: se cubren mediante decisiones de implementación y restricciones de desarrollo dentro de los contenedores y componentes que la interoperabilidad justifica. La elección de un único driver es una **decisión de énfasis**, no una renuncia a los otros atributos.
 
@@ -117,7 +117,7 @@ De los dos escenarios de interoperabilidad disponibles, ambos son drivers arquit
 | **Medida** | **100%** de las búsquedas con salida "casi conocida" presentan intactos los campos obligatorios. |
 | **Por qué condiciona la estructura** | Exige un componente adaptador aislado entre el núcleo del sistema y BLAST+. Los demás componentes **no deben saber** cómo es la salida real del binario, para que un cambio en esa salida no se propague por todo el código. Es una decisión de dependencia estructural, no de implementación interna. |
 
-La especificación completa de ambos escenarios, con todos sus componentes (fuente del estímulo, estímulo, entorno, artefacto, respuesta, medida), está en [`escenarios-calidad.md §5.1`](../requeriments/quality-scenarios/escenarios-calidad.md#51-interoperabilidad).
+La especificación completa de ambos escenarios, con todos sus componentes (fuente del estímulo, estímulo, entorno, artefacto, respuesta, medida), está en la sección 5.1 de [`escenarios-calidad.md`](../requeriments/quality-scenarios/escenarios-calidad.md#51-interoperabilidad).
 
 ### 4.3 Restricciones del proyecto que acompañan a los drivers
 
@@ -148,7 +148,7 @@ Para los dos drivers del punto anterior, las tácticas seleccionadas y descartad
 | Táctica | Atributo origen | Por qué la adoptamos para interoperabilidad |
 |---|---|---|
 | **Introducir concurrencia** | Desempeño | Es la táctica que atiende el "cero cruces con cinco concurrentes" de EC-01. Lanzar cada búsqueda como subproceso independiente del binario BLAST+, con su propio contexto, es lo que garantiza el aislamiento. |
-| **Encapsular** | Modificabilidad | Convierte al adaptador en el único punto de contacto con BLAST+. Es el mecanismo del patrón Capas (ver [§5.3](#53-patrón-arquitectónico-capas)) que materializa la táctica "adaptar la interfaz" dentro del contenedor API. |
+| **Encapsular** | Modificabilidad | Convierte al adaptador en el único punto de contacto con BLAST+. Es el mecanismo del patrón Capas (ver [sección 5.3](#53-patrón-arquitectónico-capas)) que materializa la táctica "adaptar la interfaz" dentro del contenedor API. |
 
 ### 5.2 Estilo arquitectónico base: Cliente-Servidor
 
@@ -156,10 +156,10 @@ Para los dos drivers del punto anterior, las tácticas seleccionadas y descartad
 
 **Por qué este estilo:**
 
-- **Es el estilo más natural para una interfaz gráfica web que usa un motor externo del lado servidor.** El cliente (navegador) presenta y recibe entradas; el servidor hace todo el trabajo con BLAST+. La relación entre contenedores se expone como una interfaz REST con JSON sobre HTTPS, que es el estándar web (táctica "respetar estándares de comunicación").
-- **Encaja con el equipo y el plazo.** Es la estructura que mejor soportan los frameworks del ecosistema que el equipo ya conoce o puede adoptar rápido. No introduce un ecosistema nuevo.
-- **Separa responsabilidades con pocas piezas que operar**: cliente, servidor y base de datos, con un único proceso del lado servidor que invoca a BLAST+. Es lo mínimo para cumplir los drivers.
-- **Permite evolucionar.** Si en una iteración futura un escenario exige procesamiento asincrónico pesado (por ejemplo, lotes de 100 búsquedas), se puede sumar una cola entre el servidor y un motor dedicado sin rehacer el resto.
+- **BLAST+ corre del lado servidor por obligación.** El binario está instalado en el servidor del laboratorio, no en el navegador del investigador. Una vez aceptado que hace falta un servidor, cliente-servidor es la estructura más chica que lo acompaña: un cliente que presenta, un servidor que ejecuta BLAST+ y persiste. Cualquier otro estilo multiplica piezas sin agregar nada que resuelva mejor nuestros drivers.
+- **Los dos drivers viven dentro de un único proceso servidor.** EC-01 se resuelve con subprocesos lanzados por el mismo API; EC-02 con un componente del mismo API. Ninguno exige estado distribuido, bus de eventos ni coordinación entre servicios. Un estilo que ofrezca esas capacidades sería un costo operativo pagado por algo que no necesitamos.
+- **REST + JSON es el contrato estándar entre cliente y servidor.** Materializa la táctica "respetar estándares de comunicación" en el borde más visible del sistema y mantiene abierta la puerta a un segundo cliente —por ejemplo un script de automatización que un investigador quiera correr— sin tocar el servidor.
+- **Permite evolucionar sin rehacer.** Si en el futuro aparece un escenario de procesamiento asincrónico pesado (lotes de 100 búsquedas, por ejemplo), se puede sumar una cola entre el servidor y un ejecutor dedicado sin romper el estilo base: cliente-servidor convive con esa evolución, mientras que elegir hoy un estilo más complejo nos obligaría a sostener su costo *desde el principio*.
 
 **Restricciones del estilo que la arquitectura respeta:**
 
@@ -195,9 +195,9 @@ Esto se verifica directamente en la vista de contenedores de la [sección 6](#6-
 
 | Capa | En la Aplicación Web | En el API |
 |---|---|---|
-| **Presentación** | Pantallas que ve el investigador (carga, configuración, resultados, descarga). Componente: **Vistas**. | Puntos de entrada HTTP del servidor: rutas, códigos de estado, serialización. Componente: **Controladores**. |
-| **Dominio** | Lógica de aplicación del cliente: valida formato de secuencia, rangos de parámetros y compatibilidad programa-query-base **antes** de pedir el envío al servidor. Componente: **Validación y envío**. | Lógica del dominio del servidor, agrupada por fase del ciclo de la búsqueda: lo que ocurre antes de BLAST+, lo que ocurre durante/alrededor de la ejecución, y lo que ocurre después para entregar el resultado. Componentes: **Preparación de búsqueda**, **Ejecución y persistencia**, **Entrega de resultados**. |
-| **Datos** | Acceso al mundo exterior del cliente (que para el cliente es el API). Componente: **Cliente del API**. | Acceso al mundo exterior del servidor: la base de datos y el binario BLAST+. Componentes: **Repositorio**, **Adaptador BLAST+**. |
+| **Presentación** | Pantallas que ve el investigador (carga, configuración, resultados, descarga). Componente: **Pantallas**. | Borde HTTP del servidor: recibe solicitudes, valida sintácticamente las entradas, serializa respuestas, devuelve códigos de estado. Componente: **Controladores**. |
+| **Dominio** | Lógica de aplicación del cliente: valida formato de secuencia, rangos de parámetros y compatibilidad programa-query-base **antes** de pedir el envío al servidor. Componente: **Validación y envío**. | Lógica del dominio del servidor. Tres componentes para las fases del ciclo de la búsqueda —antes de BLAST+, durante y después— más un componente para la identidad del investigador, que es parte del dominio porque el historial se corresponde a cada uno. Componentes: **Autenticación y sesión**, **Preparación de búsqueda**, **Ejecución y persistencia**, **Entrega de resultados**. |
+| **Datos** | Acceso al mundo exterior del cliente (que para el cliente es el API). Componente: **Cliente del API**. | Acceso al mundo exterior del servidor: la base de datos y el binario BLAST+. Componentes: **Acceso a datos**, **Adaptador BLAST+**. |
 
 **Validación en el cliente, además de en el servidor.** La capa de dominio de la Aplicación Web aloja la validación del formulario antes de enviar la configuración al servidor. Esta decisión se documenta aparte en [DA-05](#da-05--validación-en-la-aplicación-web-además-de-en-el-servidor): el cliente valida para que el investigador reciba feedback inmediato y para reducir solicitudes al servidor por configuraciones mal armadas; el servidor **repite** la validación completa sobre todo lo que recibe, porque la validación del cliente puede ser salteada por un actor malicioso y, por lo tanto, no es un control de seguridad.
 
@@ -205,8 +205,8 @@ Esto se verifica directamente en la vista de contenedores de la [sección 6](#6-
 
 | Restricción del patrón de Capas | Cómo se respeta |
 |---|---|
-| Una capa no depende de las superiores | En el API, ningún servicio de dominio llama a los Controladores; ningún componente de datos llama a los servicios ni a los Controladores. En la Aplicación Web, el Cliente del API no llama a Validación y envío, y Validación y envío no llama a Vistas. |
-| Cada capa usa solo a la inmediatamente inferior | En el API: Controladores → Servicios → Repositorio / Adaptador BLAST+. En la Aplicación Web: Vistas → Validación y envío → Cliente del API. |
+| Una capa no depende de las superiores | En el API, ningún componente de dominio llama a los Controladores; ningún componente de datos llama a los de dominio ni a los Controladores. En la Aplicación Web, el Cliente del API no llama a Validación y envío, y Validación y envío no llama a Pantallas. |
+| Cada capa usa solo a la inmediatamente inferior | En el API: Controladores → componentes de dominio → Acceso a datos / Adaptador BLAST+. En la Aplicación Web: Pantallas → Validación y envío → Cliente del API. |
 | Cada capa tiene una responsabilidad clara | Ver la tabla de capas más arriba. Ninguna capa mezcla responsabilidades que correspondan a otra. |
 
 Esto se verifica directamente en las vistas de componentes de la [sección 7](#7-vistas-de-componentes): todas las flechas entre capas van en la misma dirección.
@@ -221,7 +221,9 @@ Esto se verifica directamente en las vistas de componentes de la [sección 7](#7
 
 ### 5.4 Aspectos transversales
 
-Los aspectos transversales habituales en una arquitectura de este estilo —autenticación y autorización, auditoría, gestión de excepciones, instrumentación— **no forman parte de esta entrega del documento de arquitectura**. Se incorporarán en una iteración posterior, cuando el sistema entre en una etapa en la que esas responsabilidades se vuelvan parte del alcance de desarrollo. En las vistas de componentes de la [sección 7](#7-vistas-de-componentes) no aparecen como componentes propios: cada contenedor muestra únicamente sus capas de presentación, dominio y datos.
+Los aspectos transversales habituales en una arquitectura de este estilo —auditoría, gestión de excepciones, instrumentación— **no forman parte de esta entrega del documento de arquitectura**. Se incorporarán en una iteración posterior, cuando el sistema entre en una etapa en la que esas responsabilidades se vuelvan parte del alcance de desarrollo.
+
+**La autenticación y gestión de sesión sí se modela, pero no como aspecto transversal**: se la trata como un componente de dominio propio en el API (**Autenticación y sesión**, visible en la [sección 7.1](#71-vista-de-componentes-del-api)). La razón es que en LocalBlast la identidad del investigador no es solo un chequeo invisible al código: el historial de búsquedas se corresponde a cada investigador y esa correspondencia es parte del dominio del sistema, no un detalle de infraestructura. Modelarla como componente la vuelve explícita y permite trazar cómo cada efecto sobre la base de datos queda asociado al investigador correcto.
 
 ### 5.5 Tabla de cobertura
 
@@ -304,13 +306,14 @@ C4Component
     Container(web, "Aplicación Web", "SPA")
 
     Container_Boundary(api, "API") {
-        Component(ctrl, "Controladores", "Routers HTTP", "Presentación: reciben solicitudes HTTP")
+        Component(ctrl, "Controladores", "Routers", "Presentación: reciben solicitudes HTTP")
+        Component(auth, "Autenticación y sesión", "Python", "Dominio: identifica al investigador y mantiene su sesión")
 
         Component(svc_pre, "Preparación de búsqueda", "Python", "Dominio: valida secuencia, configuración y compatibilidad (CU001–CU003)")
         Component(svc_eje, "Ejecución y persistencia", "Python", "Dominio: ejecuta vía Adaptador, recibe resultados y persiste (CU004–CU005)")
         Component(svc_ent, "Entrega de resultados", "Python", "Dominio: filtra y arma descargas (CU006–CU007)")
 
-        Component(repo, "Repositorio", "SQLAlchemy", "Datos: lee y escribe en la base")
+        Component(repo, "Acceso a datos", "SQLAlchemy", "Datos: lee y escribe en la base")
         Component(adap, "Adaptador BLAST+", "CLI + parser", "Datos: invoca BLAST+ y parsea su salida")
     }
 
@@ -319,10 +322,12 @@ C4Component
 
     Rel(web, ctrl, "Solicita", "JSON/HTTPS")
 
+    Rel(ctrl, auth, "Autentica")
     Rel(ctrl, svc_pre, "Invoca")
     Rel(ctrl, svc_eje, "Invoca")
     Rel(ctrl, svc_ent, "Invoca")
 
+    Rel(auth, repo, "Lee usuarios")
     Rel(svc_pre, repo, "Guarda")
     Rel(svc_eje, repo, "Persiste")
     Rel(svc_eje, adap, "Ejecuta")
@@ -340,11 +345,12 @@ C4Component
 
 | Componente | Capa | Responsabilidad |
 |---|---|---|
-| **Controladores** | Presentación | Exponen la interfaz HTTP del API: rutas, validación sintáctica de entradas, serialización de respuestas, códigos de estado. No contienen lógica del dominio: delegan en los servicios. |
+| **Controladores** | Presentación | Exponen la interfaz HTTP del API: rutas, validación sintáctica de entradas, serialización de respuestas, códigos de estado. No contienen lógica del dominio: delegan en los componentes de dominio. En cada solicitud, antes de invocar a cualquier otro componente de dominio, consultan a **Autenticación y sesión** para saber qué investigador la originó y le pasan ese identificador como parámetro a los demás servicios. |
+| **Autenticación y sesión** | Dominio | Verifica la identidad del investigador en cada solicitud y mantiene su sesión activa durante el trabajo con el sistema. Expone el "investigador actual" al resto del dominio para que los efectos sobre la base de datos (la secuencia que guarda Preparación de búsqueda, la búsqueda que persiste Ejecución y persistencia, el historial que lee Entrega de resultados) queden asociados al investigador correcto. **Por qué está en el documento aunque no haya una historia de usuario propia**: el historial de las búsquedas se corresponde a cada investigador y esa correspondencia es parte del dominio del sistema; sin este componente no se puede explicar cómo se mantiene la correspondencia entre búsqueda e investigador. |
 | **Preparación de búsqueda** | Dominio | Todo lo que ocurre **antes** de invocar a BLAST+. Valida sintácticamente la secuencia query (RF-01, RF-02; implementa CU001) e infiere el alfabeto (ADN / ARN / proteína); recibe la configuración de la búsqueda (RF-03 a RF-06; CU002) y la valida semánticamente verificando compatibilidad entre programa, tipo de query y tipo de base de datos (RF-07; CU003). Esta validación repite la que ya hizo el cliente, porque la del cliente no es un control de confianza. |
 | **Ejecución y persistencia** | Dominio | Lo que ocurre **durante** y **al cierre** de la ejecución de BLAST+. Lanza la ejecución asíncrona con posibilidad de cancelación pidiéndosela al Adaptador BLAST+ (RF-08; CU004), recibe los resultados crudos, los deja disponibles para la presentación (RF-09) y persiste la búsqueda completa en el historial (RF-10; CU005). Nunca llama directamente a BLAST+: lo hace a través del Adaptador. |
 | **Entrega de resultados** | Dominio | Lo que ocurre **después** de la búsqueda, cada vez que el investigador refina o se lleva lo encontrado. Aplica los filtros post-búsqueda sobre los resultados crudos ya persistidos (RF-11; CU006) y arma los archivos descargables en los formatos soportados (RF-12; CU007). |
-| **Repositorio** | Datos | Único punto de acceso del API a la base de datos. Hace la traducción entre entidades del dominio y filas de SQL; agrupa las operaciones en transacciones cuando corresponde. |
+| **Acceso a datos** | Datos | Único punto de acceso del API a la base de datos. Hace la traducción entre entidades del dominio y filas de SQL; agrupa las operaciones en transacciones cuando corresponde. |
 | **Adaptador BLAST+** | Datos | **Componente clave de los drivers de interoperabilidad.** Único punto de contacto con BLAST+. Lanza cada invocación como subproceso independiente, mantiene la correspondencia entre subproceso y sesión que lo originó (EC-01), parsea la salida reconociendo los campos conocidos y descartando los no mapeados sin corromper los conocidos (EC-02). |
 
 #### 7.1.2 Catálogo de relaciones del API
@@ -352,25 +358,29 @@ C4Component
 | Origen → Destino | Verbo en el diagrama | Qué comunica realmente |
 |---|---|---|
 | **Dentro del contenedor API** (llamadas internas, sin protocolo) | | |
-| Controladores → Preparación de búsqueda | Invoca | Delega la carga y validación sintáctica de la secuencia, la recepción de la configuración y su validación semántica. |
-| Controladores → Ejecución y persistencia | Invoca | Delega la ejecución asíncrona de la búsqueda validada, la recepción de resultados crudos y la persistencia en el historial. |
-| Controladores → Entrega de resultados | Invoca | Delega el filtrado post-búsqueda sobre resultados ya persistidos y la generación del archivo de descarga. |
-| Preparación de búsqueda → Repositorio | Guarda | Guarda la secuencia cargada y lee el catálogo de bases de datos disponibles para validar la configuración. |
-| Ejecución y persistencia → Repositorio | Persiste | Persiste cada búsqueda ejecutada en el historial (parámetros, timestamps, resultados crudos). |
+| Controladores → Autenticación y sesión | Autentica | En cada solicitud, antes de delegar en otro componente de dominio, los Controladores le piden a Autenticación y sesión que verifique quién es el investigador. Si no hay sesión válida, los Controladores responden con 401/403 sin invocar nada más. |
+| Controladores → Preparación de búsqueda | Invoca | Delega la carga y validación sintáctica de la secuencia, la recepción de la configuración y su validación semántica. Pasa el identificador del investigador que ya obtuvo de Autenticación y sesión. |
+| Controladores → Ejecución y persistencia | Invoca | Delega la ejecución asíncrona de la búsqueda validada, la recepción de resultados crudos y la persistencia en el historial. Pasa el identificador del investigador. |
+| Controladores → Entrega de resultados | Invoca | Delega el filtrado post-búsqueda sobre resultados ya persistidos y la generación del archivo de descarga. Pasa el identificador del investigador para que la lectura del historial se restrinja a sus propias búsquedas. |
+| Autenticación y sesión → Acceso a datos | Lee usuarios | Lee los registros de usuarios para validar credenciales y, cuando corresponde, las sesiones vigentes. |
+| Preparación de búsqueda → Acceso a datos | Guarda | Guarda la secuencia cargada (asociada al investigador actual) y lee el catálogo de bases de datos disponibles para validar la configuración. |
+| Ejecución y persistencia → Acceso a datos | Persiste | Persiste cada búsqueda ejecutada en el historial (parámetros, timestamps, resultados crudos), asociada al investigador que la originó. |
 | Ejecución y persistencia → Adaptador BLAST+ | Ejecuta | Pide la ejecución de una búsqueda validada, pasando la configuración completa. |
-| Entrega de resultados → Repositorio | Lee | Lee los resultados crudos de una búsqueda del historial para filtrarlos o prepararlos para descarga. |
+| Entrega de resultados → Acceso a datos | Lee | Lee los resultados crudos de una búsqueda del historial —filtrada al investigador actual— para filtrarlos o prepararlos para descarga. |
 | **Hacia contenedores vecinos** (con protocolo) | | |
 | Aplicación Web → Controladores | Solicita | Solicitud REST (JSON / HTTPS). |
-| Repositorio → Base de datos | Lee y escribe | Consultas y transacciones (SQL). |
+| Acceso a datos → Base de datos | Lee y escribe | Consultas y transacciones (SQL). |
 | Adaptador BLAST+ → BLAST+ | Invoca | Invocación por línea de comandos; captura de stdout / stderr y código de salida (CLI / subproceso). |
+
+> **Sobre por qué Preparación / Ejecución / Entrega no tienen flecha hacia Autenticación y sesión en el diagrama.** El identificador del investigador viaja como **parámetro** desde los Controladores hacia esos tres servicios, y de ahí hacia Acceso a datos; no viaja como una invocación de vuelta a Autenticación y sesión. Es decir, el "quién soy" se obtiene **una sola vez** por solicitud (en el borde del API, cuando los Controladores autentican) y después se propaga como dato por el resto del flujo. Dibujar tres flechas más —una desde cada servicio hacia Autenticación y sesión— ensuciaría el diagrama sin agregar información: no hay una invocación real.
 
 #### 7.1.3 Comprobación del patrón de capas en el API
 
 Verificando sobre el diagrama las restricciones de la [sección 5.3](#53-patrón-arquitectónico-capas):
 
-- ✅ **Ninguna capa depende de las superiores.** Los componentes de datos (Repositorio, Adaptador BLAST+) no llaman a Servicios ni a Controladores. Los Servicios no llaman a Controladores. Todas las flechas de dominio bajan hacia la capa de datos; todas las flechas de presentación bajan hacia la capa de dominio.
-- ✅ **No se saltean capas.** Los Controladores no llaman al Repositorio ni al Adaptador BLAST+ directamente: delegan en los Servicios.
-- ✅ **Cada capa tiene su responsabilidad propia** (ver [§5.3](#53-patrón-arquitectónico-capas)).
+- ✅ **Ninguna capa depende de las superiores.** Los componentes de datos (Acceso a datos, Adaptador BLAST+) no llaman a los componentes de dominio ni a los Controladores. Los componentes de dominio no llaman a los Controladores. Todas las flechas de dominio bajan hacia la capa de datos; todas las flechas de presentación bajan hacia la capa de dominio.
+- ✅ **No se saltean capas.** Los Controladores no llaman a Acceso a datos ni al Adaptador BLAST+ directamente: delegan en los componentes de dominio.
+- ✅ **Cada capa tiene su responsabilidad propia** (ver [sección 5.3](#53-patrón-arquitectónico-capas)).
 
 ### 7.2 Vista de componentes de la Aplicación Web
 
@@ -381,7 +391,7 @@ C4Component
     Person(inv, "Investigador/a")
 
     Container_Boundary(web, "Aplicación Web") {
-        Component(views, "Vistas", "React u otra SPA", "Presentación: pantallas de carga, configuración, resultados y descarga")
+        Component(views, "Pantallas", "React u otra SPA", "Presentación: pantallas de carga, configuración, resultados y descarga")
         Component(valid, "Validación y envío", "JavaScript", "Dominio: valida formato de secuencia, rangos de parámetros y compatibilidad; si todo es válido, delega el envío")
         Component(api_cli, "Cliente del API", "fetch", "Datos: encapsula las llamadas HTTP al servidor")
     }
@@ -400,8 +410,8 @@ C4Component
 
 | Componente | Capa | Responsabilidad |
 |---|---|---|
-| **Vistas** | Presentación | Pantallas que el investigador ve y manipula: carga de la secuencia (HU01), configuración y validación visible del formulario (HU03 a HU07), progreso y cancelación de la ejecución (HU08 a HU10), tabla de resultados y filtros interactivos (HU11, HU12), controles de descarga (HU13, HU14). |
-| **Validación y envío** | Dominio | Centro de la lógica del cliente. Valida: formato sintáctico de la secuencia, rangos de los parámetros pre-búsqueda, compatibilidad entre programa BLAST, tipo de secuencia y tipo de base de datos. Si la validación falla, devuelve a Vistas los errores para que los muestre inline; si pasa, delega el envío al Cliente del API. |
+| **Pantallas** | Presentación | Las pantallas que el investigador ve y manipula: carga de la secuencia (HU01), configuración y validación visible del formulario (HU03 a HU07), progreso y cancelación de la ejecución (HU08 a HU10), tabla de resultados y filtros interactivos (HU11, HU12), controles de descarga (HU13, HU14). |
+| **Validación y envío** | Dominio | Centro de la lógica del cliente. Valida: formato sintáctico de la secuencia, rangos de los parámetros pre-búsqueda, compatibilidad entre programa BLAST, tipo de secuencia y tipo de base de datos. Si la validación falla, devuelve a Pantallas los errores para que los muestre inline; si pasa, delega el envío al Cliente del API. |
 | **Cliente del API** | Datos | Encapsula el detalle de las llamadas HTTP (URL base, serialización de JSON, manejo de códigos de estado). Es la única pieza del cliente que conoce la forma concreta de la interfaz del API. |
 
 #### 7.2.2 Catálogo de relaciones de la Aplicación Web
@@ -409,17 +419,17 @@ C4Component
 | Origen → Destino | Verbo en el diagrama | Qué comunica realmente |
 |---|---|---|
 | **Dentro de la Aplicación Web** (llamadas internas, sin protocolo) | | |
-| Vistas → Validación y envío | Confirma | Cuando el investigador presiona un botón que dispara una acción contra el servidor (cargar secuencia, ejecutar búsqueda, aplicar filtros, descargar), Vistas pasa el estado del formulario a Validación y envío para que valide y, si corresponde, dispare el envío. |
+| Pantallas → Validación y envío | Confirma | Cuando el investigador presiona un botón que dispara una acción contra el servidor (cargar secuencia, ejecutar búsqueda, aplicar filtros, descargar), Pantallas pasa el estado del formulario a Validación y envío para que valide y, si corresponde, dispare el envío. |
 | Validación y envío → Cliente del API | Delega | Cuando la validación local pasa, Validación y envío arma el *payload* y le pide al Cliente del API que haga la llamada. |
 | **Hacia actores y contenedores vecinos** | | |
-| Investigador/a → Vistas | Usa | Interacciones de la UI mediante el navegador. |
+| Investigador/a → Pantallas | Usa | Interacciones de la UI mediante el navegador. |
 | Cliente del API → API | Solicita | Solicitud REST (JSON / HTTPS). |
 
 #### 7.2.3 Comprobación del patrón de capas en la Aplicación Web
 
-- ✅ **Ninguna capa depende de las superiores.** Validación y envío no conoce a Vistas (le devuelve datos, no la llama). Cliente del API no conoce a Validación y envío.
-- ✅ **No se saltean capas.** Vistas no llama al Cliente del API directamente: toda acción que requiere comunicación con el servidor pasa por Validación y envío.
-- ✅ **Cada capa tiene su responsabilidad propia** (ver [§5.3](#53-patrón-arquitectónico-capas)).
+- ✅ **Ninguna capa depende de las superiores.** Validación y envío no conoce a Pantallas (le devuelve datos, no la llama). Cliente del API no conoce a Validación y envío.
+- ✅ **No se saltean capas.** Pantallas no llama al Cliente del API directamente: toda acción que requiere comunicación con el servidor pasa por Validación y envío.
+- ✅ **Cada capa tiene su responsabilidad propia** (ver [sección 5.3](#53-patrón-arquitectónico-capas)).
 
 ---
 
@@ -429,9 +439,9 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de tres historias 
 
 | HU | Criterio recorrido | Contenedores que atraviesa | Componentes involucrados |
 |---|---|---|---|
-| **HU01_CU001_B** · Carga de la secuencia FASTA | **Given** un archivo FASTA bien formado · **When** el investigador lo sube · **Then** el sistema lo deja disponible con alfabeto inferido | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío (chequea FASTA en el cliente) → Cliente del API · **API:** Controladores → Preparación de búsqueda → Repositorio |
-| **HU08_CU004_B** · Ejecución asíncrona de la búsqueda | **Given** una búsqueda ya configurada y validada · **When** el investigador presiona "Ejecutar" · **Then** la interfaz muestra progreso y permanece navegable; al terminar se dispara CU005 (presentación + persistencia) | Aplicación Web → API → BLAST+ (ejecución) · API → Base de datos (persistencia) | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Ejecución y persistencia → Adaptador BLAST+ (invoca BLAST+ como subproceso independiente, EC-01) → Ejecución y persistencia → Repositorio |
-| **HU12_CU006_B** · Filtrado post-búsqueda | **Given** resultados crudos ya devueltos por BLAST+ · **When** el investigador modifica los umbrales de filtro · **Then** la tabla se refresca sobre el crudo original, en menos de 1 segundo | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío (valida umbrales) → Cliente del API · **API:** Controladores → Entrega de resultados → Repositorio |
+| **HU01_CU001_B** · Carga de la secuencia FASTA | **Given** un archivo FASTA bien formado · **When** el investigador lo sube · **Then** el sistema lo deja disponible con alfabeto inferido | Aplicación Web → API → Base de datos | **Web:** Pantallas → Validación y envío (chequea FASTA en el cliente) → Cliente del API · **API:** Controladores → Preparación de búsqueda → Acceso a datos |
+| **HU08_CU004_B** · Ejecución asíncrona de la búsqueda | **Given** una búsqueda ya configurada y validada · **When** el investigador presiona "Ejecutar" · **Then** la interfaz muestra progreso y permanece navegable; al terminar se dispara CU005 (presentación + persistencia) | Aplicación Web → API → BLAST+ (ejecución) · API → Base de datos (persistencia) | **Web:** Pantallas → Validación y envío → Cliente del API · **API:** Controladores → Ejecución y persistencia → Adaptador BLAST+ (invoca BLAST+ como subproceso independiente, EC-01) → Ejecución y persistencia → Acceso a datos |
+| **HU12_CU006_B** · Filtrado post-búsqueda | **Given** resultados crudos ya devueltos por BLAST+ · **When** el investigador modifica los umbrales de filtro · **Then** la tabla se refresca sobre el crudo original, en menos de 1 segundo | Aplicación Web → API → Base de datos | **Web:** Pantallas → Validación y envío (valida umbrales) → Cliente del API · **API:** Controladores → Entrega de resultados → Acceso a datos |
 
 **Lectura del escenario de EC-02 sobre las vistas.** Cuando BLAST+ devuelve una salida con un campo adicional no mapeado, la respuesta del sistema queda contenida enteramente dentro del **Adaptador BLAST+**: reconoce los campos conocidos, descarta el nuevo sin romper los conocidos, y devuelve los resultados a Ejecución y persistencia como si el formato fuera el esperado. Ni los Controladores, ni los otros componentes de dominio, ni la Aplicación Web se enteran del cambio. Esta es la propiedad arquitectónica concreta que el patrón de Capas, con el Adaptador BLAST+ en su capa de datos, aporta.
 
@@ -465,8 +475,8 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de tres historias 
 - **Decisión:**
   - **Tácticas:** encapsular (del atributo modificabilidad) y adaptar la interfaz (de interoperabilidad).
   - **Patrón:** Capas, con tres capas (Presentación, Dominio, Datos), aplicado dentro de los dos contenedores con lógica propia:
-    - **API:** Controladores (presentación) → Preparación de búsqueda, Ejecución y persistencia, Entrega de resultados (dominio) → Repositorio, Adaptador BLAST+ (datos).
-    - **Aplicación Web:** Vistas (presentación) → Validación y envío (dominio) → Cliente del API (datos).
+    - **API:** Controladores (presentación) → Autenticación y sesión, Preparación de búsqueda, Ejecución y persistencia, Entrega de resultados (dominio) → Acceso a datos, Adaptador BLAST+ (datos).
+    - **Aplicación Web:** Pantallas (presentación) → Validación y envío (dominio) → Cliente del API (datos).
 - **Alternativas consideradas:**
   - **Hexagonal** — descartado: aisla más estrictamente, pero con un único sistema externo (BLAST+) las piezas extra son sobreingeniería.
   - **MVC** — descartado: útil para la UI, pero Capas permite aplicar la misma mentalidad en el cliente y en el servidor con un vocabulario único.
@@ -499,7 +509,7 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de tres historias 
 - **Decisión:**
   - **Tácticas:** introducir concurrencia (del atributo desempeño, aplicada acá al escenario de interoperabilidad).
   - **Estilo:** respeta el cliente-servidor base.
-  - **Patrón:** la correspondencia proceso↔sesión vive dentro del Adaptador BLAST+ (DA-03), no en los Controladores ni en los Servicios de dominio.
+  - **Patrón:** la correspondencia proceso↔sesión vive dentro del Adaptador BLAST+ (DA-03), no en los Controladores ni en los componentes de dominio.
 - **Alternativas consideradas:**
   - **Un único proceso BLAST+ en el que se encolan las búsquedas** — descartado: serializa las invocaciones y el escenario pedía cinco concurrentes; además, BLAST+ no está pensado para recibir "jobs" por una API persistente.
   - **Una cola de mensajes externa y un pool de workers** — descartado: suma un contenedor (broker) que no es necesario para la escala actual (ver DA-01).
@@ -538,18 +548,20 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de tres historias 
 
 | Historia de usuario | Contenedores | Componentes |
 |---|---|---|
-| HU01_CU001_B · Cargar secuencia | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Preparación de búsqueda → Repositorio |
-| HU02_CU001_E1 · Rechazo de secuencia inválida | Aplicación Web (rechazo local) o Aplicación Web → API (rechazo tras validación del servidor) | **Web:** Vistas → Validación y envío (devuelve error, no delega) · **API:** si la validación local fue salteada, Controladores → Preparación de búsqueda (rechaza) |
-| HU03_CU002_B · Configurar la búsqueda | Aplicación Web → API → Base de datos (al leer catálogo) | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Preparación de búsqueda → Repositorio (lee catálogo) |
-| HU05_CU003_B · Validar la búsqueda | Aplicación Web → API | **Web:** Vistas → Validación y envío · **API:** Controladores → Preparación de búsqueda (validación semántica en memoria) |
-| HU08_CU004_B · Ejecutar búsqueda | Aplicación Web → API → BLAST+ · API → Base de datos | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Ejecución y persistencia → **Adaptador BLAST+** → Ejecución y persistencia → Repositorio |
-| HU09_CU004_A1 · Cancelación | Aplicación Web → API → BLAST+ | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Ejecución y persistencia → **Adaptador BLAST+** (termina el subproceso) |
+| HU01_CU001_B · Cargar secuencia | Aplicación Web → API → Base de datos | **Web:** Pantallas → Validación y envío → Cliente del API · **API:** Controladores → Preparación de búsqueda → Acceso a datos |
+| HU02_CU001_E1 · Rechazo de secuencia inválida | Aplicación Web (rechazo local) o Aplicación Web → API (rechazo tras validación del servidor) | **Web:** Pantallas → Validación y envío (devuelve error, no delega) · **API:** si la validación local fue salteada, Controladores → Preparación de búsqueda (rechaza) |
+| HU03_CU002_B · Configurar la búsqueda | Aplicación Web → API → Base de datos (al leer catálogo) | **Web:** Pantallas → Validación y envío → Cliente del API · **API:** Controladores → Preparación de búsqueda → Acceso a datos (lee catálogo) |
+| HU05_CU003_B · Validar la búsqueda | Aplicación Web → API | **Web:** Pantallas → Validación y envío · **API:** Controladores → Preparación de búsqueda (validación semántica en memoria) |
+| HU08_CU004_B · Ejecutar búsqueda | Aplicación Web → API → BLAST+ · API → Base de datos | **Web:** Pantallas → Validación y envío → Cliente del API · **API:** Controladores → Ejecución y persistencia → **Adaptador BLAST+** → Ejecución y persistencia → Acceso a datos |
+| HU09_CU004_A1 · Cancelación | Aplicación Web → API → BLAST+ | **Web:** Pantallas → Validación y envío → Cliente del API · **API:** Controladores → Ejecución y persistencia → **Adaptador BLAST+** (termina el subproceso) |
 | HU10_CU004_E1 · Fallo del modo remoto | Aplicación Web → API | **API:** Controladores → Ejecución y persistencia → **Adaptador BLAST+** → Controladores (propagan el error literal al cliente) |
-| HU11_CU005_B · Presentar y persistir | Aplicación Web → API → Base de datos | **API:** Controladores → Ejecución y persistencia → Repositorio |
-| HU12_CU006_B · Filtrado | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Entrega de resultados → Repositorio |
-| HU13_CU007_B · Descarga | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Entrega de resultados → Repositorio |
+| HU11_CU005_B · Presentar y persistir | Aplicación Web → API → Base de datos | **API:** Controladores → Ejecución y persistencia → Acceso a datos |
+| HU12_CU006_B · Filtrado | Aplicación Web → API → Base de datos | **Web:** Pantallas → Validación y envío → Cliente del API · **API:** Controladores → Entrega de resultados → Acceso a datos |
+| HU13_CU007_B · Descarga | Aplicación Web → API → Base de datos | **Web:** Pantallas → Validación y envío → Cliente del API · **API:** Controladores → Entrega de resultados → Acceso a datos |
 
 Todo driver llega a al menos un contenedor y un componente. Todo componente de las vistas corresponde a una responsabilidad del sistema o a una decisión de arquitectura de este documento.
+
+**Nota sobre Autenticación y sesión.** No aparece en la columna de componentes porque no existe una historia de usuario propia para la autenticación en el alcance actual, pero el componente participa en **todas** las historias de la tabla: los Controladores lo consultan al inicio de cada solicitud HTTP para identificar al investigador y recién después delegan en el servicio de dominio correspondiente. Agregarlo en cada fila sería redundante; su participación es uniforme.
 
 ---
 
