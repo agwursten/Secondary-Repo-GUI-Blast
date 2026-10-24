@@ -87,10 +87,10 @@ El maquetado HTML del flujo de navegación (un archivo por pantalla con sus HU e
 La evaluación heurística de usabilidad, con los prompts enviados a la IA, su respuesta completa heurística por heurística, la revisión crítica del grupo sobre cada hallazgo y los ciclos de ajuste que terminaron en los `_final.html`, está en:
 👉 [`docs/ui/heuristic-review/`](docs/ui/heuristic-review/)
 
-El **Documento de Especificación de Arquitectura** (TP3), con la elección de interoperabilidad como driver único, la derivación hasta estilo cliente-servidor y patrón capas, las decisiones de arquitectura (`DA-01` a `DA-04`), las vistas de contenedores y componentes del modelo C4 con sus catálogos, y la trazabilidad escenario → táctica → estilo/patrón → decisión → elemento C4, está en:
+El **Documento de Especificación de Arquitectura**, con la elección de interoperabilidad como driver único, la derivación hasta estilo cliente-servidor y patrón capas aplicado en ambos contenedores con lógica propia (API y Aplicación Web), las decisiones de arquitectura (`DA-01` a `DA-05`), las vistas de contenedores y componentes del modelo C4 con sus catálogos, y la trazabilidad escenario → táctica → estilo/patrón → decisión → elemento C4, está en:
 👉 [`docs/architecture/arquitectura.md`](docs/architecture/arquitectura.md)
 
-El diagrama de contexto completo del sistema (incluyendo el actor Administrador/a y el proceso P3, documentados pero fuera del alcance de este cuatrimestre) sigue en:
+El diagrama de contexto completo del sistema (incluyendo el actor Administrador/a y el proceso P3, documentados pero fuera del alcance de este cuatrimestre) está en:
 👉 [`docs/architecture/contexto-inicial.md`](docs/architecture/contexto-inicial.md)
 
 ---
