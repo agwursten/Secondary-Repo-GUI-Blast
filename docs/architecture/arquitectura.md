@@ -60,7 +60,7 @@ Las restricciones que condicionan las decisiones de este documento son:
 | **Entorno de despliegue** | Servidor del laboratorio, con BLAST+ instalado por el administrador de sistemas | No hay dependencia de infraestructura cloud; no se exige alta disponibilidad 24/7. |
 | **Usuarios** | Menos de diez investigadores concurrentes | No es necesario diseñar para escala masiva; sí para hasta cinco búsquedas concurrentes (ver [EC-01](#ec-01--sobrecarga-por-concurrencia-de-invocaciones)). |
 | **Dependencia externa de red** | NCBI se contacta solo en modo remoto, y lo hace BLAST+, no nuestro sistema | Nuestro código no implementa cliente HTTP contra NCBI; la robustez remota se delega al reporte de errores de BLAST+. |
-| **Tecnologías del equipo** | El equipo tiene experiencia en **Python**. Para el frontend el equipo puede adoptar una tecnología web de SPA (React u otro framework similar) sin curva de aprendizaje empinada | El estilo base y los patrones se eligen de modo que sean realizables con esa combinación, sin depender de un ecosistema que el equipo no domine ni pueda aprender rápido. |
+| **Tecnologías del equipo** | El equipo tiene experiencia en **Python**. Para el frontend el equipo adopta **React**, con una curva de aprendizaje asumible dentro del cuatrimestre. | El estilo base y los patrones se eligen de modo que sean realizables con esa combinación, sin depender de un ecosistema que el equipo no domine ni pueda aprender rápido. |
 
 ---
 
@@ -124,7 +124,7 @@ La especificación completa de ambos escenarios, con todos sus componentes (fuen
 Dos restricciones de la [sección 2](#2-restricciones) influyen directamente en cómo se traducen estos drivers en estructura:
 
 - **Equipo de 3 personas con dedicación parcial.** Toda alternativa de arquitectura que atienda los drivers debe ser realizable con ese presupuesto. Esto descarta soluciones de alta complejidad operativa aunque sean técnicamente superiores (ver [DA-01](#da-01--estilo-base-cliente-servidor) y [DA-02](#da-02--patrón-capas-en-los-contenedores-con-lógica-propia)).
-- **Tecnologías dominadas por el equipo (Python).** El estilo elegido se realiza del lado servidor con Python y, del lado cliente, con una tecnología de SPA que el equipo pueda incorporar sin curva empinada.
+- **Tecnologías dominadas o adoptables por el equipo.** El estilo elegido se realiza del lado servidor con Python (que el equipo ya domina) y, del lado cliente, con React (que el equipo adopta en el cuatrimestre).
 
 ---
 
@@ -249,7 +249,7 @@ C4Container
     Person(inv, "Investigador/a", "Carga secuencias, lanza búsquedas, filtra y descarga resultados")
 
     System_Boundary(lb, "LocalBlast") {
-        Container(web, "Aplicación Web", "SPA (React u otra)", "Interfaz de carga, configuración, ejecución, filtrado y descarga")
+        Container(web, "Aplicación Web", "React", "Interfaz de carga, configuración, ejecución, filtrado y descarga")
         Container(api, "API", "Python", "Valida, invoca BLAST+, persiste búsquedas, aplica filtros, arma descargas")
         ContainerDb(bd, "Base de datos", "PostgreSQL", "Usuarios, catálogo de bases de datos y historial de búsquedas")
     }
@@ -303,7 +303,7 @@ Se hace una vista de componentes por cada contenedor del sistema con lógica pro
 C4Component
     title Vista de componentes del contenedor API
 
-    Container(web, "Aplicación Web", "SPA")
+    Container(web, "Aplicación Web", "React")
 
     Container_Boundary(api, "API") {
         Component(ctrl, "Controladores", "Routers", "Presentación: reciben solicitudes HTTP")
@@ -391,7 +391,7 @@ C4Component
     Person(inv, "Investigador/a")
 
     Container_Boundary(web, "Aplicación Web") {
-        Component(views, "Pantallas", "React u otra SPA", "Presentación: pantallas de carga, configuración, resultados y descarga")
+        Component(views, "Pantallas", "React", "Presentación: pantallas de carga, configuración, resultados y descarga")
         Component(valid, "Validación y envío", "JavaScript", "Dominio: valida formato de secuencia, rangos de parámetros y compatibilidad; si todo es válido, delega el envío")
         Component(api_cli, "Cliente del API", "fetch", "Datos: encapsula las llamadas HTTP al servidor")
     }
@@ -454,7 +454,7 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de tres historias 
 ### DA-01 · Estilo base cliente-servidor
 
 - **Escenario que la motiva:** EC-01 y EC-02 (ambos de interoperabilidad). El sistema entero necesita un estilo que permita alojar un servidor con BLAST+ invocado del lado del servidor, mientras el investigador usa una interfaz web del lado del cliente.
-- **Contexto:** LocalBlast es una interfaz gráfica para BLAST+. El equipo tiene 3 integrantes con dedicación parcial y domina Python; para el frontend puede adoptar una tecnología web de SPA sin curva empinada. Hasta diez investigadores concurrentes.
+- **Contexto:** LocalBlast es una interfaz gráfica para BLAST+. El equipo tiene 3 integrantes con dedicación parcial y domina Python; para el frontend adopta React. Hasta diez investigadores concurrentes.
 - **Decisión:**
   - **Tácticas:** respetar estándares de comunicación (JSON sobre HTTPS entre cliente y servidor); encapsular el acceso a BLAST+ del lado del servidor.
   - **Estilo:** Cliente-Servidor como estilo base, aplicado a todo el sistema.
@@ -587,7 +587,6 @@ Todo driver llega a al menos un contenedor y un componente. Todo componente de l
 | REST | Estilo de diseño de APIs sobre HTTP |
 | RF | Requerimiento funcional |
 | SOA | Arquitectura orientada a servicios (mencionada solo para descartarla) |
-| SPA | *Single-page application*: aplicación web que corre en el navegador y actualiza sus vistas sin recargar la página |
 | SQL | Lenguaje para consultar y modificar bases de datos relacionales |
 | TLS | *Transport Layer Security*: la "S" de HTTPS |
 | XML | Formato de datos estructurados con etiquetas, usado por BLAST+ como una de sus salidas |
