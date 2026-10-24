@@ -196,7 +196,7 @@ Esto se verifica directamente en la vista de contenedores de la [sección 6](#6-
 | Capa | En la Aplicación Web | En el API |
 |---|---|---|
 | **Presentación** | Pantallas que ve el investigador (carga, configuración, resultados, descarga). Componente: **Vistas**. | Puntos de entrada HTTP del servidor: rutas, códigos de estado, serialización. Componente: **Controladores**. |
-| **Dominio** | Lógica de aplicación del cliente: valida formato de secuencia, rangos de parámetros y compatibilidad programa-query-base **antes** de pedir el envío al servidor. Componente: **Validación y envío**. | Lógica del dominio del servidor: coordinar carga, configuración, validación semántica, ejecución, filtrado y preparación de descarga. Componentes: **Servicio de Secuencia**, **Servicio de Búsqueda**, **Servicio de Resultados**. |
+| **Dominio** | Lógica de aplicación del cliente: valida formato de secuencia, rangos de parámetros y compatibilidad programa-query-base **antes** de pedir el envío al servidor. Componente: **Validación y envío**. | Lógica del dominio del servidor, agrupada por fase del ciclo de la búsqueda: lo que ocurre antes de BLAST+, lo que ocurre durante/alrededor de la ejecución, y lo que ocurre después para entregar el resultado. Componentes: **Preparación de búsqueda**, **Ejecución y persistencia**, **Entrega de resultados**. |
 | **Datos** | Acceso al mundo exterior del cliente (que para el cliente es el API). Componente: **Cliente del API**. | Acceso al mundo exterior del servidor: la base de datos y el binario BLAST+. Componentes: **Repositorio**, **Adaptador BLAST+**. |
 
 **Validación en el cliente, además de en el servidor.** La capa de dominio de la Aplicación Web aloja la validación del formulario antes de enviar la configuración al servidor. Esta decisión se documenta aparte en [DA-05](#da-05--validación-en-la-aplicación-web-además-de-en-el-servidor): el cliente valida para que el investigador reciba feedback inmediato y para reducir solicitudes al servidor por configuraciones mal armadas; el servidor **repite** la validación completa sobre todo lo que recibe, porque la validación del cliente puede ser salteada por un actor malicioso y, por lo tanto, no es un control de seguridad.
@@ -306,9 +306,9 @@ C4Component
     Container_Boundary(api, "API") {
         Component(ctrl, "Controladores", "Routers HTTP", "Presentación: reciben solicitudes HTTP")
 
-        Component(svc_sec, "Servicio de Secuencia", "Python", "Dominio: valida sintácticamente la secuencia (CU001)")
-        Component(svc_bus, "Servicio de Búsqueda", "Python", "Dominio: configura, valida, ejecuta y persiste (CU002–CU005)")
-        Component(svc_res, "Servicio de Resultados", "Python", "Dominio: filtra y arma descargas (CU006–CU007)")
+        Component(svc_pre, "Preparación de búsqueda", "Python", "Dominio: valida secuencia, configuración y compatibilidad (CU001–CU003)")
+        Component(svc_eje, "Ejecución y persistencia", "Python", "Dominio: ejecuta vía Adaptador, recibe resultados y persiste (CU004–CU005)")
+        Component(svc_ent, "Entrega de resultados", "Python", "Dominio: filtra y arma descargas (CU006–CU007)")
 
         Component(repo, "Repositorio", "SQLAlchemy", "Datos: lee y escribe en la base")
         Component(adap, "Adaptador BLAST+", "CLI + parser", "Datos: invoca BLAST+ y parsea su salida")
@@ -319,14 +319,14 @@ C4Component
 
     Rel(web, ctrl, "Solicita", "JSON/HTTPS")
 
-    Rel(ctrl, svc_sec, "Invoca")
-    Rel(ctrl, svc_bus, "Invoca")
-    Rel(ctrl, svc_res, "Invoca")
+    Rel(ctrl, svc_pre, "Invoca")
+    Rel(ctrl, svc_eje, "Invoca")
+    Rel(ctrl, svc_ent, "Invoca")
 
-    Rel(svc_sec, repo, "Guarda")
-    Rel(svc_bus, repo, "Persiste")
-    Rel(svc_bus, adap, "Ejecuta")
-    Rel(svc_res, repo, "Lee")
+    Rel(svc_pre, repo, "Guarda")
+    Rel(svc_eje, repo, "Persiste")
+    Rel(svc_eje, adap, "Ejecuta")
+    Rel(svc_ent, repo, "Lee")
 
     Rel(repo, bd, "Lee y escribe", "SQL")
     Rel(adap, blast, "Invoca", "CLI")
@@ -341,9 +341,9 @@ C4Component
 | Componente | Capa | Responsabilidad |
 |---|---|---|
 | **Controladores** | Presentación | Exponen la interfaz HTTP del API: rutas, validación sintáctica de entradas, serialización de respuestas, códigos de estado. No contienen lógica del dominio: delegan en los servicios. |
-| **Servicio de Secuencia** | Dominio | Valida sintácticamente la secuencia query recibida del cliente (RF-01, RF-02; implementa CU001). Infiere el alfabeto (ADN / ARN / proteína) y la deja disponible para el resto del flujo. Esta validación repite la que ya hizo el cliente, porque la del cliente no es un control de confianza. |
-| **Servicio de Búsqueda** | Dominio | Coordina la configuración (RF-03 a RF-06), la validación semántica (RF-07), la ejecución asíncrona con cancelación (RF-08), la presentación de resultados (RF-09) y la persistencia en el historial (RF-10). Implementa los casos de uso CU002 a CU005. Nunca llama directamente a BLAST+: lo hace a través del Adaptador. |
-| **Servicio de Resultados** | Dominio | Aplica los filtros post-búsqueda sobre los resultados crudos ya devueltos por BLAST+ (RF-11) y arma los archivos descargables en los formatos soportados (RF-12). Implementa CU006 y CU007. |
+| **Preparación de búsqueda** | Dominio | Todo lo que ocurre **antes** de invocar a BLAST+. Valida sintácticamente la secuencia query (RF-01, RF-02; implementa CU001) e infiere el alfabeto (ADN / ARN / proteína); recibe la configuración de la búsqueda (RF-03 a RF-06; CU002) y la valida semánticamente verificando compatibilidad entre programa, tipo de query y tipo de base de datos (RF-07; CU003). Esta validación repite la que ya hizo el cliente, porque la del cliente no es un control de confianza. |
+| **Ejecución y persistencia** | Dominio | Lo que ocurre **durante** y **al cierre** de la ejecución de BLAST+. Lanza la ejecución asíncrona con posibilidad de cancelación pidiéndosela al Adaptador BLAST+ (RF-08; CU004), recibe los resultados crudos, los deja disponibles para la presentación (RF-09) y persiste la búsqueda completa en el historial (RF-10; CU005). Nunca llama directamente a BLAST+: lo hace a través del Adaptador. |
+| **Entrega de resultados** | Dominio | Lo que ocurre **después** de la búsqueda, cada vez que el investigador refina o se lleva lo encontrado. Aplica los filtros post-búsqueda sobre los resultados crudos ya persistidos (RF-11; CU006) y arma los archivos descargables en los formatos soportados (RF-12; CU007). |
 | **Repositorio** | Datos | Único punto de acceso del API a la base de datos. Hace la traducción entre entidades del dominio y filas de SQL; agrupa las operaciones en transacciones cuando corresponde. |
 | **Adaptador BLAST+** | Datos | **Componente clave de los drivers de interoperabilidad.** Único punto de contacto con BLAST+. Lanza cada invocación como subproceso independiente, mantiene la correspondencia entre subproceso y sesión que lo originó (EC-01), parsea la salida reconociendo los campos conocidos y descartando los no mapeados sin corromper los conocidos (EC-02). |
 
@@ -352,13 +352,13 @@ C4Component
 | Origen → Destino | Verbo en el diagrama | Qué comunica realmente |
 |---|---|---|
 | **Dentro del contenedor API** (llamadas internas, sin protocolo) | | |
-| Controladores → Servicio de Secuencia | Invoca | Delega la carga y validación sintáctica de la secuencia query. |
-| Controladores → Servicio de Búsqueda | Invoca | Delega la configuración, validación semántica, ejecución y persistencia. |
-| Controladores → Servicio de Resultados | Invoca | Delega el filtrado post-búsqueda y la generación del archivo de descarga. |
-| Servicio de Secuencia → Repositorio | Guarda | Guarda la secuencia cargada para esta sesión. |
-| Servicio de Búsqueda → Repositorio | Persiste | Lee el catálogo de bases de datos disponibles y persiste cada búsqueda ejecutada en el historial. |
-| Servicio de Búsqueda → Adaptador BLAST+ | Ejecuta | Pide la ejecución de una búsqueda validada, pasando la configuración completa. |
-| Servicio de Resultados → Repositorio | Lee | Lee los resultados crudos de una búsqueda del historial para filtrarlos o prepararlos para descarga. |
+| Controladores → Preparación de búsqueda | Invoca | Delega la carga y validación sintáctica de la secuencia, la recepción de la configuración y su validación semántica. |
+| Controladores → Ejecución y persistencia | Invoca | Delega la ejecución asíncrona de la búsqueda validada, la recepción de resultados crudos y la persistencia en el historial. |
+| Controladores → Entrega de resultados | Invoca | Delega el filtrado post-búsqueda sobre resultados ya persistidos y la generación del archivo de descarga. |
+| Preparación de búsqueda → Repositorio | Guarda | Guarda la secuencia cargada y lee el catálogo de bases de datos disponibles para validar la configuración. |
+| Ejecución y persistencia → Repositorio | Persiste | Persiste cada búsqueda ejecutada en el historial (parámetros, timestamps, resultados crudos). |
+| Ejecución y persistencia → Adaptador BLAST+ | Ejecuta | Pide la ejecución de una búsqueda validada, pasando la configuración completa. |
+| Entrega de resultados → Repositorio | Lee | Lee los resultados crudos de una búsqueda del historial para filtrarlos o prepararlos para descarga. |
 | **Hacia contenedores vecinos** (con protocolo) | | |
 | Aplicación Web → Controladores | Solicita | Solicitud REST (JSON / HTTPS). |
 | Repositorio → Base de datos | Lee y escribe | Consultas y transacciones (SQL). |
@@ -429,13 +429,13 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de tres historias 
 
 | HU | Criterio recorrido | Contenedores que atraviesa | Componentes involucrados |
 |---|---|---|---|
-| **HU01_CU001_B** · Carga de la secuencia FASTA | **Given** un archivo FASTA bien formado · **When** el investigador lo sube · **Then** el sistema lo deja disponible con alfabeto inferido | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío (chequea FASTA en el cliente) → Cliente del API · **API:** Controladores → Servicio de Secuencia → Repositorio |
-| **HU08_CU004_B** · Ejecución asíncrona de la búsqueda | **Given** una búsqueda ya configurada y validada · **When** el investigador presiona "Ejecutar" · **Then** la interfaz muestra progreso y permanece navegable; al terminar se dispara CU005 (presentación + persistencia) | Aplicación Web → API → BLAST+ (ejecución) · API → Base de datos (persistencia) | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Servicio de Búsqueda → Adaptador BLAST+ (invoca BLAST+ como subproceso independiente, EC-01) → Servicio de Búsqueda → Repositorio |
-| **HU12_CU006_B** · Filtrado post-búsqueda | **Given** resultados crudos ya devueltos por BLAST+ · **When** el investigador modifica los umbrales de filtro · **Then** la tabla se refresca sobre el crudo original, en menos de 1 segundo | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío (valida umbrales) → Cliente del API · **API:** Controladores → Servicio de Resultados → Repositorio |
+| **HU01_CU001_B** · Carga de la secuencia FASTA | **Given** un archivo FASTA bien formado · **When** el investigador lo sube · **Then** el sistema lo deja disponible con alfabeto inferido | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío (chequea FASTA en el cliente) → Cliente del API · **API:** Controladores → Preparación de búsqueda → Repositorio |
+| **HU08_CU004_B** · Ejecución asíncrona de la búsqueda | **Given** una búsqueda ya configurada y validada · **When** el investigador presiona "Ejecutar" · **Then** la interfaz muestra progreso y permanece navegable; al terminar se dispara CU005 (presentación + persistencia) | Aplicación Web → API → BLAST+ (ejecución) · API → Base de datos (persistencia) | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Ejecución y persistencia → Adaptador BLAST+ (invoca BLAST+ como subproceso independiente, EC-01) → Ejecución y persistencia → Repositorio |
+| **HU12_CU006_B** · Filtrado post-búsqueda | **Given** resultados crudos ya devueltos por BLAST+ · **When** el investigador modifica los umbrales de filtro · **Then** la tabla se refresca sobre el crudo original, en menos de 1 segundo | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío (valida umbrales) → Cliente del API · **API:** Controladores → Entrega de resultados → Repositorio |
 
-**Lectura del escenario de EC-02 sobre las vistas.** Cuando BLAST+ devuelve una salida con un campo adicional no mapeado, la respuesta del sistema queda contenida enteramente dentro del **Adaptador BLAST+**: reconoce los campos conocidos, descarta el nuevo sin romper los conocidos, y devuelve los resultados al Servicio de Búsqueda como si el formato fuera el esperado. Ni los Controladores, ni los otros Servicios de dominio, ni la Aplicación Web se enteran del cambio. Esta es la propiedad arquitectónica concreta que el patrón de Capas, con el Adaptador BLAST+ en su capa de datos, aporta.
+**Lectura del escenario de EC-02 sobre las vistas.** Cuando BLAST+ devuelve una salida con un campo adicional no mapeado, la respuesta del sistema queda contenida enteramente dentro del **Adaptador BLAST+**: reconoce los campos conocidos, descarta el nuevo sin romper los conocidos, y devuelve los resultados a Ejecución y persistencia como si el formato fuera el esperado. Ni los Controladores, ni los otros componentes de dominio, ni la Aplicación Web se enteran del cambio. Esta es la propiedad arquitectónica concreta que el patrón de Capas, con el Adaptador BLAST+ en su capa de datos, aporta.
 
-**Lectura del escenario de EC-01 sobre las vistas.** Cinco investigadores lanzan búsquedas concurrentes: cada una entra como una solicitud HTTP distinta a los Controladores, llega al Servicio de Búsqueda, que a su vez le pide al Adaptador BLAST+ ejecutar la búsqueda. El Adaptador lanza un subproceso independiente de BLAST+ por cada una, con su propio identificador y una referencia a la sesión; cuando cada subproceso termina, el Adaptador entrega el resultado al Servicio de Búsqueda, que lo guarda en el historial correspondiente y lo devuelve a los Controladores que respondieron esa solicitud. No hay un punto en el que los resultados de dos búsquedas puedan cruzarse porque no comparten ni estado interno ni canal.
+**Lectura del escenario de EC-01 sobre las vistas.** Cinco investigadores lanzan búsquedas concurrentes: cada una entra como una solicitud HTTP distinta a los Controladores, llega a Ejecución y persistencia, que a su vez le pide al Adaptador BLAST+ ejecutar la búsqueda. El Adaptador lanza un subproceso independiente de BLAST+ por cada una, con su propio identificador y una referencia a la sesión; cuando cada subproceso termina, el Adaptador entrega el resultado a Ejecución y persistencia, que lo guarda en el historial correspondiente y lo devuelve a los Controladores que respondieron esa solicitud. No hay un punto en el que los resultados de dos búsquedas puedan cruzarse porque no comparten ni estado interno ni canal.
 
 ---
 
@@ -465,7 +465,7 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de tres historias 
 - **Decisión:**
   - **Tácticas:** encapsular (del atributo modificabilidad) y adaptar la interfaz (de interoperabilidad).
   - **Patrón:** Capas, con tres capas (Presentación, Dominio, Datos), aplicado dentro de los dos contenedores con lógica propia:
-    - **API:** Controladores (presentación) → Servicio de Secuencia, Servicio de Búsqueda, Servicio de Resultados (dominio) → Repositorio, Adaptador BLAST+ (datos).
+    - **API:** Controladores (presentación) → Preparación de búsqueda, Ejecución y persistencia, Entrega de resultados (dominio) → Repositorio, Adaptador BLAST+ (datos).
     - **Aplicación Web:** Vistas (presentación) → Validación y envío (dominio) → Cliente del API (datos).
 - **Alternativas consideradas:**
   - **Hexagonal** — descartado: aisla más estrictamente, pero con un único sistema externo (BLAST+) las piezas extra son sobreingeniería.
@@ -489,7 +489,7 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de tres historias 
   - **Un microservicio aparte "Executor"** — descartado por los mismos motivos que microservicios en DA-01.
 - **Consecuencias:**
   - **A favor:** cambios de versión de BLAST+ se absorben en un único componente; el resto del API no sabe cómo es la salida real del binario y es inmune a sus cambios menores; EC-02 se cumple como propiedad arquitectónica.
-  - **En contra:** una capa de indirección entre el Servicio de Búsqueda y BLAST+; obligación de mantener el mapeo "campo de BLAST+ → entidad del dominio" al día en el Adaptador.
+  - **En contra:** una capa de indirección entre Ejecución y persistencia y BLAST+; obligación de mantener el mapeo "campo de BLAST+ → entidad del dominio" al día en el Adaptador.
 - **Elementos afectados:** componente "Adaptador BLAST+" del API.
 
 ### DA-04 · Ejecutar cada búsqueda como subproceso independiente de BLAST+
@@ -521,7 +521,7 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de tres historias 
 - **Consecuencias:**
   - **A favor:** feedback inmediato al investigador; menos carga en el servidor; descartes temprano de configuraciones mal armadas.
   - **En contra:** la lógica de validación queda duplicada entre cliente y servidor y debe mantenerse coherente. **La validación del cliente no es un control de seguridad**: un actor malicioso puede saltearla hablando directamente con el API. Por eso el servidor **repite** su propia validación completa sobre todo lo que recibe, independientemente de lo que haya hecho el cliente.
-- **Elementos afectados:** componente "Validación y envío" de la Aplicación Web; también los componentes "Servicio de Secuencia" y "Servicio de Búsqueda" del API, que mantienen las validaciones completas aun cuando el cliente ya haya validado.
+- **Elementos afectados:** componente "Validación y envío" de la Aplicación Web; también el componente "Preparación de búsqueda" del API, que mantiene las validaciones completas (sintácticas de la secuencia, semánticas de la configuración) aun cuando el cliente ya haya validado.
 
 ---
 
@@ -538,16 +538,16 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de tres historias 
 
 | Historia de usuario | Contenedores | Componentes |
 |---|---|---|
-| HU01_CU001_B · Cargar secuencia | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Servicio de Secuencia → Repositorio |
-| HU02_CU001_E1 · Rechazo de secuencia inválida | Aplicación Web (rechazo local) o Aplicación Web → API (rechazo tras validación del servidor) | **Web:** Vistas → Validación y envío (devuelve error, no delega) · **API:** si la validación local fue salteada, Controladores → Servicio de Secuencia (rechaza) |
-| HU03_CU002_B · Configurar la búsqueda | Aplicación Web → API → Base de datos (al leer catálogo) | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Servicio de Búsqueda → Repositorio (lee catálogo) |
-| HU05_CU003_B · Validar la búsqueda | Aplicación Web → API | **Web:** Vistas → Validación y envío · **API:** Controladores → Servicio de Búsqueda (validación semántica en memoria) |
-| HU08_CU004_B · Ejecutar búsqueda | Aplicación Web → API → BLAST+ · API → Base de datos | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Servicio de Búsqueda → **Adaptador BLAST+** → Servicio de Búsqueda → Repositorio |
-| HU09_CU004_A1 · Cancelación | Aplicación Web → API → BLAST+ | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Servicio de Búsqueda → **Adaptador BLAST+** (termina el subproceso) |
-| HU10_CU004_E1 · Fallo del modo remoto | Aplicación Web → API | **API:** Controladores → Servicio de Búsqueda → **Adaptador BLAST+** → Controladores (propagan el error literal al cliente) |
-| HU11_CU005_B · Presentar y persistir | Aplicación Web → API → Base de datos | **API:** Controladores → Servicio de Búsqueda → Repositorio |
-| HU12_CU006_B · Filtrado | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Servicio de Resultados → Repositorio |
-| HU13_CU007_B · Descarga | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Servicio de Resultados → Repositorio |
+| HU01_CU001_B · Cargar secuencia | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Preparación de búsqueda → Repositorio |
+| HU02_CU001_E1 · Rechazo de secuencia inválida | Aplicación Web (rechazo local) o Aplicación Web → API (rechazo tras validación del servidor) | **Web:** Vistas → Validación y envío (devuelve error, no delega) · **API:** si la validación local fue salteada, Controladores → Preparación de búsqueda (rechaza) |
+| HU03_CU002_B · Configurar la búsqueda | Aplicación Web → API → Base de datos (al leer catálogo) | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Preparación de búsqueda → Repositorio (lee catálogo) |
+| HU05_CU003_B · Validar la búsqueda | Aplicación Web → API | **Web:** Vistas → Validación y envío · **API:** Controladores → Preparación de búsqueda (validación semántica en memoria) |
+| HU08_CU004_B · Ejecutar búsqueda | Aplicación Web → API → BLAST+ · API → Base de datos | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Ejecución y persistencia → **Adaptador BLAST+** → Ejecución y persistencia → Repositorio |
+| HU09_CU004_A1 · Cancelación | Aplicación Web → API → BLAST+ | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Ejecución y persistencia → **Adaptador BLAST+** (termina el subproceso) |
+| HU10_CU004_E1 · Fallo del modo remoto | Aplicación Web → API | **API:** Controladores → Ejecución y persistencia → **Adaptador BLAST+** → Controladores (propagan el error literal al cliente) |
+| HU11_CU005_B · Presentar y persistir | Aplicación Web → API → Base de datos | **API:** Controladores → Ejecución y persistencia → Repositorio |
+| HU12_CU006_B · Filtrado | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Entrega de resultados → Repositorio |
+| HU13_CU007_B · Descarga | Aplicación Web → API → Base de datos | **Web:** Vistas → Validación y envío → Cliente del API · **API:** Controladores → Entrega de resultados → Repositorio |
 
 Todo driver llega a al menos un contenedor y un componente. Todo componente de las vistas corresponde a una responsabilidad del sistema o a una decisión de arquitectura de este documento.
 
