@@ -303,6 +303,7 @@ Se hace una vista de componentes por cada contenedor del sistema con lógica pro
 C4Component
     title Vista de componentes del contenedor API
 
+    ContainerDb(bd, "Base de datos", "PostgreSQL")
     Container(web, "Aplicación Web", "React")
 
     Container_Boundary(api, "API") {
@@ -317,7 +318,6 @@ C4Component
         Component(adap, "Adaptador BLAST+", "CLI + parser", "Datos: invoca BLAST+ y parsea su salida")
     }
     System_Ext(blast, "BLAST+", "Motor")
-    ContainerDb(bd, "Base de datos", "PostgreSQL")
 
     Rel(web, ctrl, "Solicita", "JSON/HTTPS")
 
