@@ -311,10 +311,10 @@ C4Component
         Component(ctrl, "Controladores", "Routers", "Presentación: reciben solicitudes HTTP")
 
         Component(svc_pre, "Preparación de búsqueda", "Python", "Dominio: valida secuencia, configuración y compatibilidad (CU001–CU003)")
-        Component(svc_eje, "Ejecución y persistencia", "Python", "Dominio: ejecuta vía Adaptador, recibe resultados y persiste (CU004–CU005)")
+        Component(repo, "Acceso a datos", "SQLAlchemy", "Datos: lee y escribe en la base")
         Component(svc_ent, "Entrega de resultados", "Python", "Dominio: filtra y arma descargas (CU006–CU007)")
 
-        Component(repo, "Acceso a datos", "SQLAlchemy", "Datos: lee y escribe en la base")
+        Component(svc_eje, "Ejecución y persistencia", "Python", "Dominio: ejecuta vía Adaptador, recibe resultados y persiste (CU004–CU005)")
         Component(adap, "Adaptador BLAST+", "CLI + parser", "Datos: invoca BLAST+ y parsea su salida")
     }
     System_Ext(blast, "BLAST+", "Motor")
