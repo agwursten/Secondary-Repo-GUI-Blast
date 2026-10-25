@@ -303,20 +303,21 @@ Se hace una vista de componentes por cada contenedor del sistema con lógica pro
 C4Component
     title Vista de componentes del contenedor API
 
-    ContainerDb(bd, "Base de datos", "PostgreSQL")
     Container(web, "Aplicación Web", "React")
 
     Container_Boundary(api, "API") {
-        Component(auth, "Autenticación y sesión", "Python", "Dominio: identifica al investigador y mantiene su sesión")
         Component(ctrl, "Controladores", "Routers", "Presentación: reciben solicitudes HTTP")
+        Component(auth, "Autenticación y sesión", "Python", "Dominio: identifica al investigador y mantiene su sesión")
 
         Component(svc_pre, "Preparación de búsqueda", "Python", "Dominio: valida secuencia, configuración y compatibilidad (CU001–CU003)")
-        Component(repo, "Acceso a datos", "SQLAlchemy", "Datos: lee y escribe en la base")
+        Component(svc_eje, "Ejecución y persistencia", "Python", "Dominio: ejecuta vía Adaptador, recibe resultados y persiste (CU004–CU005)")
         Component(svc_ent, "Entrega de resultados", "Python", "Dominio: filtra y arma descargas (CU006–CU007)")
 
-        Component(svc_eje, "Ejecución y persistencia", "Python", "Dominio: ejecuta vía Adaptador, recibe resultados y persiste (CU004–CU005)")
+        Component(repo, "Acceso a datos", "SQLAlchemy", "Datos: lee y escribe en la base")
         Component(adap, "Adaptador BLAST+", "CLI + parser", "Datos: invoca BLAST+ y parsea su salida")
     }
+
+    ContainerDb(bd, "Base de datos", "PostgreSQL")
     System_Ext(blast, "BLAST+", "Motor")
 
     Rel(web, ctrl, "Solicita", "JSON/HTTPS")
@@ -337,7 +338,6 @@ C4Component
 
     UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
 ```
-
 > **Nota sobre la disposición.** La sintaxis C4 de Mermaid tiene limitaciones de layout conocidas: coloca los contenedores vecinos (Aplicación Web, Base de datos, BLAST+) por encima del límite del API aunque las relaciones salgan hacia abajo. Las flechas que van del API a la Base de datos y a BLAST+ se leen entonces como "sube hacia el contenedor vecino que está arriba" en el dibujo, aunque conceptualmente la dependencia es *desde* el API *hacia* esos vecinos. Por el mismo motivo, las etiquetas sobre las flechas se mantuvieron cortas (un verbo cada una) y el detalle completo —qué comunica cada relación— vive en el catálogo de la [sección 7.1.2](#712-catálogo-de-relaciones-del-api).
 
 #### 7.1.1 Catálogo de componentes del API
