@@ -416,7 +416,7 @@ C4Component
     Rel(filt, api_cli, "Delega")
     Rel(api_cli, api, "Solicita", "JSON/HTTPS")
 
-    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+    UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
 ```
 
 > **Nota sobre la disposición.** El API se dibuja dentro de un límite aparte ("Servidor del laboratorio") para que Mermaid lo ubique debajo de la Aplicación Web y la flecha de solicitud no cruce los componentes; es solo un recurso de dibujo.
