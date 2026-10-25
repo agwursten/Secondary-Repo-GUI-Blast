@@ -403,11 +403,13 @@ C4Component
     Container_Boundary(web, "Aplicación Web") {
         Component(views, "Pantallas", "React", "Presentación: pantallas de carga, configuración, resultados y descarga")
         Component(valid, "Validación y envío", "JavaScript", "Dominio: valida formato de secuencia, rangos de parámetros y compatibilidad; si todo es válido, delega el envío")
-        Component(filt, "Filtrado de resultados", "JavaScript", "Dominio: conserva los resultados crudos y los filtra sin consultar al servidor")
+        Component(filt, "Filtrado de resultados", "JavaScript", "Dominio: conserva el crudo en memoria y filtra sin consultar al servidor; arma el pedido de descarga")
         Component(api_cli, "Cliente del API", "fetch", "Datos: encapsula las llamadas HTTP al servidor")
     }
 
-    Container(api, "API", "Python")
+    Boundary(srv, "Servidor del laboratorio", "servidor") {
+        Container(api, "API", "Python")
+    }
 
     Rel(inv, views, "Usa", "navegador")
     Rel(views, valid, "Confirma")
@@ -416,8 +418,11 @@ C4Component
     Rel(filt, api_cli, "Delega")
     Rel(api_cli, api, "Solicita", "JSON/HTTPS")
 
-    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+    UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
 ```
+
+> **Nota sobre la disposición.** El API se dibuja dentro de un límite aparte ("Servidor del laboratorio") para que Mermaid lo ubique debajo de la Aplicación Web y la flecha de solicitud no cruce los componentes; es solo un recurso de dibujo.
+
 
 #### 7.2.1 Catálogo de componentes de la Aplicación Web
 
