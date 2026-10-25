@@ -306,8 +306,8 @@ C4Component
     Container(web, "Aplicación Web", "React")
 
     Container_Boundary(api, "API") {
-        Component(ctrl, "Controladores", "Routers", "Presentación: reciben solicitudes HTTP")
         Component(auth, "Autenticación y sesión", "Python", "Dominio: identifica al investigador y mantiene su sesión")
+        Component(ctrl, "Controladores", "Routers", "Presentación: reciben solicitudes HTTP")
 
         Component(svc_pre, "Preparación de búsqueda", "Python", "Dominio: valida secuencia, configuración y compatibilidad (CU001–CU003)")
         Component(svc_eje, "Ejecución y persistencia", "Python", "Dominio: ejecuta vía Adaptador, recibe resultados y persiste (CU004–CU005)")
@@ -316,9 +316,8 @@ C4Component
         Component(repo, "Acceso a datos", "SQLAlchemy", "Datos: lee y escribe en la base")
         Component(adap, "Adaptador BLAST+", "CLI + parser", "Datos: invoca BLAST+ y parsea su salida")
     }
-
-    ContainerDb(bd, "Base de datos", "PostgreSQL")
     System_Ext(blast, "BLAST+", "Motor")
+    ContainerDb(bd, "Base de datos", "PostgreSQL")
 
     Rel(web, ctrl, "Solicita", "JSON/HTTPS")
 
