@@ -479,6 +479,7 @@ Este documento registra el uso crítico de asistentes de IA generativa durante e
   - **Cada flecha del diagrama de secuencia es una operación de la clase que la recibe**, y aparece con ese mismo nombre en el diagrama de clases.
   - **Nombres que se entiendan solos.** Por ejemplo, `RutasEjecucion` no decía nada y se eliminó (la ruta HTTP es código del framework sin lógica); quedaron `PantallaBusqueda`, `ControladorEjecucion`, `RepositorioHistorial`, `AdaptadorBlast`.
   - **Menos clases.** El modelo bajó a diez clases: la Aplicación Web como una sola frontera; las entidades de configuración como atributos de `Busqueda`; los hits como datos simples.
+  - **Interfaz con la base de datos por polimorfismo.** Le pedimos que se viera explícitamente que cambiar de base no afecta al programa. `RepositorioHistorial` quedó marcado como interfaz en la robustez y en las secuencias, con dos implementaciones: `RepositorioHistorialEnMemoria` y `RepositorioHistorialSql` (SQLite o PostgreSQL según la cadena de conexión). La base de datos se agregó a la robustez detrás del repositorio.
 - **Qué descartamos:** la consulta periódica del progreso y el registro de búsquedas en curso en el servidor (más piezas sin que la HU las pida), y la autenticación dentro del diseño de esta HU.
 - **Errores / imprecisiones detectadas:** la IA sobredimensionó el diseño, que es el riesgo que advertía la cátedra: más clases, interfaces y diagramas de los que la HU necesita. Algunos se justificaban con historias que no estábamos diseñando (cancelación, confidencialidad del historial).
 

@@ -55,7 +55,6 @@ Más allá de esas condiciones, es **la historia que justifica la existencia del
 | C4 | Modelo de documentación de arquitectura en cuatro niveles: contexto, contenedores, componentes y código |
 | CA | Criterio de aceptación de una historia de usuario |
 | CLI | Interfaz de línea de comandos (*command-line interface*) |
-| CP | Caso de prueba |
 | CU | Caso de uso |
 | D2 | Almacén del DFD con las búsquedas ejecutadas y sus resultados crudos (historial) |
 | DA | Decisión de arquitectura |
@@ -67,6 +66,7 @@ Más allá de esas condiciones, es **la historia que justifica la existencia del
 | MVC | Modelo-Vista-Controlador |
 | NCBI | *National Center for Biotechnology Information*, proveedor del BLAST remoto |
 | RF | Requerimiento funcional |
+| SQL | Lenguaje para consultar y modificar bases de datos relacionales |
 | XML | Formato de datos con etiquetas; es la salida de BLAST+ que usa este diseño (`-outfmt 5`) |
 
 ---
@@ -81,7 +81,7 @@ Más allá de esas condiciones, es **la historia que justifica la existencia del
 | **Estructura** | Contenedor **Aplicación Web** (patrón MVC, `DA-07`): Pantallas, Controlador de búsqueda, Modelo de búsqueda, Modelo de resultados y Cliente del Backend. Contenedor **Backend** (patrón Capas, `DA-02`): **Controladores** (presentación), **Ejecución y persistencia** (dominio), **Acceso a datos** y **Adaptador BLAST+** (datos). Sistema externo **BLAST+**. Estilo base cliente-servidor (`DA-01`). **Componente principal: Ejecución y persistencia.** |
 | **Calidad** | `EC-01` · hasta cinco búsquedas concurrentes sin cruce de resultados. Tácticas: *introducir concurrencia* y *encapsular*. Decisión: `DA-04` (un subproceso de BLAST+ por búsqueda). `EC-02` · cambio menor de versión de BLAST+ sin romper la lectura de la salida. Tácticas: *adaptar la interfaz* y *encapsular*. Decisión: `DA-03` (Adaptador BLAST+ dedicado en la capa de datos). |
 | **Dominio** | Entidades del modelo de dominio que intervienen: `Busqueda` y `Alineamiento` como clases; `SecuenciaQuery`, `ProgramaBlast`, `ParametrosPreBusqueda`, `ModoEjecucion` y `BaseDeDatos` como datos de la búsqueda. No intervienen `Usuario`, `Investigador`, `Administrador`, `FiltroPostBusqueda`, `Reporte` ni `FormatoDescarga` (ver [3.2](#32-entidades-del-modelo-de-dominio-que-intervienen)). |
-| **Verificación** | `EC-01`: prueba con cinco búsquedas lanzadas a la vez sobre un adaptador simulado con demoras distintas; cada una recibe exactamente sus propios alineamientos (cero cruces). `EC-02`: prueba de la lectura de una salida XML con campos desconocidos; los campos obligatorios llegan intactos y queda registrada una advertencia. Ver [8.2](#82-casos-de-prueba-previstos). |
+| **Verificación** | `EC-01`: se verificará con una prueba de cinco búsquedas lanzadas a la vez sobre un adaptador simulado con demoras distintas; cada una recibe exactamente sus propios alineamientos (cero cruces). `EC-02`: se verificará con una prueba de la lectura de una salida XML con campos desconocidos; los campos obligatorios llegan intactos y queda registrada una advertencia. Las pruebas concretas se diseñan en la etapa de pruebas, una vez aprobado este diseño. |
 
 ### 2.2 Recorrido de la HU sobre los componentes
 
@@ -118,7 +118,7 @@ flowchart LR
 
 ★ componente principal de la HU.
 
-La verificación completa de coherencia con la arquitectura está en la [sección 8.3](#83-verificación-de-coherencia), porque necesita los diagramas de las secciones 3 y 4.
+La verificación completa de coherencia con la arquitectura está en la [sección 8.2](#82-verificación-de-coherencia), porque necesita los diagramas de las secciones 3 y 4.
 
 ---
 
@@ -216,37 +216,42 @@ Los escenarios de **tolerancia a fallos** (rate limit y timeout de NCBI) describ
 
 ### 3.4 Diagrama de robustez
 
-Leyenda: borde punteado = actor o sistema externo; rectángulo redondeado azul = *boundary*; círculo naranja = *controller*; rectángulo con barras verde = *entity*.
+Leyenda: borde punteado = actor o sistema externo; cilindro gris = almacén de datos; rectángulo redondeado azul = *boundary*; círculo naranja = *controller*; rectángulo con barras verde = *entity*.
 
 ```mermaid
 flowchart LR
     inv["Investigador/a<br/>(actor)"]
     blast["BLAST+<br/>(sistema externo)"]
+    db[("Base de datos<br/>historial D2")]
 
     ui(["«boundary»<br/>PantallaBusqueda"])
-    ab(["«boundary»<br/>AdaptadorBlast"])
 
     ce(("«controller»<br/>ControladorEjecucion"))
-    rh(("«controller»<br/>RepositorioHistorial"))
+    rh(("«controller»<br/>«interface»<br/>RepositorioHistorial"))
 
     subgraph agg["agregado Busqueda"]
         bu[["«entity»<br/>Busqueda"]]
         al[["«entity»<br/>Alineamiento"]]
     end
 
+    ab(["«boundary»<br/>AdaptadorBlast"])
+
     inv --> ui
     ui --> ce
-    ce --> bu
     ce --> ab
-    ce --> rh
-    rh --> bu
     ab --> blast
+    ce --> bu
+    ce --> rh
+    rh -->|guarda| bu
+    rh --> db
 
     classDef actor fill:#f3f4f6,stroke:#4b5563,color:#111827,stroke-dasharray: 4 3
     classDef boundary fill:#dbeafe,stroke:#1d4ed8,color:#0f172a
     classDef controller fill:#ffedd5,stroke:#c2410c,color:#0f172a
     classDef entity fill:#dcfce7,stroke:#15803d,color:#0f172a
+    classDef store fill:#e5e7eb,stroke:#374151,color:#111827
     class inv,blast actor
+    class db store
     class ui,ab boundary
     class ce,rh controller
     class bu,al entity
@@ -257,9 +262,11 @@ flowchart LR
 
 - **Fronteras.** Hay dos, porque el sistema habla con dos cosas que no son él: el investigador, a través de `PantallaBusqueda`, y BLAST+, a través de `AdaptadorBlast`.
 - **Controladores.** `ControladorEjecucion` coordina la HU y `RepositorioHistorial` guarda la búsqueda terminada.
+- **Interfaz con la base de datos.** `RepositorioHistorial` es una **interfaz**: define qué se puede hacer con el historial (`guardar`) pero no cómo ni dónde. Detrás de ella hay implementaciones intercambiables (en memoria y en una base SQL; ver el modelo de clases). El controlador solo conoce la interfaz, así que cambiar de base de datos no lo afecta.
+- **Base de datos.** Es el almacén donde queda el historial (D2 del DFD), en el contenedor *Base de datos* de la arquitectura. No es una de las tres categorías de la robustez: se dibuja para mostrar dónde terminan los datos, igual que BLAST+ se dibuja para mostrar con quién habla el Adaptador. Solo la toca `RepositorioHistorial`: ni el controlador ni las entidades saben que existe, y por eso se puede cambiar la base (memoria, SQLite, PostgreSQL) sin tocarlos.
 - **Entidades.** `Busqueda` y `Alineamiento`, que salen de la tabla 3.2. Forman un agregado: un alineamiento no existe sin su búsqueda, y desde afuera se accede siempre a través de `Busqueda`. Por eso no hay flecha del controlador a `Alineamiento`.
 
-**Reglas de conexión verificadas.** El actor solo toca la pantalla; la pantalla solo toca al controlador; ninguna frontera toca una entidad (`AdaptadorBlast` recibe datos simples y devuelve los hits como datos, no como `Alineamiento`); BLAST+ se alcanza solo a través de una frontera; el controlador coordina a los demás.
+**Reglas de conexión verificadas.** El actor solo toca la pantalla; la pantalla solo toca al controlador; ninguna frontera toca una entidad (`AdaptadorBlast` recibe datos simples y devuelve los hits como datos, no como `Alineamiento`); BLAST+ se alcanza solo a través de una frontera; el controlador coordina a los demás; la base de datos se alcanza solo a través del repositorio.
 
 #### 3.4.1 Dónde vive cada regla del negocio
 
@@ -283,6 +290,7 @@ La pantalla no aplica ninguna de estas reglas: solo muestra el progreso, la tabl
 | `RepositorioHistorial` | controller | Backend | Acceso a datos | Datos |
 | `AdaptadorBlast` | boundary | Backend | Adaptador BLAST+ | Datos |
 | BLAST+ | sistema externo | — | — | — |
+| Base de datos (historial D2) | almacén de datos | Base de datos (PostgreSQL) | — | — |
 
 **Nota sobre la Aplicación Web.** En esta HU la Aplicación Web no aplica reglas del negocio: la validación (`DA-05`) es de `HU05` y el filtrado (`DA-06`) es de `HU11`. Por eso se la representa con una sola frontera, `PantallaBusqueda`. Dentro de ella, según MVC, las Pantallas muestran progreso y tabla, el Controlador de búsqueda envía la solicitud a través del Cliente del Backend, el Modelo de búsqueda conserva la configuración validada que viaja en la solicitud y el Modelo de resultados guarda la tabla recibida.
 
@@ -304,7 +312,7 @@ sequenceDiagram
     participant AB as AdaptadorBlastCli<br/>(implementa AdaptadorBlast)
     participant BL as BLAST+
     participant AL as Alineamiento
-    participant RH as RepositorioHistorial
+    participant RH as RepositorioHistorial<br/>(interfaz)
 
     Inv->>UI: presionar_ejecutar()
     UI-)CE: ejecutar_busqueda(configuracion)
@@ -354,7 +362,7 @@ sequenceDiagram
     participant B as Busqueda
     participant AB as AdaptadorBlastCli<br/>(implementa AdaptadorBlast)
     participant BL as BLAST+
-    participant RH as RepositorioHistorial
+    participant RH as RepositorioHistorial<br/>(interfaz)
 
     Inv->>UI: presionar_ejecutar()
     UI-)CE: ejecutar_busqueda(configuracion)
@@ -465,6 +473,10 @@ classDiagram
         -busquedas: list~Busqueda~
         +guardar(busqueda: Busqueda) None
     }
+    class RepositorioHistorialSql {
+        -url_conexion: str
+        +guardar(busqueda: Busqueda) None
+    }
 
     PantallaBusqueda --> ControladorEjecucion : JSON / HTTPS
     ControladorEjecucion --> AdaptadorBlast
@@ -475,6 +487,7 @@ classDiagram
     AdaptadorBlastSimulado ..|> AdaptadorBlast
     AdaptadorBlast ..> ErrorBlast : lanza
     RepositorioHistorialEnMemoria ..|> RepositorioHistorial
+    RepositorioHistorialSql ..|> RepositorioHistorial
     RepositorioHistorial ..> Busqueda : guarda
 ```
 
@@ -489,7 +502,7 @@ classDiagram
 | `AdaptadorBlast` / `AdaptadorBlastCli` | `ejecutar`, `leer_salida`, `registrar_advertencia` | `ejecutar` en 1 y 2; las otras dos en 1 |
 | `RepositorioHistorial` | `guardar` | Secuencia 1 |
 | `ErrorBlast` | — (lo devuelve `ejecutar`) | Secuencia 2 |
-| `AdaptadorBlastSimulado`, `RepositorioHistorialEnMemoria` | Implementan las interfaces que participan en las secuencias | Secuencias 1 y 2, detrás de su interfaz |
+| `AdaptadorBlastSimulado`, `RepositorioHistorialEnMemoria`, `RepositorioHistorialSql` | Implementan las interfaces que participan en las secuencias | Secuencias 1 y 2, detrás de su interfaz |
 
 No hay operaciones que no aparezcan como flecha en alguna secuencia.
 
@@ -505,7 +518,7 @@ No hay operaciones que no aparezcan como flecha en alguna secuencia.
 | `Busqueda` | Raíz del agregado: guarda la configuración y el momento de ejecución, crea sus alineamientos con todos los hits y arma la tabla | Experto en información y Creador |
 | `Alineamiento` | Calcula sus porcentajes | Experto en información |
 | `AdaptadorBlast` | Único punto de contacto con BLAST+: lanza el subproceso, lee la salida y advierte los campos que no conoce | Bajo acoplamiento y alta cohesión |
-| `RepositorioHistorial` | Guarda la búsqueda terminada con todos sus alineamientos | Alta cohesión y bajo acoplamiento |
+| `RepositorioHistorial` | Interfaz con la base de datos: guarda la búsqueda terminada con todos sus alineamientos. Sus implementaciones deciden dónde | Alta cohesión y bajo acoplamiento; **Polimorfismo** y **Variaciones protegidas** (ver D9) |
 
 Las dos entidades tienen comportamiento propio (crear alineamientos, armar la tabla, calcular porcentajes): no son anémicas.
 
@@ -521,17 +534,24 @@ Las dos entidades tienen comportamiento propio (crear alineamientos, armar la ta
 
 **D5 · El Adaptador recibe datos simples y devuelve los hits como datos.** `ejecutar` recibe el programa, la secuencia, la base, el modo y los parámetros, y devuelve una lista de hits (diccionarios con los campos conocidos). El Adaptador no conoce las entidades del dominio (una frontera no toca entidades) y el dominio no conoce flags de línea de comandos ni etiquetas XML (`DA-03`). Es `Busqueda` quien convierte cada hit en un `Alineamiento`.
 
-**D6 · Interfaces solo donde hay más de una implementación.** `AdaptadorBlast` tiene la implementación real (`AdaptadorBlastCli`) y una simulada (`AdaptadorBlastSimulado`), que hace falta para probar `EC-01` con demoras controladas y para correr el sistema donde BLAST+ no está instalado. `RepositorioHistorial` tiene la implementación en memoria y tendrá la de PostgreSQL. Las demás clases no tienen interfaz porque tienen una sola implementación posible.
+**D6 · Interfaces solo donde hay más de una implementación.** `AdaptadorBlast` tiene la implementación real (`AdaptadorBlastCli`) y una simulada (`AdaptadorBlastSimulado`), que hace falta para probar `EC-01` con demoras controladas y para correr el sistema donde BLAST+ no está instalado. `RepositorioHistorial` tiene la implementación en memoria y la SQL (ver D9). Las demás clases no tienen interfaz porque tienen una sola implementación posible.
 
 **D7 · Salida XML (`-outfmt 5`).** La salida tabular (`-outfmt 6`) tiene columnas por posición, y una columna nueva corre las demás. En XML cada campo tiene nombre. Por eso es el formato que permite cumplir `EC-02`: tomar los campos conocidos por su nombre e ignorar los nuevos.
 
 **D8 · `ErrorBlast` en lugar de un valor de retorno especial.** Cuando BLAST+ termina con error, el Adaptador lanza `ErrorBlast` con el mensaje de BLAST+. El error corta la secuencia antes de registrar y de guardar, y la ruta HTTP lo convierte en una respuesta de error que la pantalla muestra. El controlador no necesita ramas para ese caso.
 
+**D9 · Interfaz con la base de datos, resuelta por polimorfismo.** Si mañana el historial pasa de una base a otra, el programa no debe cambiar. Para eso `ControladorEjecucion` no guarda en ninguna base concreta: llama a `guardar(busqueda)` sobre la interfaz `RepositorioHistorial`, y es la implementación que recibió por constructor la que decide dónde termina la búsqueda. Hay dos:
+
+- `RepositorioHistorialEnMemoria`: guarda en una lista de Python. Sirve para las pruebas y para correr el sistema sin instalar nada.
+- `RepositorioHistorialSql`: guarda en una base relacional, con la búsqueda y sus alineamientos en una sola transacción. Usa SQLAlchemy (la tecnología del componente Acceso a datos), así que la misma clase funciona con SQLite (desarrollo y defensa) o con PostgreSQL (producción, según la arquitectura) cambiando solo `url_conexion`.
+
+Elegir una u otra es una sola línea en el punto de arranque del programa. El controlador, las entidades, las secuencias y las pruebas del controlador no cambian. Son dos criterios GRASP que se suman a los cinco básicos: **Polimorfismo** (la variación "dónde se guarda" se resuelve con clases distintas que responden a la misma operación, en lugar de un `if` sobre el tipo de base) y **Variaciones protegidas** (la interfaz protege al resto del sistema del punto que puede cambiar). Agregar otra base en el futuro es agregar otra clase que implemente `RepositorioHistorial`, sin tocar las existentes.
+
 ### 5.3 Patrones de diseño usados
 
 | Patrón | Problema que resuelve | Dónde está en el diagrama |
 |---|---|---|
-| **Repository** | Que el controlador guarde la búsqueda sin saber si el historial está en memoria o en PostgreSQL | `RepositorioHistorial` y `RepositorioHistorialEnMemoria` |
+| **Repository** | Que el controlador guarde la búsqueda sin saber si el historial está en memoria, en SQLite o en PostgreSQL | `RepositorioHistorial` (interfaz) con `RepositorioHistorialEnMemoria` y `RepositorioHistorialSql` |
 | **Adapter** (GoF) | BLAST+ habla por línea de comandos y XML; el dominio necesita "ejecutá esto y devolveme los hits". El Adaptador traduce una interfaz en la otra | `AdaptadorBlast` (interfaz) y `AdaptadorBlastCli` (adaptador) |
 
 **Se consideraron y se descartaron:**
@@ -551,64 +571,53 @@ src/
 ├── aplicacion/         # controlador_ejecucion.py, adaptador_blast.py (interfaz y ErrorBlast),
 │                       # repositorio_historial.py (interfaz)
 ├── infraestructura/    # adaptador_blast_cli.py, adaptador_blast_simulado.py,
-│                       # repositorio_historial_en_memoria.py
+│                       # repositorio_historial_en_memoria.py, repositorio_historial_sql.py
 └── interfaz/           # pantalla de búsqueda y ruta HTTP de ejecución
 tests/
 ```
 
 Correspondencia con la arquitectura: `aplicacion/controlador_ejecucion.py` y `dominio/` son el componente **Ejecución y persistencia**; `infraestructura/repositorio_historial_*` es **Acceso a datos**; `infraestructura/adaptador_blast_*` es el **Adaptador BLAST+**; la ruta HTTP de `interfaz/` es **Controladores**.
 
+Qué implementación del repositorio y del adaptador se usa se decide en un único lugar, el punto de arranque del programa, que las crea y se las pasa al `ControladorEjecucion` por su constructor.
+
 ---
 
 ## 7. Pruebas
 
-*Se completa una vez aprobado el diseño.* Los casos de prueba previstos están en la [sección 8.2](#82-casos-de-prueba-previstos).
+*Se completa una vez aprobado el diseño.*
 
 ---
 
 ## 8. Trazabilidad
 
-### 8.1 HU → componente C4 → clases → archivo → pruebas
+### 8.1 HU → componente C4 → clases → archivo
 
-Extiende la tabla 11.2 de la arquitectura con las columnas de diseño. Los archivos y las pruebas son los previstos.
+Extiende la tabla 11.2 de la arquitectura con las columnas de diseño. Los archivos son los previstos para la implementación; la columna de pruebas se agrega cuando se diseñen los casos de prueba.
 
-| Criterio / escenario | Componente C4 | Clases | Archivo previsto | Pruebas |
-|---|---|---|---|---|
-| CA-01 · Ejecución sin bloquear, con progreso | Pantallas → Controladores → Ejecución y persistencia | `PantallaBusqueda`, `ControladorEjecucion` | `interfaz/`, `aplicacion/controlador_ejecucion.py` | `CP-01` |
-| CA-02 · Tabla al finalizar | Ejecución y persistencia → Adaptador BLAST+ | `ControladorEjecucion`, `AdaptadorBlast`, `Busqueda`, `Alineamiento` | `aplicacion/controlador_ejecucion.py`, `dominio/busqueda.py`, `dominio/alineamiento.py` | `CP-02`, `CP-03` |
-| CA-03 · Persistencia en el historial | Ejecución y persistencia → Acceso a datos | `ControladorEjecucion`, `Busqueda`, `RepositorioHistorial` | `aplicacion/controlador_ejecucion.py`, `infraestructura/repositorio_historial_en_memoria.py` | `CP-04`, `CP-05` |
-| Camino de error (garantía mínima de `CU004`) | Ejecución y persistencia → Adaptador BLAST+ | `AdaptadorBlast`, `ErrorBlast`, `ControladorEjecucion` | `aplicacion/adaptador_blast.py`, `aplicacion/controlador_ejecucion.py` | `CP-06` |
-| `EC-01` · Cero cruces con cinco concurrentes | Ejecución y persistencia → Adaptador BLAST+ | `ControladorEjecucion`, `AdaptadorBlast` | `aplicacion/controlador_ejecucion.py` | `CP-07` |
-| `EC-02` · Campos nuevos en la salida | Adaptador BLAST+ | `AdaptadorBlastCli` | `infraestructura/adaptador_blast_cli.py` | `CP-08` |
+| Criterio / escenario | Componente C4 | Clases | Archivo previsto |
+|---|---|---|---|
+| CA-01 · Ejecución sin bloquear, con progreso | Pantallas → Controladores → Ejecución y persistencia | `PantallaBusqueda`, `ControladorEjecucion` | `interfaz/`, `aplicacion/controlador_ejecucion.py` |
+| CA-02 · Tabla al finalizar | Ejecución y persistencia → Adaptador BLAST+ | `ControladorEjecucion`, `AdaptadorBlast`, `Busqueda`, `Alineamiento` | `aplicacion/controlador_ejecucion.py`, `dominio/busqueda.py`, `dominio/alineamiento.py` |
+| CA-03 · Persistencia en el historial | Ejecución y persistencia → Acceso a datos | `ControladorEjecucion`, `Busqueda`, `RepositorioHistorial` | `aplicacion/controlador_ejecucion.py`, `infraestructura/repositorio_historial_en_memoria.py`, `infraestructura/repositorio_historial_sql.py` |
+| Camino de error (garantía mínima de `CU004`) | Ejecución y persistencia → Adaptador BLAST+ | `AdaptadorBlast`, `ErrorBlast`, `ControladorEjecucion` | `aplicacion/adaptador_blast.py`, `aplicacion/controlador_ejecucion.py` |
+| `EC-01` · Cero cruces con cinco concurrentes | Ejecución y persistencia → Adaptador BLAST+ | `ControladorEjecucion`, `AdaptadorBlast` | `aplicacion/controlador_ejecucion.py` |
+| `EC-02` · Campos nuevos en la salida | Adaptador BLAST+ | `AdaptadorBlastCli` | `infraestructura/adaptador_blast_cli.py` |
 
-### 8.2 Casos de prueba previstos
-
-| ID | Técnica | Origen | Dado (entrada y estado) | Resultado esperado |
-|---|---|---|---|---|
-| `CP-01` | Caja negra | CA-01 | Dos ejecuciones lanzadas a la vez con un adaptador simulado que demora 1 segundo | Las dos terminan en menos de 2 segundos: el servidor no hace esperar una ejecución a la otra |
-| `CP-02` | Caja negra | CA-02 | Adaptador simulado que devuelve dos hits | `ejecutar_busqueda` devuelve dos filas con hit, score, E-value, % identidad y % cobertura |
-| `CP-03` | Caja negra, valores límite | CA-02, R1 | Alineamientos con identidades = longitud del alineamiento, con la query cubierta entera y con un solo residuo cubierto | Porcentajes exactos: 100, 100 y 100 ÷ longitud de la query |
-| `CP-04` | Caja negra | CA-03, R2 | Ejecución que devuelve tres hits | El historial tiene una búsqueda con parámetros, base, fecha y los tres alineamientos |
-| `CP-05` | Caja blanca | CA-03, R3 | Repositorio de prueba que falla al guardar | `ejecutar_busqueda` termina con error y no devuelve filas |
-| `CP-06` | Caja negra | Camino de error, R4 | Adaptador simulado que lanza `ErrorBlast("mensaje")` | El error llega con el mensaje de BLAST+; el historial queda vacío |
-| `CP-07` | Caja negra | `EC-01` | Cinco ejecuciones lanzadas a la vez, cada una con una secuencia distinta, sobre un adaptador simulado con demoras distintas que devuelve hits propios de cada secuencia | Cada ejecución recibe exactamente sus hits: cero cruces |
-| `CP-08` | Caja negra | `EC-02`, R5 | XML de BLAST+ con una etiqueta nueva dentro de un hit | `leer_salida` devuelve los campos obligatorios correctos y queda una advertencia en el log |
-
-### 8.3 Verificación de coherencia
+### 8.2 Verificación de coherencia
 
 | Verificación | ¿Se cumple? | Evidencia |
 |---|---|---|
 | Cada participante de las secuencias pertenece a un componente de la ficha | Sí | Tabla 3.4.2: los seis participantes tienen contenedor, componente y capa |
-| Cada mensaje entre componentes está en el catálogo de relaciones de la arquitectura | Sí | `PantallaBusqueda → ControladorEjecucion` = Aplicación Web → Controladores (*Solicita*) → Ejecución y persistencia (*Invoca*), a través de la ruta HTTP (3.4.2). `ControladorEjecucion → AdaptadorBlast` = Ejecución y persistencia → Adaptador BLAST+ (*Ejecuta*). `AdaptadorBlast → BLAST+` = Adaptador BLAST+ → BLAST+ (*Invoca*). `ControladorEjecucion → RepositorioHistorial` = Ejecución y persistencia → Acceso a datos (*Persiste*) |
+| Cada mensaje entre componentes está en el catálogo de relaciones de la arquitectura | Sí | `PantallaBusqueda → ControladorEjecucion` = Aplicación Web → Controladores (*Solicita*) → Ejecución y persistencia (*Invoca*), a través de la ruta HTTP (3.4.2). `ControladorEjecucion → AdaptadorBlast` = Ejecución y persistencia → Adaptador BLAST+ (*Ejecuta*). `AdaptadorBlast → BLAST+` = Adaptador BLAST+ → BLAST+ (*Invoca*). `ControladorEjecucion → RepositorioHistorial` = Ejecución y persistencia → Acceso a datos (*Persiste*). `RepositorioHistorial → Base de datos` = Acceso a datos → Base de datos (*Lee y escribe*, SQL) |
 | El diseño respeta las restricciones del estilo y de los patrones del contenedor | Sí | Cliente-servidor: el cliente inicia la comunicación y espera la respuesta; el servidor nunca le envía nada por su cuenta. Capas: las llamadas van de presentación a dominio a datos, sin saltear capas y sin llamadas hacia arriba (por eso se descartó Observer). MVC: la Aplicación Web solo muestra lo que recibe |
 | La táctica del escenario de calidad aparece como operación o mensaje | Sí | `EC-01`: la flecha a BLAST+ con un subproceso propio por ejecución, dentro de la llamada asíncrona a `ejecutar_busqueda` (secuencia 1). `EC-02`: `leer_salida` y el `opt` con `registrar_advertencia` (secuencia 1) |
 | Cada entidad del diagrama de robustez está en el modelo de dominio (o se agregó) | Sí | `Busqueda` y `Alineamiento` están en el modelo de dominio |
 | Cada entidad que interviene según el paso 1 aparece en el diseño, o se explica por qué no | Sí | `Busqueda` y `Alineamiento` son clases. Las otras cinco intervienen como atributos de `Busqueda`, por el motivo explicado en 3.2 |
-| La medida del escenario tiene una prueba que la verifica | Sí (prevista) | `EC-01`: `CP-07`. `EC-02`: `CP-08` |
-| Todo criterio de aceptación llega al menos a una prueba | Sí (prevista) | CA-01 → `CP-01`; CA-02 → `CP-02`, `CP-03`; CA-03 → `CP-04`, `CP-05` |
+| La medida del escenario tiene una prueba que la verifica | Pendiente (etapa de pruebas) | Las medidas a verificar quedan identificadas en la tabla de coherencia (2.1): cero cruces con cinco ejecuciones simultáneas (`EC-01`) y campos obligatorios intactos con advertencia registrada (`EC-02`). El diseño las hace verificables sin BLAST+ real gracias a `AdaptadorBlastSimulado` y a que `leer_salida` es una operación pública |
+| Todo criterio de aceptación llega al menos a una prueba | Pendiente (etapa de pruebas) | Cada criterio ya llega a clases y archivos (tabla 8.1); la columna de pruebas se completa al diseñar los casos de prueba |
 | Toda clase del diagrama aparece en alguna secuencia | Sí | Tabla de correspondencia de la sección 4 |
 
-### 8.4 Actualizaciones a documentos anteriores
+### 8.3 Actualizaciones a documentos anteriores
 
 | Documento | Cambio | Motivo |
 |---|---|---|
@@ -628,6 +637,7 @@ Extiende la tabla 11.2 de la arquitectura con las columnas de diseño. Los archi
 | Agregado | Grupo de entidades que se tratan como una unidad y se acceden a través de una entidad raíz. Aquí, `Busqueda` con sus alineamientos |
 | Hit | Cada secuencia de la base de datos que BLAST+ encontró parecida a la query. En la salida de BLAST+ llega como datos; en el dominio se convierte en un `Alineamiento` |
 | Historial | Conjunto de búsquedas ejecutadas con sus resultados crudos (almacén D2) |
+| Polimorfismo | Que objetos de clases distintas respondan a la misma operación, cada uno a su manera. Aquí, las implementaciones de `RepositorioHistorial` responden a `guardar` cada una en su almacén |
 | Subproceso | Proceso del sistema operativo que lanza el Backend para ejecutar un programa de BLAST+ |
 
 Los términos del dominio (BLAST, BLAST+, query, E-value, FASTA, etc.) están en el [glosario del SRS](../requeriments/srs.md#10-glosario).
