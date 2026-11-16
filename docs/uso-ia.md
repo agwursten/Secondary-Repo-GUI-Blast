@@ -427,7 +427,63 @@ Este documento registra el uso crítico de asistentes de IA generativa durante e
   - **Menciones al número de TP** eliminadas del cuerpo: el documento simula un proyecto real.
 - **Qué descartamos:** separar la vista de componentes del API en dos sub-vistas para evitar cruces de líneas (la consigna pide una por cada contenedor); dibujar flechas desde Preparación / Ejecución / Entrega hacia Autenticación y sesión (el identificador viaja como parámetro, no como invocación), una cola de mensajes implícita entre Ejecución y persistencia y el Adaptador BLAST+ (habría violado DA-04).
 - **Errores / imprecisiones detectadas:** la IA no decía abiertamente que la validación en el cliente **no es un control de seguridad**, en DA-05 dejamos explícito que el servidor repite la validación porque un atacante puede saltear la del cliente. En una iteración quiso agregar la cola implícita descartada arriba. Confusión recurrente entre contenedores de C4 y contenedores de despliegue (Docker): corregida cada vez.
+
+## Entrada 22 — Cambio de patrón en la Aplicación Web: de Capas a MVC, y ajuste de nombres en el Backend
+
+- **Herramienta usada:** Claude.
+- **Tarea concreta:** revisar la vista de componentes de la Aplicación Web armada en la Entrada 21, donde habíamos aplicado al cliente las mismas tres capas que al Backend (presentación, dominio, datos). Al consultar en clases notamos que Capas no se ajustaba perfectamente bien con el problema del cliente. Le pedimos a la IA que evaluara qué patrón correspondía al cliente y que reescribiera la sección 5.3, la vista de componentes 7.2 y las decisiones afectadas.
+- **Qué generó:**
+  - Una sección 5.3 que separa el patrón por contenedor: **Capas en el Backend** (flujo vertical: solicitud → dominio → base de datos o BLAST+) y **MVC en la Aplicación Web** (flujo cíclico: acción → cambio de estado → refresco de la vista).
+  - Una nueva vista de componentes de la Aplicación Web con roles MVC: **Pantallas** (Vista), **Controlador de búsqueda** y **Controlador de resultados** (Controladores), **Modelo de búsqueda** y **Modelo de resultados** (Modelos), y el **Cliente del Backend** como componente de apoyo fuera de la tríada, usado solo por los Controladores.
+  - Una nueva decisión **DA-07 · Patrón MVC en la Aplicación Web**, trazada a los dos escenarios de operabilidad (filtrado en menos de 1 segundo e invalidación de la marca "validada" en menos de 500 ms), con Capas y MVVM como alternativas descartadas.
+  - La reubicación de las reglas de validación (DA-05) y de filtrado (DA-06) dentro de los Modelos, de modo que se puedan probar sin montar la interfaz.
+- **Qué aceptamos:**
+  - MVC en la variante con **notificación de cambios por suscripción**: la Vista observa a los Modelos (en React, el estado que renderiza) y los Modelos no conocen ni a la Vista ni a los Controladores. Encaja con cómo funciona React y deja verificable en el diagrama que ninguna flecha sale de los Modelos.
+  - Dividir Controlador y Modelo en dos (búsqueda y resultados), porque corresponden a los dos momentos del trabajo del investigador (preparar y lanzar la búsqueda, y explorar lo que devolvió) y comparten poco estado.
+  - La tabla de comprobación de restricciones del patrón (7.2.3), con el mismo formato que la de Capas en el Backend (7.1.3).
+- **Qué modificamos:**
+  - **"API" pasa a llamarse "Backend".** Al reescribir las vistas notamos que llamar "API" al contenedor confundía el contenedor con la interfaz que expone. Lo renombramos a **Backend** en todo el documento y dejamos en la sección 6.2 la aclaración de por qué. "API" (o "API REST") queda reservado para la interfaz REST que el Backend le ofrece a la Aplicación Web.
+  - **"Entrega de resultados" pasa a llamarse "Generación de archivos de descarga".** Con el filtrado movido al Modelo de resultados del cliente (DA-06), el componente del Backend ya no "entrega" resultados filtrados: solo arma los archivos descargables a partir de lo persistido y de los hits visibles que indica el cliente. El nombre nuevo describe lo que hace de verdad.
+  - **Motivación de DA-07.** La IA la trazaba a EC-01 y EC-02. La corregimos: los drivers de interoperabilidad no condicionan la estructura interna del cliente. Los que la condicionan son los escenarios de operabilidad, que no son drivers, y así quedó escrito en DA-07 y en la sección 11.1.
+- **Qué descartamos:**
+  - **Mantener Capas en el cliente.** Ver la tarea concreta: el flujo de una interfaz no es una cadena vertical.
+  - **MVVM.** Sirve para interfaces con estado complejo y enlace automático entre vista y modelo de vista. El estado de LocalBlast (una secuencia, una configuración, una tabla de resultados) es acotado, y el enlace automático sumaría una pieza más que haría más difícil depurar.
+- **Errores / imprecisiones detectadas:**
+  - **Cambio transversal aplicado a medias (patrón recurrente).** La IA actualizó la sección 5.3 y la vista 7.2, pero dejó menciones a "capas en la Aplicación Web" y a "API" en la sección 4.1, en DA-02 y en la trazabilidad. Hubo que pedirle un barrido completo del documento. Tampoco actualizó esta bitácora: las Entradas 20 y 21 siguen describiendo la versión anterior (capas en el cliente, "API", "Entrega de resultados"), y las dejamos así a propósito porque registran lo que se decidió en ese momento.
   
+## Entrada 23 — Fusión de CU004 y CU005: la ejecución termina mostrando los resultados
+
+- **Herramienta usada:** Claude.
+- **Tarea concreta:** al elegir una HU para el diseño detallado, la candidata natural era `HU08_CU004_B` (ejecutar la búsqueda), pero terminaba con los resultados "en memoria", sin mostrarle nada al investigador. Le planteamos a la IA unir la ejecución con la presentación y persistencia de los resultados, y le pedimos su opinión y luego el cambio en todo el repositorio.
+- **Qué generó:** una evaluación a favor del cambio, apoyada en nuestros propios criterios: el antiguo `CU005` no tenía disparador del actor (lo disparaba el fin de `CU004`), no se podía ejercer por separado y no tenía slices secundarios; a su vez, la garantía de éxito de `CU004` no tenía valor observable para el investigador. Después aplicó el cambio en casos de uso, HU, SRS, contexto, arquitectura, perfil, mockups y evaluaciones heurísticas.
+- **Qué aceptamos:**
+  - `CU004 · Ejecutar la búsqueda y ver sus resultados`, con 4 pasos en el camino feliz y RF-08, RF-09 y RF-10. `HU08_CU004_B` absorbe los criterios de la antigua `HU11_CU005_B` (CA-02 presentación, CA-03 persistencia).
+  - La renumeración: `CU006`/`CU007` pasan a `CU005`/`CU006` y `HU12`–`HU14` pasan a `HU11`–`HU13`. Quedan 6 CU y 13 HU. Los archivos de la pantalla 4 se renombran a `..._HU08-HU11-HU12-HU13`, porque la tabla de resultados de esa pantalla ahora es parte de `HU08`.
+- **Qué modificamos:** actualizamos también los identificadores de HU dentro de los prompts citados en `docs/ui/`, para que todo el repositorio use la numeración vigente. Las entradas anteriores de esta bitácora se dejan con la numeración de su momento.
+- **Qué descartamos:** dejar un hueco en la numeración (un `CU005` "eliminado") para evitar renombrar; quedaba una trazabilidad más confusa que el costo de renumerar.
+- **Errores / imprecisiones detectadas:** la renumeración encadenada (`HU13_CU007` → `HU12_CU006` → `HU12_CU005`) dejó dos identificadores mal cambiados en `historias-usuario.md`. Se detectó al revisar el resultado y se corrigió antes de entregar. Riesgo propio de cualquier renumeración: conviene hacerla en una sola pasada.
+
+## Entrada 24 — Diseño detallado de `HU08_CU004_B` y revisión del modelo de dominio
+
+- **Herramienta usada:** Claude.
+- **Tarea concreta:** le pasamos el repositorio completo y le pedimos dos cosas para `HU08_CU004_B` (solo el camino feliz): primero, revisar el modelo de dominio, que se había escrito al inicio del proyecto y sospechábamos inconsistente con los casos de uso y la arquitectura actuales; después, hacer el diseño detallado de la HU: ficha, análisis tridimensional, diagrama de robustez, diagramas de secuencia, modelo de clases, justificación con GRASP, verificación de coherencia con la arquitectura y trazabilidad.
+- **Qué generó:**
+  - Una revisión del modelo de dominio con siete cambios (registro en [`modelo-dominio.md`](requeriments/modelo-dominio.md#registro-de-cambios)). Los principales: la multiplicidad `Busqueda → SecuenciaQuery`, que contradecía a `CU001`; la entidad nueva `ProgramaBlast`; y el ciclo de vida de la búsqueda como diagrama de estados.
+  - El documento [`docs/design/diseno-detallado.md`](design/diseno-detallado.md), con el camino principal dibujado en tres secuencias (lanzar, completar en segundo plano, consultar) por ser asíncrono, una secuencia de rechazos y un modelo de clases único.
+  - Tres actualizaciones a documentos anteriores, detectadas al diseñar. Primera: CA-03 de `HU08` y el flujo de `CU004` pasan a persistir **antes** de mostrar la tabla, porque el orden original contradecía la garantía mínima del CU. Segunda: la relación *Ejecución y persistencia → Acceso a datos* del catálogo de la arquitectura pasa a *Lee y persiste*. Tercera: se agrega una precisión a `DA-04` sobre cómo se mantiene la correspondencia entre subproceso y búsqueda.
+- **Alternativas que la IA planteó y descartó, con su motivo (a validar por el grupo):**
+  - Modelar en clases el MVC interno de la Aplicación Web (Controlador de búsqueda, Modelos, Cliente del Backend). Se descartó y la Aplicación Web se representa como una sola frontera, porque en esta HU no aplica ninguna regla del negocio. El reparto MVC queda en una tabla.
+  - Que el Adaptador BLAST+ avise al controlador cuando BLAST+ termina, con *callback* u Observer. Es una dependencia de la capa de datos hacia el dominio, prohibida por `DA-02`. Se reemplazó por un hilo que espera al subproceso.
+  - Un registro compartido de subprocesos en el Adaptador. No hace falta para esta HU y agrega estado compartido; queda para `HU09` (cancelación).
+  - Una entidad `Historial`. No tiene datos ni reglas propias; se materializa como repositorio.
+  - Strategy para los modos local y remoto. La diferencia es un flag que resuelve BLAST+; serían dos clases idénticas.
+  - Salida tabular `-outfmt 6`. Sus columnas son posicionales y no permiten cumplir `EC-02`; se eligió XML (`-outfmt 5`).
+- **Qué aceptamos / modificamos / descartamos:** *a completar por el grupo después de revisar el diseño.*
+- **Puntos que el grupo debe revisar con especial cuidado:**
+  - Si la cantidad de clases del modelo (incluidos los objetos de valor `InvocacionBlast`, `SalidaBlast`, `HitCrudo`, `FilaResultado`) es defendible o conviene simplificar alguna.
+  - El cambio de orden en CA-03, que modifica un criterio de aceptación ya entregado.
+  - Que los casos de prueba previstos (sección 8.2 del diseño) sean los que efectivamente se implementen en la etapa de pruebas.
+
 ## Reflexión sobre el uso de IA
 
 La bitácora deja ver un patrón claro: la IA nos sirvió como acelerador de redacción y como espejo para nuestras propias inconsistencias, pero nunca como fuente de verdad sobre el dominio. Los errores que fuimos detectando como proponer descargar SwissProt automáticamente, sugerir un E-value por defecto que no distinguía por programa, plantear un fallback automático de bases locales a remotas cuando esas equivalencias no existen, arrastrar la persistencia en D2 al lugar equivocado, o dejar la salvedad rebuscada de "las capacidades de P2 se profundizan pero P2 como proceso no", no eran errores de forma sino de entendimiento del dominio. Solo las pudimos atrapar porque el grupo discutió el modelo antes de aceptar el texto, y porque cuando algo nos hacía ruido lo cuestionamos en vez de pasarlo por alto. También apareció, con mucha regularidad, un patrón operativo: cuando un cambio conceptual tocaba varios archivos, la IA lo aplicaba bien al cuerpo del documento y se olvidaba de las introducciones, resúmenes, tablas de trazabilidad o diagramas, hasta el punto de que ya lo esperábamos y lo chequeábamos antes de commitear. La lección que nos llevamos para los próximos TPs es que la IA acelera lo que ya entendemos, no reemplaza el entendimiento: es útil para escribir más rápido, para aplicar cambios transversales de forma consistente y para que un integrante le explique algo a otro por escrito con menos fricción, pero el trabajo real, discutir el modelo, decidir qué se profundiza, cerrar una definición de dominio, sigue siendo del grupo. Como grupo mantuvimos, en cada iteración, la última palabra sobre qué entraba al repo; y eso es lo que hizo que la IA fuera una herramienta y no un delegado.

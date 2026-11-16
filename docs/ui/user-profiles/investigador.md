@@ -11,7 +11,7 @@ Persona que necesita correr alineamientos BLAST como parte de su labor académic
 - **Estudiantes de Grado y Posgrado**, que *"necesitan realizar alineamientos locales rápidos para trabajos prácticos o investigación sin perder tiempo en la configuración de entornos por terminal"*.
 - **Investigadores y Docentes de Bioinformática / Biología Molecular**, que *"buscan una herramienta ágil e intuitiva para explorar resultados con filtros visuales personalizados que no están disponibles de forma nativa en la web tradicional"*.
 
-Ambos subgrupos acceden a las mismas capacidades del sistema (todas las HU01 a HU14), por lo que son el mismo actor del sistema. Las diferencias entre ellos se reflejan en este perfil como **rangos de variación interna** (en nivel técnico, en frecuencia de uso, en qué subconjunto del flujo ejercen con más intensidad) más que como perfiles separados.
+Ambos subgrupos acceden a las mismas capacidades del sistema (todas las HU01 a HU13), por lo que son el mismo actor del sistema. Las diferencias entre ellos se reflejan en este perfil como **rangos de variación interna** (en nivel técnico, en frecuencia de uso, en qué subconjunto del flujo ejercen con más intensidad) más que como perfiles separados.
 
 Rastreo: SRS 2.1 y 2.2 sobre los stakeholders que pueden asumir el rol de Investigador/a. La documentación del proyecto no describe ningún otro atributo demográfico del Investigador (edad, carrera específica, institución), por lo que este perfil no afirma nada en esos ejes.
 
@@ -49,7 +49,7 @@ El SRS caracteriza al Investigador con un **rango** de conocimiento técnico, no
 
 ## 2. Escenario de uso
 
-**Historia de usuario de referencia.** El escenario se construye alrededor de **`HU13_CU007_B` · *Descargar los alineamientos actualmente visibles en un formato***. Se elige esta HU como terminal porque es la que cierra el ciclo completo de valor del Investigador: una vez descargado el subconjunto que importa, puede llevarse el trabajo fuera del sistema. La narración incluye naturalmente las HUs encadenadas necesarias para llegar hasta allí: `HU01_CU001_B` (carga de la secuencia), `HU03_CU002_B` (configuración), `HU05_CU003_B` (validación semántica), `HU08_CU004_B` (ejecución), `HU11_CU005_B` (tabla y persistencia automática) y `HU12_CU006_B` (filtros post-búsqueda). Esta elección cubre el camino feliz completo del sistema (los dos procesos profundizados, P1 y P2) y por lo tanto da el mejor insumo al maquetado posterior.
+**Historia de usuario de referencia.** El escenario se construye alrededor de **`HU12_CU006_B` · *Descargar los alineamientos actualmente visibles en un formato***. Se elige esta HU como terminal porque es la que cierra el ciclo completo de valor del Investigador: una vez descargado el subconjunto que importa, puede llevarse el trabajo fuera del sistema. La narración incluye naturalmente las HUs encadenadas necesarias para llegar hasta allí: `HU01_CU001_B` (carga de la secuencia), `HU03_CU002_B` (configuración), `HU05_CU003_B` (validación semántica), `HU08_CU004_B` (ejecución, tabla y persistencia automática) y `HU11_CU005_B` (filtros post-búsqueda). Esta elección cubre el camino feliz completo del sistema (los dos procesos profundizados, P1 y P2) y por lo tanto da el mejor insumo al maquetado posterior.
 
 ### Narración (camino feliz)
 
@@ -79,16 +79,16 @@ Pantallas que atraviesa el Investigador durante el escenario principal, con las 
 | 1 | **Autenticación** | (ninguna HU — ver nota) | Ingresa usuario y contraseña. |
 | 2 | **Nueva búsqueda** · sección *Secuencia query* | `HU01_CU001_B`, `HU02_CU001_E1` | Sube el archivo FASTA o pega el texto. El sistema infiere el alfabeto y la deja disponible, o rechaza con mensaje diagnóstico. |
 | 3 | **Nueva búsqueda** · sección *Configuración + validación* | `HU03_CU002_B`, `HU04_CU002_A1`, `HU05_CU003_B`, `HU06_CU003_E1`, `HU07_CU003_E2` | Elige modo, base de datos, programa y parámetros pre-búsqueda, y pide la validación semántica. Los defaults son sensatos según el programa. Si la configuración es inválida, el sistema señala el campo exacto. |
-| 4 | **Ejecución en progreso** | `HU08_CU004_B`, `HU09_CU004_A1`, `HU10_CU004_E1` | Ve el indicador de progreso de BLAST+, puede cancelar la búsqueda, y recibe el mensaje literal de BLAST+ / NCBI si la ejecución falla en modo remoto. |
-| 5 | **Resultados** con *filtros post-búsqueda* y *descarga* | `HU11_CU005_B`, `HU12_CU006_B`, `HU13_CU007_B`, `HU14_CU007_A1` | Ve la tabla con las columnas mínimas, aplica y ajusta filtros interactivamente sin re-ejecutar BLAST, y descarga el subconjunto visible en el formato elegido. Confirmación de persistencia automática en el historial. |
+| 4 | **Ejecución en progreso** | `HU08_CU004_B` (CA-01), `HU09_CU004_A1`, `HU10_CU004_E1` | Ve el indicador de progreso de BLAST+, puede cancelar la búsqueda, y recibe el mensaje literal de BLAST+ / NCBI si la ejecución falla en modo remoto. |
+| 5 | **Resultados** con *filtros post-búsqueda* y *descarga* | `HU08_CU004_B` (CA-02, CA-03), `HU11_CU005_B`, `HU12_CU006_B`, `HU13_CU006_A1` | Ve la tabla con las columnas mínimas, aplica y ajusta filtros interactivamente sin re-ejecutar BLAST, y descarga el subconjunto visible en el formato elegido. Confirmación de persistencia automática en el historial. |
 
 **Nota sobre la pantalla de autenticación.** La autenticación básica está dentro del alcance del sistema ([SRS 1.3](../../requeriments/srs.md#13-dentro-del-alcance)) pero no se detalló como historia de usuario propia (ningún `HU0X_CU00Y_*` cubre el login). El grupo evaluará si corresponde maquetarla en esta iteración; en caso contrario, el flujo se maqueta a partir de la pantalla #2 asumiendo sesión ya iniciada.
 
-**Nota sobre la pantalla #5.** Las HUs `HU11_CU005_B`, `HU12_CU006_B` y `HU13_CU007_B` conviven en la misma vista: la propia `HU11_CU005_B` describe la tabla *"en la misma vista apenas termina la ejecución"*, y las HUs de filtro y descarga operan sobre esa misma tabla sin cambiar de contexto (los filtros no re-ejecutan BLAST y la descarga toma lo visible). Por eso se maqueta como una pantalla única con zonas específicas para cada HU, no como tres pantallas separadas. Esto es consistente con el escenario de calidad de **Operabilidad** del catálogo de escenarios de calidad del proyecto, que exige fluidez al refinar resultados sin cambiar de contexto.
+**Nota sobre la pantalla #5.** La tabla de resultados de `HU08_CU004_B` (CA-02 y CA-03) y las HUs `HU11_CU005_B` y `HU12_CU006_B` conviven en la misma vista: `HU08_CU004_B` presenta la tabla apenas termina la ejecución, y las HUs de filtro y descarga operan sobre esa misma tabla sin cambiar de contexto (los filtros no re-ejecutan BLAST y la descarga toma lo visible). Por eso se maqueta como una pantalla única con zonas específicas para cada HU, no como tres pantallas separadas. Esto es consistente con el escenario de calidad de **Operabilidad** del catálogo de escenarios de calidad del proyecto, que exige fluidez al refinar resultados sin cambiar de contexto.
 
 ## 4. Resumen de HUs cubiertas por el flujo
 
-El escenario, incluidas sus variantes realistas, cubre las **14 HUs del catálogo** (directa o como variante):
+El escenario, incluidas sus variantes realistas, cubre las **13 HUs del catálogo** (directa o como variante):
 
 | HU | Rol en el flujo |
 |---|---|
@@ -99,10 +99,9 @@ El escenario, incluidas sus variantes realistas, cubre las **14 HUs del catálog
 | `HU05_CU003_B` | Validación semántica que habilita *Ejecutar búsqueda*. |
 | `HU06_CU003_E1` | Variante de excepción: parámetros pre-búsqueda fuera de rango. |
 | `HU07_CU003_E2` | Variante de excepción: combinación programa/query/base incompatible. |
-| `HU08_CU004_B` | Ejecución asíncrona con indicador de progreso. |
+| `HU08_CU004_B` | Ejecución asíncrona con indicador de progreso; al terminar, tabla de resultados y persistencia automática en historial. |
 | `HU09_CU004_A1` | Variante alternativa: cancelación manual de la búsqueda. |
 | `HU10_CU004_E1` | Variante de excepción: fallo del modo remoto, mensaje literal. |
-| `HU11_CU005_B` | Tabla de resultados y persistencia automática en historial. |
-| `HU12_CU006_B` | Filtros post-búsqueda interactivos sin re-ejecutar BLAST. |
-| `HU13_CU007_B` | Descarga del subconjunto visible en el formato elegido. |
-| `HU14_CU007_A1` | Variante alternativa: descarga con tabla vacía por filtros. |
+| `HU11_CU005_B` | Filtros post-búsqueda interactivos sin re-ejecutar BLAST. |
+| `HU12_CU006_B` | Descarga del subconjunto visible en el formato elegido. |
+| `HU13_CU006_A1` | Variante alternativa: descarga con tabla vacía por filtros. |

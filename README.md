@@ -16,6 +16,8 @@ LocalBlast_2026/
     ├── architecture/
     │   ├── architecture.md
     │   └── contexto-inicial.md
+    ├── design/
+    │   └── diseno-detallado.md
     ├── requeriments/
     │   ├── casos-de-uso.md
     │   ├── historias-usuario.md
@@ -32,14 +34,14 @@ LocalBlast_2026/
     │   │   ├── pantalla-02-configuracion-validacion_HU03-HU04-HU05-HU06-HU07_final.html
     │   │   ├── pantalla-03-ejecucion_HU08-HU09-HU10_inicial.html
     │   │   ├── pantalla-03-ejecucion_HU08-HU09-HU10_final.html
-    │   │   ├── pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_inicial.html
-    │   │   └── pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14_final.html
+    │   │   ├── pantalla-04-resultados-filtros-descarga_HU08-HU11-HU12-HU13_inicial.html
+    │   │   └── pantalla-04-resultados-filtros-descarga_HU08-HU11-HU12-HU13_final.html
     │   ├── heuristic-review/
     │   │   ├── README.md
     │   │   ├── pantalla-01-carga-secuencia_HU01-HU02.md
     │   │   ├── pantalla-02-configuracion-validacion_HU03-HU04-HU05-HU06-HU07.md
     │   │   ├── pantalla-03-ejecucion_HU08-HU09-HU10.md
-    │   │   └── pantalla-04-resultados-filtros-descarga_HU11-HU12-HU13-HU14.md
+    │   │   └── pantalla-04-resultados-filtros-descarga_HU08-HU11-HU12-HU13.md
     │   └── user-profiles/
     │       ├── README.md
     │       └── investigador.md
@@ -89,6 +91,9 @@ La evaluación heurística de usabilidad, con los prompts enviados a la IA, su r
 
 El documento de Especificación de Arquitectura, con la elección de interoperabilidad como driver único, la derivación hasta estilo cliente-servidor, patrón de capas en el Backend y patrón MVC en la Aplicación Web, las decisiones de arquitectura (`DA-01` a `DA-08`), las vistas de contenedores, de componentes y de despliegue del modelo C4 con sus catálogos, y la trazabilidad escenario → táctica → estilo/patrón → decisión → elemento C4, está en:
 👉 [`docs/architecture/architecture.md`](docs/architecture/architecture.md)
+
+El diseño detallado de la historia `HU08_CU004_B · Ejecutar la búsqueda validada y ver sus resultados` (ficha y análisis tridimensional de la HU, diagrama de robustez, diagramas de secuencia, modelo de clases, justificación con GRASP, verificación de coherencia con la arquitectura y trazabilidad hasta las pruebas previstas) está en:
+👉 [`docs/design/diseno-detallado.md`](docs/design/diseno-detallado.md)
 
 El diagrama de contexto completo del sistema está en:
 👉 [`docs/architecture/contexto-inicial.md`](docs/architecture/contexto-inicial.md)

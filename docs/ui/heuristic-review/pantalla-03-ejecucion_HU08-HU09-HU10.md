@@ -46,7 +46,7 @@ Prompt y resumen de la generación: ver [`../mockups/README.md`](../mockups/READ
 | Hallazgo | Decisión | Por qué |
 |---|---|---|
 | H5 — confirmar cancelación | **aceptado** | Mismo criterio que las pantallas anteriores: acción destructiva pide confirmación. Entra al ajuste. |
-| H9 (refuerzo) — "no se guardó" durante la ejecución | **aceptado** | Lo tomamos del comentario de la IA dentro de H9 y lo levantamos como hallazgo propio. HU11 CA-02 dice que la persistencia es al final. Si el investigador no sabe eso, duda en cancelar. Entra al ajuste. |
+| H9 (refuerzo) — "no se guardó" durante la ejecución | **aceptado** | Lo tomamos del comentario de la IA dentro de H9 y lo levantamos como hallazgo propio. HU08 CA-03 dice que la persistencia es al final. Si el investigador no sabe eso, duda en cancelar. Entra al ajuste. |
 | H10 — qué pasa si cierro la pestaña | **rechazado** | El comportamiento concreto depende de la implementación, no está definido en TP1. Prometerlo en el maquetado y después no cumplirlo es peor que no decir nada. |
 
 **Cambios que entran al ciclo adicional:** chip "aún no persistida en el historial" durante la ejecución; bloque de confirmación antes de cancelar.
@@ -59,7 +59,7 @@ Prompt y resumen de la generación: ver [`../mockups/README.md`](../mockups/READ
 
 > Sobre `_inicial.html`, aplicá dos cambios y devolvemelo como `_final.html`, con la regla "sin JS":
 >
-> 1. Al lado del porcentaje de progreso, agregá un chip ámbar "aún no persistida en el historial", para dejar visible desde el principio que la persistencia ocurre al final (HU11 CA-02).
+> 1. Al lado del porcentaje de progreso, agregá un chip ámbar "aún no persistida en el historial", para dejar visible desde el principio que la persistencia ocurre al final (HU08 CA-03).
 > 2. Antes del botón "Cancelar búsqueda" original, agregá un bloque de confirmación que simule el click: texto "¿Cancelar la búsqueda en curso? Se abortará la invocación a BLAST+. La búsqueda **no** se va a guardar en el historial", más dos botones: "No, seguir corriendo" y "Sí, cancelar" (rojo firme, no `btn-danger` suave).
 
 ### 4.2 Qué quedó en el `_final.html`

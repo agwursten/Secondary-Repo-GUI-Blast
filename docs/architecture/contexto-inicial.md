@@ -100,9 +100,8 @@ Los casos de uso escritos en `docs/requeriments/casos-de-uso.md` se distribuyen 
 - `CU001 · Cargar la secuencia query` **deriva de P1**.
 - `CU002 · Configurar los parámetros de la búsqueda` **deriva de P1**.
 - `CU003 · Validar la búsqueda` **deriva de P1**.
-- `CU004 · Ejecutar la búsqueda` **deriva de P1**.
-- `CU005 · Ver los resultados y persistir la búsqueda en el historial` **deriva de P1**.
-- `CU006 · Refinar los resultados con filtros post-búsqueda` **deriva de P2**.
-- `CU007 · Descargar los resultados en un formato` **deriva de P2**.
+- `CU004 · Ejecutar la búsqueda y ver sus resultados` **deriva de P1**.
+- `CU005 · Refinar los resultados con filtros post-búsqueda` **deriva de P2**.
+- `CU006 · Descargar los resultados en un formato` **deriva de P2**.
 
 Ver la justificación completa en la sección [Selección de procesos a profundizar](../requeriments/srs.md#5-selección-de-procesos-a-profundizar) del SRS.

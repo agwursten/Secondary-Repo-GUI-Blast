@@ -31,8 +31,8 @@ Describir las decisiones estructurales de LocalBlast que atienden los escenarios
 
 La arquitectura se define para los dos procesos del sistema que se desarrollan en el alcance actual:
 
-- **P1 · Ejecutar búsqueda BLAST** (casos de uso CU001 a CU005).
-- **P2 · Filtrar y entregar resultados** (casos de uso CU006 y CU007).
+- **P1 · Ejecutar búsqueda BLAST** (casos de uso CU001 a CU004).
+- **P2 · Filtrar y entregar resultados** (casos de uso CU005 y CU006).
 
 El proceso **P3 · Administrar bases de datos** queda fuera del alcance del cuatrimestre (ver [SRS, sección 1.4](../requeriments/srs.md#14-fuera-del-alcance)); su actor Administrador/a y el flujo de administración del catálogo no se detallan en estas vistas.
 
@@ -98,7 +98,7 @@ De los cinco atributos de calidad priorizados en el documento de [escenarios de 
 - **Es condición de existencia del producto.** LocalBlast *es*, por definición, una interfaz gráfica para BLAST+. Toda ejecución —local o remota— termina siendo una invocación al binario externo y un parseo de su salida. Sin interoperabilidad con BLAST+ el sistema no existe; con los otros atributos, LocalBlast puede ser menos ágil, menos robusto o menos modular, pero sigue siendo un sistema.
 - **Fue el atributo más crítico en la matriz comparativa**, con 9 victorias sobre 9 posibles. Ningún otro atributo lo venció en ningún par.
 - **Es el atributo que más condiciona la estructura.** La elección de cómo invocar a BLAST+, dónde alojar al adaptador, cómo aislar las versiones del binario del resto del código, y cómo manejar la concurrencia de subprocesos son decisiones estructurales. Los otros atributos se materializan sobre todo *dentro* de las piezas que la interoperabilidad obliga a crear:
-  - *Operabilidad* se juega en la Aplicación Web (parte del cliente del estilo que vamos a elegir), que valida el formulario y filtra los resultados en el navegador (ver [DA-05](#da-05--validación-en-la-aplicación-web-además-de-en-el-servidor) y [DA-06](#da-06--filtrado-de-resultados-en-la-aplicación-web)). Su estructura interna sigue el patrón MVC (Modelo-Vista-Controlador; ver [DA-07](#da-07--patrón-mvc-en-la-aplicación-web)).
+  - *Operabilidad* se juega en la Aplicación Web (parte del cliente del estilo que vamos a elegir), que valida el formulario y filtra los resultados sin ir al Backend (ver [DA-05](#da-05--validación-en-la-aplicación-web-además-de-en-el-servidor) y [DA-06](#da-06--filtrado-de-resultados-en-la-aplicación-web)). Su estructura interna sigue el patrón MVC (Modelo-Vista-Controlador; ver [DA-07](#da-07--patrón-mvc-en-la-aplicación-web)).
   - *Confidencialidad* se resuelve con TLS en el canal cliente-servidor y con el componente **Autenticación y sesión** del Backend (ver sección 7.1), que acompaña al estilo elegido pero no es un estilo propio.
   - *Tolerancia a fallos* se trata, en nuestro caso, delegando a BLAST+ el reporte de errores remotos y propagándolos sin reinterpretarlos: una responsabilidad del adaptador que la interoperabilidad exige crear.
   - *Modularidad* se obtiene en gran medida como consecuencia del patrón de Capas que la interoperabilidad justifica en el Backend (ver [sección 5.3.1](#531-capas-en-el-backend)): aislar BLAST+ en una capa dedicada deja el resto del sistema modular por diseño.
@@ -149,7 +149,7 @@ Para los dos drivers del punto anterior, las tácticas seleccionadas y descartad
 | Táctica | Decisión | Por qué |
 |---|---|---|
 | **Adaptar la interfaz** | ✅ Seleccionada | Es la táctica central para EC-02. Un componente dedicado traduce entre la salida real de BLAST+ (texto tabular, XML, código de salida) y la estructura interna del sistema. Si BLAST+ cambia, cambia solo ese componente. |
-| **Respetar estándares de comunicación** | ✅ Seleccionada | Entre el navegador y el servidor usamos HTTPS con JSON (web estándar); con BLAST+ usamos la interfaz de línea de comandos estándar documentada en el manual oficial del motor. Nada propietario entre contenedores. |
+| **Respetar estándares de comunicación** | ✅ Seleccionada | Entre el navegador y la Aplicación Web usamos HTTPS, y entre la Aplicación Web y el Backend, JSON sobre HTTPS (web estándar); con BLAST+ usamos la interfaz de línea de comandos estándar documentada en el manual oficial del motor. Nada propietario entre contenedores. |
 | **Descubrir servicios** | ❌ Descartada | BLAST+ corre en el mismo servidor que el Backend, con ruta configurada. No hay universo de servicios por descubrir en tiempo de ejecución. |
 | **Orquestar** | ❌ Descartada | No hay varios servicios que orquestar: hay un único sistema externo (BLAST+) invocado por una sola operación por búsqueda. |
 
@@ -170,7 +170,7 @@ Para los dos drivers del punto anterior, las tácticas seleccionadas y descartad
 - **Los dos drivers viven dentro de un único proceso servidor.** EC-01 se resuelve con subprocesos lanzados por el mismo Backend; EC-02 con un componente del mismo Backend. Ninguno exige estado distribuido, bus de eventos ni coordinación entre servicios. Un estilo que ofrezca esas capacidades sería un costo operativo pagado por algo que no necesitamos.
 - **REST + JSON es el contrato estándar entre cliente y servidor.** Materializa la táctica "respetar estándares de comunicación" en el borde más visible del sistema y mantiene abierta la puerta a un segundo cliente —por ejemplo un script de automatización que un investigador quiera correr— sin tocar el servidor.
 - **Permite evolucionar sin rehacer.** Si en el futuro aparece un escenario de procesamiento asincrónico pesado (lotes de 100 búsquedas, por ejemplo), se puede sumar una cola entre el servidor y un ejecutor dedicado sin romper el estilo base: cliente-servidor convive con esa evolución, mientras que elegir hoy un estilo más complejo nos obligaría a sostener su costo *desde el principio*.
-- **El cliente se aloja en el servidor y se ejecuta en el navegador.** La Aplicación Web se publica desde el mismo servidor que aloja al Backend (sus archivos estáticos se descargan al abrirla) y se ejecuta en el navegador del investigador. En la PC del investigador no se instala nada, y actualizar la aplicación es actualizar un único lugar. Ver [DA-08](#da-08--despliegue-en-un-único-servidor-del-laboratorio) y la [sección 8](#8-vista-de-despliegue).
+- **El cliente se aloja en el servidor y el navegador lo renderiza.** La Aplicación Web corre en el mismo servidor que el Backend, y el navegador del investigador solo muestra lo que ella le entrega. En la PC del investigador no se instala nada, y actualizar la aplicación es actualizar un único lugar. Ver [DA-08](#da-08--despliegue-en-un-único-servidor-del-laboratorio) y la [sección 8](#8-vista-de-despliegue).
 
 **Restricciones del estilo que la arquitectura respeta:**
 
@@ -307,7 +307,7 @@ C4Container
     Person(inv, "Investigador/a", "Carga secuencias, lanza búsquedas, filtra y descarga resultados")
 
     System_Boundary(lb, "LocalBlast") {
-        Container(web, "Aplicación Web", "React", "Interfaz de carga, configuración, ejecución, filtrado y descarga; se ejecuta en el navegador")
+        Container(web, "Aplicación Web", "React", "Interfaz de carga, configuración, ejecución, filtrado y descarga; el navegador del investigador la renderiza")
         Container(backend, "Backend", "Python / FastAPI", "Valida, invoca BLAST+, persiste búsquedas, arma descargas")
         ContainerDb(bd, "Base de datos", "PostgreSQL", "Usuarios, catálogo de bases de datos y historial de búsquedas")
     }
@@ -326,7 +326,7 @@ C4Container
 
 | Contenedor | Responsabilidad |
 |---|---|
-| **Aplicación Web** | Única interfaz humana del sistema. Formulario de carga, configuración, validación cliente y ejecución de búsquedas; vista de progreso y cancelación; tabla de resultados con filtros interactivos; disparo de descargas. No contiene lógica de dominio del servidor: toda operación sobre BLAST+ o sobre la base de datos la hace el Backend. Se aloja en el Servidor del laboratorio y se ejecuta en el navegador del investigador: el navegador descarga y renderiza sus archivos estáticos, por lo que en la PC del investigador no se instala nada (ver [sección 8](#8-vista-de-despliegue)). |
+| **Aplicación Web** | Única interfaz humana del sistema. Formulario de carga, configuración, validación cliente y ejecución de búsquedas; vista de progreso y cancelación; tabla de resultados con filtros interactivos; disparo de descargas. No contiene lógica de dominio del servidor: toda operación sobre BLAST+ o sobre la base de datos la hace el Backend. Se aloja y se ejecuta en el Servidor del laboratorio, junto al Backend; el navegador del investigador solo la renderiza, por lo que en la PC del investigador no se instala nada (ver [sección 8](#8-vista-de-despliegue)). |
 | **Backend** | Núcleo del sistema, del lado servidor. Expone una API REST que consume la Aplicación Web, recibe sus solicitudes HTTP, orquesta los servicios de dominio (carga, búsqueda, descarga), persiste en la base de datos y es el único contenedor que invoca a BLAST+. |
 | **Base de datos** | Almacén único del sistema. Guarda los usuarios habilitados, el catálogo de bases de datos BLAST disponibles (D1 del DFD) y el historial de búsquedas con sus parámetros, timestamps y resultados crudos (D2 del DFD). |
 | **BLAST+** *(sistema externo)* | Motor de alineamiento. En modo local lee índices del servidor del laboratorio; en modo remoto recibe la flag `-remote` y él mismo dialoga con NCBI. LocalBlast lo trata uniformemente en ambos modos: le pasa argumentos por CLI, recibe su salida por stdout y su código de retorno. |
@@ -389,7 +389,7 @@ C4Component
 
     Rel(auth, repo, "Lee usuarios")
     Rel(svc_pre, repo, "Guarda")
-    Rel(svc_eje, repo, "Persiste")
+    Rel(svc_eje, repo, "Lee y persiste")
     Rel(svc_eje, adap, "Ejecuta")
     Rel(svc_ent, repo, "Lee")
 
@@ -408,8 +408,8 @@ C4Component
 | **Controladores** | Presentación | Exponen la interfaz HTTP del Backend: rutas, validación sintáctica de entradas, serialización de respuestas, códigos de estado. No contienen lógica del dominio: delegan en los componentes de dominio. En cada solicitud, antes de invocar a cualquier otro componente de dominio, consultan a **Autenticación y sesión** para saber qué investigador la originó y le pasan ese identificador como parámetro a los demás servicios. |
 | **Autenticación y sesión** | Dominio | Verifica la identidad del investigador en cada solicitud y mantiene su sesión activa durante el trabajo con el sistema. Expone el "investigador actual" al resto del dominio para que los efectos sobre la base de datos (la secuencia que guarda Preparación de búsqueda, la búsqueda que persiste Ejecución y persistencia, el historial que lee Generación de archivos de descarga) queden asociados al investigador correcto. **Por qué está en el documento aunque no haya una historia de usuario propia**: el historial de las búsquedas se corresponde a cada investigador y esa correspondencia es parte del dominio del sistema; sin este componente no se puede explicar cómo se mantiene la correspondencia entre búsqueda e investigador. |
 | **Preparación de búsqueda** | Dominio | Todo lo que ocurre **antes** de invocar a BLAST+. Valida sintácticamente la secuencia query (RF-01, RF-02; implementa CU001) e infiere el alfabeto (ADN / ARN / proteína); recibe la configuración de la búsqueda (RF-03 a RF-06; CU002) y la valida semánticamente verificando compatibilidad entre programa, tipo de query y tipo de base de datos (RF-07; CU003). Esta validación repite la que ya hizo el cliente, porque la del cliente no es un control de confianza. |
-| **Ejecución y persistencia** | Dominio | Lo que ocurre **durante** y **al cierre** de la ejecución de BLAST+. Lanza la ejecución asíncrona con posibilidad de cancelación pidiéndosela al Adaptador BLAST+ (RF-08; CU004), recibe los resultados crudos, los entrega al cliente para su presentación (RF-09) y persiste la búsqueda completa en el historial (RF-10; CU005). Nunca llama directamente a BLAST+: lo hace a través del Adaptador. |
-| **Generación de archivos de descarga** | Dominio | Lo que ocurre **después** de la búsqueda, cuando el investigador se lleva lo encontrado. Arma los archivos descargables en los formatos soportados (RF-12; CU007) a partir de los resultados persistidos y de los hits visibles que indica el cliente, e incluye los metadatos de la búsqueda y de los filtros aplicados. Verifica que la búsqueda sea del investigador actual y que los hits pertenezcan a ella. |
+| **Ejecución y persistencia** | Dominio | Lo que ocurre **durante** y **al cierre** de la ejecución de BLAST+. Lanza la ejecución asíncrona con posibilidad de cancelación pidiéndosela al Adaptador BLAST+ (RF-08), recibe los resultados crudos, los entrega al cliente para su presentación (RF-09) y persiste la búsqueda completa en el historial (RF-10); implementa CU004. Nunca llama directamente a BLAST+: lo hace a través del Adaptador. |
+| **Generación de archivos de descarga** | Dominio | Lo que ocurre **después** de la búsqueda, cuando el investigador se lleva lo encontrado. Arma los archivos descargables en los formatos soportados (RF-12; CU006) a partir de los resultados persistidos y de los hits visibles que indica el cliente, e incluye los metadatos de la búsqueda y de los filtros aplicados. Verifica que la búsqueda sea del investigador actual y que los hits pertenezcan a ella. |
 | **Acceso a datos** | Datos | Único punto de acceso del Backend a la base de datos. Hace la traducción entre entidades del dominio y filas de SQL; agrupa las operaciones en transacciones cuando corresponde. |
 | **Adaptador BLAST+** | Datos | **Componente clave de los drivers de interoperabilidad.** Único punto de contacto con BLAST+. Lanza cada invocación como subproceso independiente, mantiene la correspondencia entre subproceso y sesión que lo originó (EC-01), parsea la salida reconociendo los campos conocidos y descartando los no mapeados sin corromper los conocidos (EC-02). |
 
@@ -420,11 +420,11 @@ C4Component
 | **Dentro del contenedor Backend** (llamadas internas, sin protocolo) | | |
 | Controladores → Autenticación y sesión | Autentica | En cada solicitud, antes de delegar en otro componente de dominio, los Controladores le piden a Autenticación y sesión que verifique quién es el investigador. Si no hay sesión válida, los Controladores responden con 401/403 sin invocar nada más. |
 | Controladores → Preparación de búsqueda | Invoca | Delega la carga y validación sintáctica de la secuencia, la recepción de la configuración y su validación semántica. Pasa el identificador del investigador que ya obtuvo de Autenticación y sesión. |
-| Controladores → Ejecución y persistencia | Invoca | Delega la ejecución asíncrona de la búsqueda validada, la recepción de resultados crudos y la persistencia en el historial. Pasa el identificador del investigador. |
+| Controladores → Ejecución y persistencia | Invoca | Delega la ejecución asíncrona de la búsqueda validada, la consulta del estado de la ejecución (progreso y, al terminar, resultados), la recepción de resultados crudos y la persistencia en el historial. Pasa el identificador del investigador. |
 | Controladores → Generación de archivos de descarga | Invoca | Delega la generación del archivo de descarga. Pasa el identificador del investigador para que la lectura del historial se restrinja a sus propias búsquedas. |
 | Autenticación y sesión → Acceso a datos | Lee usuarios | Lee los registros de usuarios para validar credenciales y, cuando corresponde, las sesiones vigentes. |
 | Preparación de búsqueda → Acceso a datos | Guarda | Guarda la secuencia cargada (asociada al investigador actual) y lee el catálogo de bases de datos disponibles para validar la configuración. |
-| Ejecución y persistencia → Acceso a datos | Persiste | Persiste cada búsqueda ejecutada en el historial (parámetros, timestamps, resultados crudos), asociada al investigador que la originó. |
+| Ejecución y persistencia → Acceso a datos | Lee y persiste | Lee la búsqueda validada que se va a ejecutar o cuyo estado se consulta, siempre acotada al investigador actual, y persiste cada búsqueda ejecutada en el historial (parámetros, timestamps, resultados crudos), asociada al investigador que la originó. |
 | Ejecución y persistencia → Adaptador BLAST+ | Ejecuta | Pide la ejecución de una búsqueda validada, pasando la configuración completa. |
 | Generación de archivos de descarga → Acceso a datos | Lee | Lee los resultados crudos de una búsqueda del historial —filtrada al investigador actual— para prepararlos para descarga. |
 | **Hacia contenedores vecinos** (con protocolo) | | |
@@ -482,9 +482,9 @@ C4Component
 
 | Componente | Rol MVC | Responsabilidad |
 |---|---|---|
-| **Pantallas** | Vista | Las pantallas que el investigador ve y manipula: carga de la secuencia (HU01), configuración y validación visible del formulario (HU03 a HU07), progreso y cancelación de la ejecución (HU08 a HU10), tabla de resultados y filtros interactivos (HU11, HU12), controles de descarga (HU13, HU14). Se dibujan a partir del estado de los Modelos y se redibujan cuando este cambia. Capturan las acciones del investigador y las delegan en los Controladores. No contienen reglas del dominio ni llaman al Backend. |
+| **Pantallas** | Vista | Las pantallas que el investigador ve y manipula: carga de la secuencia (HU01), configuración y validación visible del formulario (HU03 a HU07), progreso y cancelación de la ejecución y tabla de resultados (HU08 a HU10), filtros interactivos (HU11), controles de descarga (HU12, HU13). Se dibujan a partir del estado de los Modelos y se redibujan cuando este cambia. Capturan las acciones del investigador y las delegan en los Controladores. No contienen reglas del dominio ni llaman al Backend. |
 | **Controlador de búsqueda** | Controlador | Interpreta las acciones del investigador sobre la búsqueda: cargar la secuencia, ajustar la configuración, pedir la validación, ejecutar y cancelar. Actualiza el Modelo de búsqueda y, si este indica que la configuración es válida, arma el envío y se lo pide al Cliente del Backend. Con las respuestas del servidor actualiza el estado de ejecución (progreso, cancelación, error) y, al terminar la búsqueda, carga los resultados crudos en el Modelo de resultados. |
-| **Controlador de resultados** | Controlador | Interpreta las acciones sobre los resultados: modificar o quitar un filtro, elegir el formato y pedir la descarga. Actualiza los criterios de filtro en el Modelo de resultados (RF-11; CU006). Para descargar, arma el pedido con la búsqueda, el formato y los hits visibles y se lo pide al Cliente del Backend (RF-12; CU007). |
+| **Controlador de resultados** | Controlador | Interpreta las acciones sobre los resultados: modificar o quitar un filtro, elegir el formato y pedir la descarga. Actualiza los criterios de filtro en el Modelo de resultados (RF-11; CU005). Para descargar, arma el pedido con la búsqueda, el formato y los hits visibles y se lo pide al Cliente del Backend (RF-12; CU006). |
 | **Modelo de búsqueda** | Modelo | Información de la búsqueda que se está preparando o ejecutando: secuencia, configuración, marca "validada / no validada" y estado de ejecución. Contiene las **reglas de validación**: formato sintáctico de la secuencia, rangos de los parámetros pre-búsqueda y compatibilidad entre programa BLAST, tipo de secuencia y tipo de base de datos (RF-01 a RF-07; CU001 a CU003). Cualquier cambio en un campo relevante posterior a la validación invalida la marca. |
 | **Modelo de resultados** | Modelo | Conserva en memoria los resultados crudos recibidos del servidor y el identificador de la búsqueda a la que pertenecen, los criterios de filtro activos (identidad, cobertura, E-value y taxonomía) y calcula los **hits visibles**, siempre desde el crudo original y sin consultar al servidor. |
 | **Cliente del Backend** | Apoyo (fuera de la tríada) | Encapsula el detalle de las llamadas HTTP (URL base, serialización de JSON, manejo de códigos de estado). Es la única pieza del cliente que conoce la forma concreta de la interfaz REST del Backend. Solo lo usan los Controladores. |
@@ -530,12 +530,12 @@ C4Deployment
     title Vista de despliegue de LocalBlast - Producción
 
     Deployment_Node(pc, "PC del investigador/a", "Ubuntu (GNU/Linux)") {
-        System_Ext(nav, "Navegador web", "Chrome / Firefox", "Descarga y renderiza la Aplicación Web")
+        System_Ext(nav, "Navegador web", "Chrome / Firefox", "Renderiza la Aplicación Web")
     }
 
     Deployment_Node(srv, "Servidor del laboratorio", "Debian (GNU/Linux)") {
         Deployment_Node(py, "Python 3", "Entorno de ejecución") {
-            Container(web, "Aplicación Web", "React", "Archivos estáticos HTML, JS y CSS que el navegador descarga")
+            Container(web, "Aplicación Web", "React", "Interfaz de LocalBlast que el navegador renderiza")
             Container(backend, "Backend", "Python / FastAPI", "Valida, invoca BLAST+, persiste búsquedas, arma descargas")
         }
         Deployment_Node(pg, "PostgreSQL", "Entorno de ejecución") {
@@ -546,45 +546,47 @@ C4Deployment
         }
     }
 
-    System_Ext(ncbi, "Servicio BLAST de NCBI", "Solo en modo remoto")
+    Deployment_Node(inet, "Internet", "Fuera de la infraestructura del laboratorio") {
+        System_Ext(ncbi, "Servicio BLAST de NCBI", "Solo en modo remoto")
+    }
 
-    Rel(nav, web, "Descarga y ejecuta", "HTTPS")
-    Rel(nav, backend, "Solicita", "JSON / HTTPS")
+    Rel(nav, web, "Renderiza", "HTTPS")
+    Rel(web, backend, "Solicita", "JSON / HTTPS")
     Rel(backend, bd, "Lee y escribe", "SQL / TCP")
     Rel(backend, blast, "Invoca", "CLI / subproceso")
     Rel(blast, ncbi, "Consulta en modo remoto", "HTTPS")
 
-    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="2")
 ```
 
-> **Nota sobre la notación.** Mermaid no admite nodos vacíos: todo nodo debe contener al menos un elemento. Como la PC del investigador no ejecuta ningún contenedor de LocalBlast (solo el navegador), el navegador se dibuja como un elemento de software de terceros (`System_Ext`) dentro del nodo. **No es un contenedor nuevo ni forma parte del sistema que construimos**: es el programa que descarga y renderiza la Aplicación Web.
+> **Nota sobre la notación.** Mermaid no admite nodos vacíos: todo nodo debe contener al menos un elemento. Como la PC del investigador no ejecuta ningún contenedor de LocalBlast (solo el navegador), el navegador se dibuja como un elemento de software de terceros (`System_Ext`) dentro del nodo. **No es un contenedor nuevo ni forma parte del sistema que construimos**: es el programa que renderiza la Aplicación Web.
 
 ### 8.2 Cómo se despliega la Aplicación Web
 
-La Aplicación Web es un contenedor de la vista de contenedores, y en producción **se aloja en el Servidor del laboratorio** junto con el Backend, dentro del entorno de ejecución Python 3. Lo que se aloja son sus archivos estáticos (HTML, JS y CSS compilados), que el Backend publica para que se descarguen.
+La Aplicación Web es un contenedor de la vista de contenedores, y en producción **se aloja y se ejecuta en el Servidor del laboratorio** junto con el Backend, dentro del entorno de ejecución Python 3.
 
-La **PC del investigador solo tiene un navegador web**. Al abrir LocalBlast, el navegador descarga esos archivos por HTTPS y los renderiza y ejecuta localmente; de ahí en adelante, el navegador envía al Backend solicitudes REST (JSON sobre HTTPS) y dibuja las respuestas. El investigador no instala ni ejecuta la Aplicación Web en su máquina: la ejecuta el navegador a partir de lo que descargó del servidor.
+La **PC del investigador solo tiene un navegador web**, que se conecta a la Aplicación Web por HTTPS y renderiza lo que ella le entrega. **El navegador no se comunica con el Backend**: cuando el investigador carga, valida o ejecuta una búsqueda, es la Aplicación Web la que le envía al Backend las solicitudes REST (JSON sobre HTTPS) y la que recibe sus respuestas. El investigador no instala nada en su máquina.
 
-Esto es coherente con el estilo cliente-servidor ([sección 5.2](#52-estilo-arquitectónico-base-cliente-servidor)): el cliente inicia siempre la comunicación, tanto para descargar la aplicación como para pedirle trabajo al Backend. La decisión se justifica en [DA-08](#da-08--despliegue-en-un-único-servidor-del-laboratorio).
+Esto es coherente con el estilo cliente-servidor ([sección 5.2](#52-estilo-arquitectónico-base-cliente-servidor)): cada cliente inicia siempre la comunicación, el navegador con la Aplicación Web y la Aplicación Web con el Backend. La decisión se justifica en [DA-08](#da-08--despliegue-en-un-único-servidor-del-laboratorio).
 
 ### 8.3 Catálogo de nodos
 
 | Nodo | Tipo o tecnología | Qué ejecuta o aloja | Artefactos | Instancias | Escenario o decisión que lo justifica |
 |---|---|---|---|---|---|
-| **PC del investigador/a** | Ubuntu (GNU/Linux), con navegador web | Solo el navegador, que descarga y renderiza la Aplicación Web. No tiene contenedores de LocalBlast instalados. | — (los archivos HTML, JS y CSS se descargan del servidor en cada uso) | Una por investigador (hasta diez concurrentes) | [DA-01](#da-01--estilo-base-cliente-servidor) y [DA-08](#da-08--despliegue-en-un-único-servidor-del-laboratorio): es el cliente del estilo; no requiere instalar nada, solo un navegador. |
+| **PC del investigador/a** | Ubuntu (GNU/Linux), con navegador web | Solo el navegador, que renderiza la Aplicación Web. No tiene contenedores de LocalBlast instalados. | — | Una por investigador (hasta diez concurrentes) | [DA-01](#da-01--estilo-base-cliente-servidor) y [DA-08](#da-08--despliegue-en-un-único-servidor-del-laboratorio): es el cliente del estilo; no requiere instalar nada, solo un navegador. |
 | **Servidor del laboratorio** | Debian (GNU/Linux) | Los tres entornos de ejecución siguientes. | — | 1 | [DA-08](#da-08--despliegue-en-un-único-servidor-del-laboratorio): un único servidor, ya existente, donde BLAST+ está instalado. |
-| **Python 3** *(dentro del servidor)* | Entorno de ejecución | **Backend** (lo ejecuta) y **Aplicación Web** (la aloja y publica) | Paquete Python `localblast-api` y sus bibliotecas; archivos estáticos HTML, JS y CSS de la Aplicación Web | 1 | EC-01 y [DA-04](#da-04--ejecutar-cada-búsqueda-como-subproceso-independiente-de-blast): el Backend lanza cada búsqueda como subproceso local de BLAST+ en este mismo servidor. |
+| **Python 3** *(dentro del servidor)* | Entorno de ejecución | **Backend** y **Aplicación Web** (ejecuta los dos) | Paquete Python `localblast-api` y sus bibliotecas; código de la Aplicación Web (HTML, JS y CSS) | 1 | EC-01 y [DA-04](#da-04--ejecutar-cada-búsqueda-como-subproceso-independiente-de-blast): el Backend lanza cada búsqueda como subproceso local de BLAST+ en este mismo servidor. |
 | **PostgreSQL** *(dentro del servidor)* | Entorno de ejecución | **Base de datos** | Base de datos de LocalBlast: usuarios, catálogo de bases de datos e historial de búsquedas | 1 | [DA-08](#da-08--despliegue-en-un-único-servidor-del-laboratorio): comparte el servidor para no sumar un nodo que operar; solo el Backend accede a ella (restricción del estilo, [sección 5.2](#52-estilo-arquitectónico-base-cliente-servidor)). |
 | **BLAST+ 2.14** *(dentro del servidor)* | Entorno de ejecución | **BLAST+** (sistema externo instalado, no un contenedor propio) | Binarios de BLAST+ (`blastn`, `blastp`, `blastx`, etc.) y secuencias locales del laboratorio (las bases de datos BLAST locales, cuyas rutas registra el catálogo de la Base de datos) | 1 | Restricción de la [sección 2](#2-restricciones) y EC-02: lo instala y actualiza el administrador de sistemas, por lo que su versión puede cambiar sin coordinarse con el equipo; el Adaptador BLAST+ absorbe esos cambios. |
 
-El **Servicio BLAST de NCBI** no es un nodo de nuestra infraestructura: es un sistema externo, usado solo en modo remoto.
+El **Servicio BLAST de NCBI** no es un nodo de nuestra infraestructura: es un sistema externo, usado solo en modo remoto. En el diagrama se dibuja dentro de un nodo **Internet** solo para ubicarlo fuera del servidor del laboratorio; ese nodo no lo operamos ni lo desplegamos nosotros.
 
 ### 8.4 Catálogo de relaciones del despliegue
 
 | Origen → Destino | Qué se comunica | Protocolo | Dónde ocurre | Corresponde en la vista de contenedores a |
 |---|---|---|---|---|
-| Navegador web → Aplicación Web | Descarga de los archivos estáticos de la aplicación al abrirla | HTTPS | Red entre la PC del investigador y el servidor | Investigador/a → Aplicación Web (el investigador usa la aplicación a través del navegador) |
-| Navegador web → Backend | Solicitudes REST con los datos de la búsqueda, el progreso, los resultados y las descargas | JSON / HTTPS | Red entre la PC del investigador y el servidor | Aplicación Web → Backend (la Aplicación Web, al ejecutarse en el navegador, es quien envía las solicitudes) |
+| Navegador web → Aplicación Web | Las pantallas que el navegador renderiza y las acciones del investigador sobre ellas | HTTPS | Red entre la PC del investigador y el servidor | Investigador/a → Aplicación Web (el investigador usa la aplicación a través del navegador) |
+| Aplicación Web → Backend | Solicitudes REST con los datos de la búsqueda, el progreso, los resultados y las descargas | JSON / HTTPS | Local, dentro del servidor (en el entorno Python 3) | Aplicación Web → Backend |
 | Backend → Base de datos | Lectura y escritura de usuarios, catálogo e historial | SQL / TCP | Local, dentro del servidor (de Python 3 a PostgreSQL) | Backend → Base de datos |
 | Backend → BLAST+ | Invocación como subproceso con los argumentos de la búsqueda; lectura de la salida | CLI / subproceso | Local, dentro del servidor (de Python 3 a BLAST+ 2.14) | Backend → BLAST+ |
 | BLAST+ → Servicio BLAST de NCBI | Búsqueda remota, solo cuando el investigador elige el modo remoto | HTTPS | Salida del servidor hacia Internet | No figura en la vista de contenedores: la origina BLAST+, no LocalBlast (ver nota siguiente) |
@@ -595,7 +597,7 @@ El **Servicio BLAST de NCBI** no es un nodo de nuestra infraestructura: es un si
 
 - **EC-01 (concurrencia).** Backend y BLAST+ comparten nodo: cada búsqueda es un subproceso del sistema operativo del servidor, sin red de por medio. Con cinco búsquedas concurrentes habrá cinco procesos de BLAST+ en el mismo servidor.
 - **EC-02 (cambio de versión de BLAST+).** BLAST+ es un entorno de ejecución propio dentro del servidor, mantenido por el administrador de sistemas. El único contacto con él es el Backend (a través del Adaptador BLAST+), y por eso una actualización no se propaga a los demás nodos.
-- **Qué cruza la red.** Solo hay un cruce de red entre nodos propios: el que va de la PC del investigador al servidor, siempre por HTTPS. Todo lo demás es comunicación local dentro del servidor. Al servidor se le suma, en modo remoto, la salida hacia NCBI.
+- **Qué cruza la red.** Solo hay un cruce de red entre nodos propios: el del navegador de la PC del investigador hacia la Aplicación Web en el servidor, siempre por HTTPS. El Backend no queda expuesto a la PC: solo lo invoca la Aplicación Web, dentro del servidor. Todo lo demás también es comunicación local dentro del servidor. Al servidor se le suma, en modo remoto, la salida hacia NCBI.
 
 **Sacrificios asumidos.** Con un único servidor, si el servidor cae se detienen el Backend, la base de datos y BLAST+, y el investigador no puede ni abrir la aplicación; es el mismo punto único de falla que ya aceptó [DA-01](#da-01--estilo-base-cliente-servidor). Además, el Backend, la base de datos y los procesos de BLAST+ comparten procesador y memoria: durante un pico de cinco búsquedas concurrentes puede degradarse el tiempo de respuesta del Backend y de la base. Si esto ocurriera en la práctica, el paso siguiente sería sacar la base de datos a un nodo propio. El grupo acepta estos riesgos para no multiplicar la infraestructura que debe operar y lo registra en DA-08.
 
@@ -603,7 +605,7 @@ El **Servicio BLAST de NCBI** no es un nodo de nuestra infraestructura: es un si
 
 - ✅ **Todo contenedor aparece una vez, dentro de un nodo:** Aplicación Web y Backend en el entorno Python 3, Base de datos en el entorno PostgreSQL.
 - ✅ **No se crean contenedores nuevos.** El navegador y BLAST+ se dibujan como software de terceros (`System_Ext`), igual que BLAST+ en la vista de contenedores.
-- ✅ **Las relaciones corresponden a las de la vista de contenedores** y llevan el mismo protocolo (con el detalle de transporte "SQL / TCP"); la única relación adicional, BLAST+ → NCBI, se explica en la nota de la [sección 8.4](#84-catálogo-de-relaciones-del-despliegue).
+- ✅ **Las relaciones corresponden a las de la vista de contenedores** y llevan el mismo protocolo (con el detalle de transporte "SQL / TCP"). El navegador solo se relaciona con la Aplicación Web, nunca con el Backend; la única relación adicional, BLAST+ → NCBI, se explica en la nota de la [sección 8.4](#84-catálogo-de-relaciones-del-despliegue).
 - ✅ **Un solo entorno (producción) y dos niveles de anidamiento** (servidor → entorno de ejecución).
 - ✅ **Cada nodo tiene nombre y tecnología**, y el número de instancias figura en el catálogo de nodos.
 
@@ -617,10 +619,10 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de cuatro historia
 
 | HU | Criterio recorrido | Contenedores que atraviesa | Componentes involucrados |
 |---|---|---|---|
-| **HU01_CU001_B** · Carga de la secuencia FASTA | **Given** un archivo FASTA bien formado · **When** el investigador lo sube · **Then** el sistema lo deja disponible con alfabeto inferido | Aplicación Web → Backend → Base de datos | **Web:** Pantallas → Controlador de búsqueda (actualiza y valida con el Modelo de búsqueda el formato FASTA en el cliente) → Cliente del Backend · **Backend:** Controladores → Preparación de búsqueda → Acceso a datos |
-| **HU08_CU004_B** · Ejecución asíncrona de la búsqueda | **Given** una búsqueda ya configurada y validada · **When** el investigador presiona "Ejecutar" · **Then** la interfaz muestra progreso y permanece navegable; al terminar se dispara CU005 (presentación + persistencia) | Aplicación Web → Backend → BLAST+ (ejecución) · Backend → Base de datos (persistencia) | **Web:** Pantallas → Controlador de búsqueda → Cliente del Backend (el progreso se refleja en el Modelo de búsqueda y las Pantallas lo muestran) · **Backend:** Controladores → Ejecución y persistencia → Adaptador BLAST+ (invoca BLAST+ como subproceso independiente, EC-01) → Ejecución y persistencia → Acceso a datos |
-| **HU12_CU006_B** · Filtrado post-búsqueda | **Given** resultados crudos ya devueltos por BLAST+ · **When** el investigador modifica los umbrales de filtro · **Then** la tabla se refresca sobre el crudo original, en menos de 1 segundo | Aplicación Web | **Web:** Pantallas → Controlador de resultados → Modelo de resultados (recalcula los hits visibles desde el crudo; las Pantallas se redibujan al cambiar) · **Backend:** no interviene |
-| **HU13_CU007_B** · Descarga | **Given** una tabla con o sin filtros aplicados · **When** el investigador elige el formato y presiona "Descargar" · **Then** recibe un archivo con los hits visibles y los metadatos de la búsqueda | Aplicación Web → Backend → Base de datos | **Web:** Pantallas → Controlador de resultados (arma el pedido con los hits visibles del Modelo de resultados) → Cliente del Backend · **Backend:** Controladores → Generación de archivos de descarga → Acceso a datos |
+| **HU01_CU001_B** · Carga de la secuencia FASTA | **Given** un archivo FASTA bien formado · **When** el investigador lo sube · **Then** el sistema lo deja disponible con alfabeto inferido | Aplicación Web → Backend | **Web:** Pantallas → Controlador de búsqueda (actualiza y valida con el Modelo de búsqueda el formato FASTA en el cliente) → Cliente del Backend · **Backend:** Controladores → Preparación de búsqueda (repite la validación sintáctica e infiere el alfabeto en memoria; la secuencia queda en la sesión y no se persiste) |
+| **HU08_CU004_B** · Ejecución asíncrona de la búsqueda y presentación de sus resultados | **Given** una búsqueda ya configurada y validada · **When** el investigador presiona "Ejecutar" · **Then** la interfaz muestra progreso y permanece navegable; al terminar presenta la tabla de alineamientos y la búsqueda queda persistida en el historial | Aplicación Web → Backend → BLAST+ (ejecución) · Backend → Base de datos (persistencia) | **Web:** Pantallas → Controlador de búsqueda → Cliente del Backend (el progreso se refleja en el Modelo de búsqueda y las Pantallas lo muestran) → Controlador de búsqueda → Modelo de resultados (carga los resultados crudos; las Pantallas dibujan la tabla) · **Backend:** Controladores → Ejecución y persistencia → Adaptador BLAST+ (invoca BLAST+ como subproceso independiente, EC-01) → Ejecución y persistencia → Acceso a datos |
+| **HU11_CU005_B** · Filtrado post-búsqueda | **Given** resultados crudos ya devueltos por BLAST+ · **When** el investigador modifica los umbrales de filtro · **Then** la tabla se refresca sobre el crudo original, en menos de 1 segundo | Aplicación Web | **Web:** Pantallas → Controlador de resultados → Modelo de resultados (recalcula los hits visibles desde el crudo; las Pantallas se redibujan al cambiar) · **Backend:** no interviene |
+| **HU12_CU006_B** · Descarga | **Given** una tabla con o sin filtros aplicados · **When** el investigador elige el formato y presiona "Descargar" · **Then** recibe un archivo con los hits visibles y los metadatos de la búsqueda | Aplicación Web → Backend → Base de datos | **Web:** Pantallas → Controlador de resultados (arma el pedido con los hits visibles del Modelo de resultados) → Cliente del Backend · **Backend:** Controladores → Generación de archivos de descarga → Acceso a datos |
 
 **Lectura del escenario de EC-02 sobre las vistas.** Cuando BLAST+ devuelve una salida con un campo adicional no mapeado, la respuesta del sistema queda contenida enteramente dentro del **Adaptador BLAST+**: reconoce los campos conocidos, descarta el nuevo sin romper los conocidos, y devuelve los resultados a Ejecución y persistencia como si el formato fuera el esperado. Ni los Controladores, ni los otros componentes de dominio, ni la Aplicación Web se enteran del cambio. Esta es la propiedad arquitectónica concreta que el patrón de Capas, con el Adaptador BLAST+ en su capa de datos, aporta al Backend.
 
@@ -628,7 +630,7 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de cuatro historia
 
 **Lectura del escenario de filtrado sobre las vistas.** La Aplicación Web recibe la tabla cruda una sola vez, y el Modelo de resultados recalcula los hits visibles en cada cambio de umbral que le informa el Controlador de resultados; las Pantallas se redibujan al observar el cambio, sin pasar por el Backend ni por la base de datos. Por eso el tiempo de respuesta no depende de la red ni de la carga del servidor.
 
-**Lectura de HU08 sobre el despliegue.** El navegador de la PC del investigador, que ya descargó la Aplicación Web del servidor, envía por HTTPS la solicitud de ejecución al Backend (entorno Python 3 del Servidor del laboratorio). El Backend lanza BLAST+ como subproceso local (entorno BLAST+ 2.14, del mismo servidor), que en modo local lee las secuencias locales del laboratorio y en modo remoto consulta a NCBI por HTTPS. Al terminar, el Backend persiste la búsqueda en PostgreSQL (mismo servidor) y responde al navegador. Ver la [sección 8](#8-vista-de-despliegue).
+**Lectura de HU08 sobre el despliegue.** El navegador de la PC del investigador le envía por HTTPS a la Aplicación Web la acción de ejecutar, y la Aplicación Web le pide la ejecución al Backend (los dos en el entorno Python 3 del Servidor del laboratorio). El Backend lanza BLAST+ como subproceso local (entorno BLAST+ 2.14, del mismo servidor), que en modo local lee las secuencias locales del laboratorio y en modo remoto consulta a NCBI por HTTPS. Al terminar, el Backend persiste la búsqueda en PostgreSQL (mismo servidor) y responde a la Aplicación Web, que le entrega al navegador la tabla de resultados para renderizar. Ver la [sección 8](#8-vista-de-despliegue).
 
 ---
 
@@ -640,7 +642,7 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de cuatro historia
 - **Contexto:** LocalBlast es una interfaz gráfica para BLAST+. El equipo tiene 3 integrantes con dedicación parcial y domina Python; para el frontend adopta React. Hasta diez investigadores concurrentes.
 - **Decisión:**
   - **Tácticas:** respetar estándares de comunicación (JSON sobre HTTPS entre cliente y servidor); encapsular el acceso a BLAST+ del lado del servidor.
-  - **Estilo:** Cliente-Servidor como estilo base, aplicado a todo el sistema. El cliente es la Aplicación Web, alojada en el servidor y ejecutada en el navegador del investigador (ver [DA-08](#da-08--despliegue-en-un-único-servidor-del-laboratorio)).
+  - **Estilo:** Cliente-Servidor como estilo base, aplicado a todo el sistema. El cliente es la Aplicación Web, alojada en el servidor junto al Backend; el navegador del investigador la renderiza (ver [DA-08](#da-08--despliegue-en-un-único-servidor-del-laboratorio)).
   - **Patrón:** se decide en DA-02.
 - **Alternativas consideradas:**
   - **Microservicios** — descartado: alta complejidad operativa para el presupuesto del equipo; sin partes con ritmos de cambio distintos que lo justifiquen.
@@ -700,6 +702,7 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de cuatro historia
   - **A favor:** aislamiento natural entre búsquedas (cada subproceso tiene su propia memoria); si BLAST+ falla en una invocación, las otras no se ven afectadas; cumple EC-01 por diseño.
   - **En contra:** consumo de CPU y memoria crece linealmente con la concurrencia; cada subproceso implica el overhead de cargar BLAST+ en memoria. Aceptable para el régimen de uso previsto.
 - **Elementos afectados:** componente "Adaptador BLAST+" (en el Backend).
+- **Precisión en el diseño detallado:** la correspondencia entre subproceso y búsqueda viaja con los datos: el Adaptador etiqueta la salida de cada subproceso con el identificador de la búsqueda que lo originó, y la entidad `Busqueda` rechaza una salida que no es suya. No hay estado compartido entre ejecuciones. Ver [`diseno-detallado.md`](../design/diseno-detallado.md#52-decisiones-de-diseño), decisión D2.
 
 ### DA-05 · Validación en la Aplicación Web, además de en el servidor
 
@@ -719,14 +722,14 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de cuatro historia
 ### DA-06 · Filtrado de resultados en la Aplicación Web
 
 - **Escenario que la motiva:** el escenario 1 de operabilidad (sección 5.2 de [`escenarios-calidad.md`](../requeriments/quality-scenarios/escenarios-calidad.md#52-operabilidad)): cada cambio de filtro debe reflejarse en menos de 1 segundo sobre tablas de hasta 500 hits.
-- **Contexto:** el cliente ya recibe la tabla cruda al terminar la búsqueda (CU005). Con varias búsquedas en curso (EC-01) el servidor está ocupado, y una solicitud por cada ajuste de umbral no garantizaría ese tiempo.
+- **Contexto:** el cliente ya recibe la tabla cruda al terminar la búsqueda (CU004). Con varias búsquedas en curso (EC-01) el servidor está ocupado, y una solicitud por cada ajuste de umbral no garantizaría ese tiempo.
 - **Decisión:**
   - **Táctica:** mantener copias de datos (del atributo desempeño): el cliente conserva el crudo en memoria y filtra sobre él.
   - **Estilo:** respeta cliente-servidor: el cliente muestra, el servidor persiste y genera los archivos.
   - **Patrón:** el filtrado vive en el Modelo de la Aplicación Web (componente **Modelo de resultados**, que calcula los hits visibles) y lo dispara el Controlador de resultados (ver DA-07). Para descargar, el cliente envía el id de la búsqueda, el formato y los hits visibles; el servidor verifica que pertenezcan a la búsqueda del investigador y genera el archivo.
 - **Alternativas consideradas:**
   - **Filtrar en el servidor** — descartada: cada ajuste sería una solicitud, atada a la red y a la carga del servidor.
-  - **Reenviar los parámetros del filtro para que el servidor filtre al descargar** — descartada: la regla existiría en dos lenguajes y el archivo podría no coincidir con lo visible (CU007).
+  - **Reenviar los parámetros del filtro para que el servidor filtre al descargar** — descartada: la regla existiría en dos lenguajes y el archivo podría no coincidir con lo visible (CU006).
 - **Consecuencias:**
   - **A favor:** respuesta inmediata y sin solicitudes; una sola implementación de la regla de filtrado; el archivo coincide con lo visible.
   - **En contra:** el cliente guarda la tabla cruda en memoria (aceptable hasta 500 hits); el servidor debe validar cada pedido de descarga, porque el cliente no es un control de confianza (como en DA-05).
@@ -759,7 +762,7 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de cuatro historia
   - **Tácticas:** respetar estándares de comunicación (HTTPS con JSON en el único cruce de red entre nodos propios, de la PC del investigador al servidor).
   - **Estilo:** respeta cliente-servidor: un nodo cliente (la PC del investigador) y un nodo servidor.
   - **Patrón:** no aplica; es una decisión de infraestructura.
-  - **Despliegue:** un único Servidor del laboratorio (Debian GNU/Linux) con tres entornos de ejecución: Python 3 (Backend y Aplicación Web), PostgreSQL (Base de datos) y BLAST+ 2.14. La **Aplicación Web se aloja en el servidor**: sus archivos estáticos (HTML, JS y CSS) los publica el Backend y el navegador del investigador los descarga y los ejecuta. La PC del investigador no ejecuta ningún contenedor de LocalBlast: solo el navegador.
+  - **Despliegue:** un único Servidor del laboratorio (Debian GNU/Linux) con tres entornos de ejecución: Python 3 (Backend y Aplicación Web), PostgreSQL (Base de datos) y BLAST+ 2.14. La **Aplicación Web se aloja y se ejecuta en el servidor**, junto al Backend: el navegador del investigador se conecta a ella por HTTPS y renderiza lo que le entrega, sin comunicarse con el Backend. La PC del investigador no ejecuta ningún contenedor de LocalBlast: solo el navegador.
 - **Alternativas consideradas:**
   - **Instalar la Aplicación Web en la PC de cada investigador** — descartada: obligaría a instalar y mantener el cliente en cada máquina y a distribuir cada versión nueva. Alojada en el servidor, el investigador solo necesita un navegador y actualizar la aplicación es actualizar un único lugar.
   - **Servidor de base de datos separado** — descartada: ningún driver lo exige, y sumaría un nodo más que operar para un equipo de tres personas. Queda como paso siguiente si el consumo conjunto se vuelve un problema.
@@ -792,22 +795,25 @@ Las decisiones que sostienen la estructura interna de la Aplicación Web se traz
 
 | Historia de usuario | Contenedores | Componentes |
 |---|---|---|
-| HU01_CU001_B · Cargar secuencia | Aplicación Web → Backend → Base de datos | **Web:** Pantallas → Controlador de búsqueda (Modelo de búsqueda) → Cliente del Backend · **Backend:** Controladores → Preparación de búsqueda → Acceso a datos |
+| HU01_CU001_B · Cargar secuencia | Aplicación Web → Backend | **Web:** Pantallas → Controlador de búsqueda (Modelo de búsqueda) → Cliente del Backend · **Backend:** Controladores → Preparación de búsqueda (en memoria, sin persistir) |
 | HU02_CU001_E1 · Rechazo de secuencia inválida | Aplicación Web (rechazo local) o Aplicación Web → Backend (rechazo tras validación del servidor) | **Web:** Pantallas → Controlador de búsqueda (el Modelo de búsqueda marca el error, no se envía) · **Backend:** si la validación local fue salteada, Controladores → Preparación de búsqueda (rechaza) |
 | HU03_CU002_B · Configurar la búsqueda | Aplicación Web → Backend → Base de datos (al leer catálogo) | **Web:** Pantallas → Controlador de búsqueda (Modelo de búsqueda) → Cliente del Backend · **Backend:** Controladores → Preparación de búsqueda → Acceso a datos (lee catálogo) |
+| HU04_CU002_A1 · Base de datos local no disponible | Aplicación Web → Backend → Base de datos (al leer el estado del catálogo) | **Web:** Pantallas → Controlador de búsqueda (el Modelo de búsqueda registra la base como no utilizable y no habilita la validación) → Cliente del Backend · **Backend:** Controladores → Preparación de búsqueda → Acceso a datos (lee el catálogo con el estado de cada base) |
 | HU05_CU003_B · Validar la búsqueda | Aplicación Web → Backend | **Web:** Pantallas → Controlador de búsqueda (Modelo de búsqueda: marca validada) · **Backend:** Controladores → Preparación de búsqueda (validación semántica en memoria) |
-| HU08_CU004_B · Ejecutar búsqueda | Aplicación Web → Backend → BLAST+ · Backend → Base de datos | **Web:** Pantallas → Controlador de búsqueda → Cliente del Backend · **Backend:** Controladores → Ejecución y persistencia → **Adaptador BLAST+** → Ejecución y persistencia → Acceso a datos |
+| HU06_CU003_E1 · Rechazo de parámetros fuera de rango | Aplicación Web (rechazo local) o Aplicación Web → Backend (rechazo tras validación del servidor) | **Web:** Pantallas → Controlador de búsqueda (el Modelo de búsqueda detecta el parámetro fuera del rango del programa y no marca la configuración como validada) · **Backend:** si la validación local fue salteada, Controladores → Preparación de búsqueda (rechaza) |
+| HU07_CU003_E2 · Rechazo de combinación incompatible | Aplicación Web (rechazo local) o Aplicación Web → Backend (rechazo tras validación del servidor) | **Web:** Pantallas → Controlador de búsqueda (el Modelo de búsqueda detecta la incompatibilidad programa / query / base de datos y no marca la configuración como validada) · **Backend:** si la validación local fue salteada, Controladores → Preparación de búsqueda (rechaza) |
+| HU08_CU004_B · Ejecutar búsqueda y ver resultados | Aplicación Web → Backend → BLAST+ · Backend → Base de datos | **Web:** Pantallas → Controlador de búsqueda → Cliente del Backend → Controlador de búsqueda → Modelo de resultados · **Backend:** Controladores → Ejecución y persistencia → **Adaptador BLAST+** → Ejecución y persistencia → Acceso a datos |
 | HU09_CU004_A1 · Cancelación | Aplicación Web → Backend → BLAST+ | **Web:** Pantallas → Controlador de búsqueda (Modelo de búsqueda: estado de ejecución) → Cliente del Backend · **Backend:** Controladores → Ejecución y persistencia → **Adaptador BLAST+** (termina el subproceso) |
 | HU10_CU004_E1 · Fallo del modo remoto | Aplicación Web → Backend | **Backend:** Controladores → Ejecución y persistencia → **Adaptador BLAST+** → Controladores (propagan el error literal al cliente) · **Web:** Controlador de búsqueda (registra el error en el Modelo de búsqueda) → Pantallas (lo muestran) |
-| HU11_CU005_B · Presentar y persistir | Aplicación Web → Backend → Base de datos | **Web:** Pantallas → Controlador de búsqueda → Cliente del Backend → Controlador de búsqueda → Modelo de resultados · **Backend:** Controladores → Ejecución y persistencia → Acceso a datos |
-| HU12_CU006_B · Filtrado | Aplicación Web | **Web:** Pantallas → Controlador de resultados → Modelo de resultados |
-| HU13_CU007_B · Descarga | Aplicación Web → Backend → Base de datos | **Web:** Pantallas → Controlador de resultados (Modelo de resultados) → Cliente del Backend · **Backend:** Controladores → Generación de archivos de descarga → Acceso a datos |
+| HU11_CU005_B · Filtrado | Aplicación Web | **Web:** Pantallas → Controlador de resultados → Modelo de resultados |
+| HU12_CU006_B · Descarga | Aplicación Web → Backend → Base de datos | **Web:** Pantallas → Controlador de resultados (Modelo de resultados) → Cliente del Backend · **Backend:** Controladores → Generación de archivos de descarga → Acceso a datos |
+| HU13_CU006_A1 · Descarga con cero hits visibles | Aplicación Web → Backend → Base de datos | **Web:** Pantallas → Controlador de resultados (el Modelo de resultados informa cero hits visibles y el pedido viaja con la lista vacía) → Cliente del Backend · **Backend:** Controladores → Generación de archivos de descarga (arma el archivo con encabezados y metadatos, sin filas de hits) → Acceso a datos (solo lee: la entrada del historial no se modifica) |
 
 ### 11.3 Contenedor → nodo de despliegue
 
 | Contenedor | Nodo donde se ejecuta o se aloja |
 |---|---|
-| Aplicación Web | Alojada en el entorno **Python 3** del Servidor del laboratorio; ejecutada en el **navegador** de la PC del investigador/a |
+| Aplicación Web | Entorno **Python 3** del Servidor del laboratorio, junto al Backend; el **navegador** de la PC del investigador/a solo la renderiza |
 | Backend | Entorno **Python 3** del Servidor del laboratorio |
 | Base de datos | Entorno **PostgreSQL** del Servidor del laboratorio |
 | BLAST+ *(sistema externo instalado)* | Entorno **BLAST+ 2.14** del Servidor del laboratorio |
@@ -860,4 +866,6 @@ Los términos del dominio (BLAST, BLAST+, query, base de datos BLAST, FASTA, E-v
 - [Diagrama de contexto del sistema](contexto-inicial.md) *(incluye el actor Administrador/a y el proceso P3, fuera del alcance del cuatrimestre actual)*
 - [Escenarios de atributo de calidad](../requeriments/quality-scenarios/escenarios-calidad.md)
 - [Casos de uso](../requeriments/casos-de-uso.md) e [Historias de usuario](../requeriments/historias-usuario.md)
+- [Diseño detallado de `HU08_CU004_B`](../design/diseno-detallado.md)
 - [Bitácora de uso de IA](../uso-ia.md)
+

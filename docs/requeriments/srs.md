@@ -105,15 +105,15 @@ De los tres procesos identificados en el DFD Nivel 1 (P1, P2, P3), el grupo elig
 
 ### 5.1 Qué se profundiza y por qué
 
-- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra la complejidad interesante del dominio (dos modos de invocación a BLAST+ con o sin `-remote`, validación de parámetros pre-búsqueda, verificación de compatibilidad programa/query/base de datos, ejecución asíncrona con cancelación y persistencia automática en el historial). Da lugar a **cinco casos de uso**, uno por cada capacidad discreta que el sistema le brinda al investigador dentro del ciclo de una búsqueda: `CU001 · Cargar la secuencia query` (dejar la secuencia disponible y chequeada sintácticamente), `CU002 · Configurar los parámetros de la búsqueda` (armar modo, base de datos, programa y parámetros pre-búsqueda), `CU003 · Validar la búsqueda` (obtener el visto bueno semántico del sistema), `CU004 · Ejecutar la búsqueda` (correr BLAST+ con progreso y cancelación) y `CU005 · Ver los resultados y persistir la búsqueda en el historial` (presentar la tabla de alineamientos y dejarla registrada en D2). La partición refleja que cada una de esas capacidades tiene valor propio y es ejercitable por separado.
+- **P1 · Ejecutar búsqueda BLAST — profundizado.** Es el proceso *core* del sistema: sin él no hay valor entregable. Concentra la complejidad interesante del dominio (dos modos de invocación a BLAST+ con o sin `-remote`, validación de parámetros pre-búsqueda, verificación de compatibilidad programa/query/base de datos, ejecución asíncrona con cancelación y persistencia automática en el historial). Da lugar a **cuatro casos de uso**, uno por cada capacidad discreta que el sistema le brinda al investigador dentro del ciclo de una búsqueda: `CU001 · Cargar la secuencia query` (dejar la secuencia disponible y chequeada sintácticamente), `CU002 · Configurar los parámetros de la búsqueda` (armar modo, base de datos, programa y parámetros pre-búsqueda), `CU003 · Validar la búsqueda` (obtener el visto bueno semántico del sistema) y `CU004 · Ejecutar la búsqueda y ver sus resultados` (correr BLAST+ con progreso y cancelación, presentar la tabla de alineamientos y dejar la búsqueda registrada en D2). La partición refleja que cada una de esas capacidades tiene valor propio y es ejercitable por separado.
 
-- **P2 · Filtrar y entregar resultados — profundizado.** Es lo que le permite al investigador cerrar la interacción con valor real: sin filtrar ni descargar, la búsqueda queda "en el aire" en la interfaz. P2 se ejecuta sobre los datos ya devueltos por BLAST+ y su lógica es previsible (comparaciones numéricas para el filtro, serialización para la descarga), pero es indispensable para el flujo típico del usuario y por eso lo profundizamos. Da lugar a **dos casos de uso** con capacidades distintas para el mismo actor investigador: `CU006 · Refinar los resultados con filtros post-búsqueda` y `CU007 · Descargar los resultados en un formato`. Están detallados en [`docs/requeriments/casos-de-uso.md`](casos-de-uso.md).
+- **P2 · Filtrar y entregar resultados — profundizado.** Es lo que le permite al investigador cerrar la interacción con valor real: sin filtrar ni descargar, la búsqueda queda "en el aire" en la interfaz. P2 se ejecuta sobre los datos ya devueltos por BLAST+ y su lógica es previsible (comparaciones numéricas para el filtro, serialización para la descarga), pero es indispensable para el flujo típico del usuario y por eso lo profundizamos. Da lugar a **dos casos de uso** con capacidades distintas para el mismo actor investigador: `CU005 · Refinar los resultados con filtros post-búsqueda` y `CU006 · Descargar los resultados en un formato`. Están detallados en [`docs/requeriments/casos-de-uso.md`](casos-de-uso.md).
 
 ### 5.2 Qué queda fuera del profundizado y por qué
 
 - **P3 · Administrar bases de datos — no profundizado.** Es el proceso de un actor distinto (Administrador), con objetivo distinto y precondición distinta a los procesos anteriores. Un caso de uso derivado de P3, por ejemplo "Administrar base de datos BLAST local", pertenece conceptualmente a ese proceso, no a P1 ni a P2, y por lo tanto queda fuera de la cadena `RF → CU → slice → HU` de este TP. Se documenta a nivel de alcance en el DFD Nivel 1 (con sus flujos hacia BLAST+ y hacia D1) y sus entidades siguen presentes en el modelo de dominio, pero sin RF ni CU propios profundizados en este cuatrimestre.
 
-**Criterio general.** Esta decisión respeta la recomendación explícita de la cátedra: *"elegir uno bien resuelto vale más que varios a medio desarrollar"*. Concentrar el trabajo en los dos procesos que cubren una interacción completa del investigador (P1 y P2) nos permite descomponer esa interacción en las siete capacidades discretas que el sistema le da al investigador — cargar una secuencia, configurar los parámetros de una búsqueda, pedirle al sistema que la valide, ejecutarla, ver los resultados y dejarlos persistidos, refinarlos con filtros, y descargarlos en un formato —, cada una modelada como su propio CU con un objetivo bien delimitado y con un flujo principal de entre 1 y 4 pasos, implementable y probable de forma independiente. Es más rico que dispersar el esfuerzo entre P3, que responde a un objetivo y a un actor diferentes.
+**Criterio general.** Esta decisión respeta la recomendación explícita de la cátedra: *"elegir uno bien resuelto vale más que varios a medio desarrollar"*. Concentrar el trabajo en los dos procesos que cubren una interacción completa del investigador (P1 y P2) nos permite descomponer esa interacción en las seis capacidades discretas que el sistema le da al investigador — cargar una secuencia, configurar los parámetros de una búsqueda, pedirle al sistema que la valide, ejecutarla y ver sus resultados (que quedan persistidos), refinarlos con filtros, y descargarlos en un formato —, cada una modelada como su propio CU con un objetivo bien delimitado y con un flujo principal de entre 2 y 4 pasos, implementable y probable de forma independiente. Es más rico que dispersar el esfuerzo entre P3, que responde a un objetivo y a un actor diferentes.
 
 ---
 
@@ -122,14 +122,12 @@ Los RF-01 a RF-10 corresponden al proceso profundizado P1 y los RF-11 y RF-12 al
 
 ### 6.1 Proceso P1 — Ejecución de búsqueda BLAST
 
-Realizados por `CU001` (cargar la secuencia query), `CU002` (configurar los parámetros), `CU003` (validar la búsqueda), `CU004` (ejecutar) y `CU005` (ver resultados y persistir).
+Realizados por `CU001` (cargar la secuencia query), `CU002` (configurar los parámetros), `CU003` (validar la búsqueda) y `CU004` (ejecutar, ver resultados y persistir).
 
 | ID | Requerimiento |
 |---|---|
-| **RF-01** | El sistema debe permitir al usuario ingresar la secuencia query como texto pegado en el formulario o como archivo FASTA subido e incluir ayuda contextual fija y siempre visible sobre el formato FASTA, junto con un ejemplo
-de secuencia en un bloque persistente que no desaparezca al escribir. |
-| **RF-02** | El sistema debe validar el formato sintáctico de la secuencia query al momento de cargarla: que se pueda parsear como FASTA (o como secuencia plana), que el alfabeto observado sea reconocible como ADN, ARN o proteína, y que no tenga violaciones de formato obvias (encabezado sin cuerpo, caracteres no imprimibles, archivo vacío). Este chequeo no depende del programa BLAST elegido y ocurre antes de cualquier configuración de búsqueda. Debe mostrar mensajes claros de
-error acompañados de un ejemplo del formato correcto esperado para facilitar la correccion|
+| **RF-01** | El sistema debe permitir al usuario ingresar la secuencia query como texto pegado en el formulario o como archivo FASTA subido e incluir ayuda contextual fija y siempre visible sobre el formato FASTA, junto con un ejemplo de secuencia en un bloque persistente que no desaparezca al escribir. |
+| **RF-02** | El sistema debe validar el formato sintáctico de la secuencia query al momento de cargarla: que se pueda parsear como FASTA (o como secuencia plana), que el alfabeto observado sea reconocible como ADN, ARN o proteína, y que no tenga violaciones de formato obvias (encabezado sin cuerpo, caracteres no imprimibles, archivo vacío). Este chequeo no depende del programa BLAST elegido y ocurre antes de cualquier configuración de búsqueda. Debe mostrar mensajes claros de error acompañados de un ejemplo del formato correcto esperado para facilitar la corrección. |
 | **RF-03** | El sistema debe permitir al usuario elegir entre dos modos de ejecución mutuamente excluyentes: **local** (invoca a BLAST+ contra una base de datos del catálogo del laboratorio) o **remoto** (invoca a BLAST+ con la flag `-remote`, y es BLAST+ el que se comunica con NCBI). |
 | **RF-04** | El sistema debe permitir al usuario seleccionar una base de datos disponible para el modo elegido: en modo local, las que figuran en el catálogo administrado por P3; en modo remoto, las bases estándar de NCBI. |
 | **RF-05** | El sistema debe permitir al usuario elegir el programa BLAST a ejecutar (`blastn`, `blastp`, `blastx`, `tblastn`, `tblastx`) y debe verificar que esa elección sea compatible con el tipo de la secuencia query y con el tipo de la base de datos seleccionada. Si la combinación no es compatible, no permite lanzar la búsqueda e indica el motivo. |
@@ -142,7 +140,7 @@ error acompañados de un ejemplo del formato correcto esperado para facilitar la
 
 ### 6.2 Proceso P2 — Filtrado y entrega de resultados
 
-Realizados por `CU006` (refinar con filtros post-búsqueda) y `CU007` (descargar en un formato).
+Realizados por `CU005` (refinar con filtros post-búsqueda) y `CU006` (descargar en un formato).
 
 | ID | Requerimiento |
 |---|---|
@@ -153,7 +151,7 @@ Realizados por `CU006` (refinar con filtros post-búsqueda) y `CU007` (descargar
 
 ## 7. Casos de uso e historias de usuario
 
-Los casos de uso en formato Cockburn (flujo principal detallado y slices secundarios nombrados), derivados de los procesos profundizados P1 (`CU001` a `CU005`) y P2 (`CU006` y `CU007`), están en:
+Los casos de uso en formato Cockburn (flujo principal detallado y slices secundarios nombrados), derivados de los procesos profundizados P1 (`CU001` a `CU004`) y P2 (`CU005` y `CU006`), están en:
 
 👉 [`docs/requeriments/casos-de-uso.md`](casos-de-uso.md)
 
@@ -196,6 +194,7 @@ Cada atributo cuenta con dos escenarios de calidad, redactados en entornos de so
 |---|---|
 | **BLAST** | *Basic Local Alignment Search Tool*: familia de algoritmos para buscar regiones de similitud local entre secuencias biológicas. |
 | **BLAST+** | Suite oficial de línea de comandos de NCBI que implementa BLAST (`blastn`, `blastp`, `makeblastdb`, etc.). Es la herramienta que LocalBlast envuelve. |
+| **Programa BLAST** | Variante del algoritmo que se ejecuta (`blastn`, `blastp`, `blastx`, `tblastn`, `tblastx`). Determina qué tipo de query y qué tipo de base de datos son compatibles. |
 | **Query** | Secuencia biológica que el investigador quiere alinear contra una base de datos. |
 | **Base de datos BLAST** | Conjunto de secuencias biológicas indexadas para búsqueda BLAST. Físicamente: los archivos `.nhr/.nin/.nsq` (nucleótidos) o `.phr/.pin/.psq` (proteínas) generados por `makeblastdb`. |
 | **Hit / Alineamiento** | Cada una de las coincidencias que BLAST devuelve entre la query y una secuencia de la base de datos. |
