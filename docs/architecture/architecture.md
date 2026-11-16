@@ -178,7 +178,7 @@ Para los dos drivers del punto anterior, las tácticas seleccionadas y descartad
 |---|---|
 | Los clientes no se comunican entre sí | Solo hay un cliente (Aplicación Web); no hay comunicación cliente-cliente. |
 | El cliente no accede directamente a la base de datos | La Aplicación Web nunca habla SQL. Todo acceso a datos pasa por el Backend. |
-| El servidor no inicia la comunicación con el cliente | El Backend responde a las solicitudes del cliente; no empuja mensajes al navegador por iniciativa propia (el progreso de la búsqueda se consulta desde el cliente). |
+| El servidor no inicia la comunicación con el cliente | El Backend responde a las solicitudes del cliente; no empuja mensajes al navegador por iniciativa propia (mientras BLAST+ corre, la Aplicación Web espera la respuesta de su propia solicitud y muestra el indicador de progreso). |
 | El cliente inicia siempre la comunicación | Todas las flechas entre contenedores salen del cliente o del Backend hacia abajo (BD, BLAST+); ninguna sale de la BD o de BLAST+ hacia el cliente. |
 
 Esto se verifica directamente en la vista de contenedores de la [sección 6](#6-vista-de-contenedores).
@@ -338,7 +338,7 @@ C4Container
 | Origen → Destino | Qué se comunica |
 |---|---|
 | Investigador/a → Aplicación Web | Interacciones de la UI: carga de archivo, formulario, botones. |
-| Aplicación Web → Backend | Solicitudes REST: carga de secuencia (ya validada en el cliente), configuración, ejecución, consulta de progreso, obtención de resultados y descarga. |
+| Aplicación Web → Backend | Solicitudes REST: carga de secuencia (ya validada en el cliente), configuración, ejecución (cuya respuesta trae los resultados) y descarga. |
 | Backend → Base de datos | Lectura y escritura: usuarios para asociar sesión, catálogo para listar bases disponibles, historial para persistir cada búsqueda ejecutada. |
 | Backend → BLAST+ | Invocación como subproceso con los argumentos de la búsqueda (programa, modo, base de datos, parámetros, ruta a secuencia query). Lee la salida por stdout. |
 
@@ -388,8 +388,8 @@ C4Component
     Rel(ctrl, svc_ent, "Invoca")
 
     Rel(auth, repo, "Lee usuarios")
-    Rel(svc_pre, repo, "Guarda")
-    Rel(svc_eje, repo, "Lee y persiste")
+    Rel(svc_pre, repo, "Lee catálogo")
+    Rel(svc_eje, repo, "Persiste")
     Rel(svc_eje, adap, "Ejecuta")
     Rel(svc_ent, repo, "Lee")
 
@@ -406,9 +406,9 @@ C4Component
 | Componente | Capa | Responsabilidad |
 |---|---|---|
 | **Controladores** | Presentación | Exponen la interfaz HTTP del Backend: rutas, validación sintáctica de entradas, serialización de respuestas, códigos de estado. No contienen lógica del dominio: delegan en los componentes de dominio. En cada solicitud, antes de invocar a cualquier otro componente de dominio, consultan a **Autenticación y sesión** para saber qué investigador la originó y le pasan ese identificador como parámetro a los demás servicios. |
-| **Autenticación y sesión** | Dominio | Verifica la identidad del investigador en cada solicitud y mantiene su sesión activa durante el trabajo con el sistema. Expone el "investigador actual" al resto del dominio para que los efectos sobre la base de datos (la secuencia que guarda Preparación de búsqueda, la búsqueda que persiste Ejecución y persistencia, el historial que lee Generación de archivos de descarga) queden asociados al investigador correcto. **Por qué está en el documento aunque no haya una historia de usuario propia**: el historial de las búsquedas se corresponde a cada investigador y esa correspondencia es parte del dominio del sistema; sin este componente no se puede explicar cómo se mantiene la correspondencia entre búsqueda e investigador. |
+| **Autenticación y sesión** | Dominio | Verifica la identidad del investigador en cada solicitud y mantiene su sesión activa durante el trabajo con el sistema. Expone el "investigador actual" al resto del dominio para que los efectos sobre la base de datos (la búsqueda que persiste Ejecución y persistencia, el historial que lee Generación de archivos de descarga) queden asociados al investigador correcto. **Por qué está en el documento aunque no haya una historia de usuario propia**: el historial de las búsquedas se corresponde a cada investigador y esa correspondencia es parte del dominio del sistema; sin este componente no se puede explicar cómo se mantiene la correspondencia entre búsqueda e investigador. |
 | **Preparación de búsqueda** | Dominio | Todo lo que ocurre **antes** de invocar a BLAST+. Valida sintácticamente la secuencia query (RF-01, RF-02; implementa CU001) e infiere el alfabeto (ADN / ARN / proteína); recibe la configuración de la búsqueda (RF-03 a RF-06; CU002) y la valida semánticamente verificando compatibilidad entre programa, tipo de query y tipo de base de datos (RF-07; CU003). Esta validación repite la que ya hizo el cliente, porque la del cliente no es un control de confianza. |
-| **Ejecución y persistencia** | Dominio | Lo que ocurre **durante** y **al cierre** de la ejecución de BLAST+. Lanza la ejecución asíncrona con posibilidad de cancelación pidiéndosela al Adaptador BLAST+ (RF-08), recibe los resultados crudos, los entrega al cliente para su presentación (RF-09) y persiste la búsqueda completa en el historial (RF-10); implementa CU004. Nunca llama directamente a BLAST+: lo hace a través del Adaptador. |
+| **Ejecución y persistencia** | Dominio | Lo que ocurre **durante** y **al cierre** de la ejecución de BLAST+. Lanza la ejecución asíncrona con posibilidad de cancelación pidiéndosela al Adaptador BLAST+ (RF-08), recibe los resultados crudos, persiste la búsqueda completa en el historial (RF-10) y recién entonces se los entrega al cliente para su presentación (RF-09); implementa CU004. Nunca llama directamente a BLAST+: lo hace a través del Adaptador. |
 | **Generación de archivos de descarga** | Dominio | Lo que ocurre **después** de la búsqueda, cuando el investigador se lleva lo encontrado. Arma los archivos descargables en los formatos soportados (RF-12; CU006) a partir de los resultados persistidos y de los hits visibles que indica el cliente, e incluye los metadatos de la búsqueda y de los filtros aplicados. Verifica que la búsqueda sea del investigador actual y que los hits pertenezcan a ella. |
 | **Acceso a datos** | Datos | Único punto de acceso del Backend a la base de datos. Hace la traducción entre entidades del dominio y filas de SQL; agrupa las operaciones en transacciones cuando corresponde. |
 | **Adaptador BLAST+** | Datos | **Componente clave de los drivers de interoperabilidad.** Único punto de contacto con BLAST+. Lanza cada invocación como subproceso independiente, mantiene la correspondencia entre subproceso y sesión que lo originó (EC-01), parsea la salida reconociendo los campos conocidos y descartando los no mapeados sin corromper los conocidos (EC-02). |
@@ -420,11 +420,11 @@ C4Component
 | **Dentro del contenedor Backend** (llamadas internas, sin protocolo) | | |
 | Controladores → Autenticación y sesión | Autentica | En cada solicitud, antes de delegar en otro componente de dominio, los Controladores le piden a Autenticación y sesión que verifique quién es el investigador. Si no hay sesión válida, los Controladores responden con 401/403 sin invocar nada más. |
 | Controladores → Preparación de búsqueda | Invoca | Delega la carga y validación sintáctica de la secuencia, la recepción de la configuración y su validación semántica. Pasa el identificador del investigador que ya obtuvo de Autenticación y sesión. |
-| Controladores → Ejecución y persistencia | Invoca | Delega la ejecución asíncrona de la búsqueda validada, la consulta del estado de la ejecución (progreso y, al terminar, resultados), la recepción de resultados crudos y la persistencia en el historial. Pasa el identificador del investigador. |
+| Controladores → Ejecución y persistencia | Invoca | Delega la ejecución de la búsqueda validada (que llega completa en la solicitud), la recepción de resultados crudos y la persistencia en el historial. Pasa el identificador del investigador. |
 | Controladores → Generación de archivos de descarga | Invoca | Delega la generación del archivo de descarga. Pasa el identificador del investigador para que la lectura del historial se restrinja a sus propias búsquedas. |
 | Autenticación y sesión → Acceso a datos | Lee usuarios | Lee los registros de usuarios para validar credenciales y, cuando corresponde, las sesiones vigentes. |
-| Preparación de búsqueda → Acceso a datos | Guarda | Guarda la secuencia cargada (asociada al investigador actual) y lee el catálogo de bases de datos disponibles para validar la configuración. |
-| Ejecución y persistencia → Acceso a datos | Lee y persiste | Lee la búsqueda validada que se va a ejecutar o cuyo estado se consulta, siempre acotada al investigador actual, y persiste cada búsqueda ejecutada en el historial (parámetros, timestamps, resultados crudos), asociada al investigador que la originó. |
+| Preparación de búsqueda → Acceso a datos | Lee catálogo | Lee el catálogo de bases de datos disponibles para validar la configuración. La secuencia y la configuración **no se persisten antes de ejecutar**: las conserva la Aplicación Web (Modelo de búsqueda) y viajan completas en la solicitud de ejecución. |
+| Ejecución y persistencia → Acceso a datos | Persiste | Persiste cada búsqueda ejecutada en el historial (parámetros, timestamps, resultados crudos), asociada al investigador que la originó. Es la única escritura de la búsqueda: ocurre después de que BLAST+ terminó. |
 | Ejecución y persistencia → Adaptador BLAST+ | Ejecuta | Pide la ejecución de una búsqueda validada, pasando la configuración completa. |
 | Generación de archivos de descarga → Acceso a datos | Lee | Lee los resultados crudos de una búsqueda del historial —filtrada al investigador actual— para prepararlos para descarga. |
 | **Hacia contenedores vecinos** (con protocolo) | | |
@@ -501,7 +501,7 @@ C4Component
 | Controlador de búsqueda → Modelo de búsqueda | Actualiza | Escribe en el modelo lo que el investigador cargó o cambió, y le pide validar según las reglas del modelo. |
 | Controlador de búsqueda → Modelo de resultados | Carga resultados | Al terminar la búsqueda, entrega al Modelo de resultados los resultados crudos recibidos y el identificador de la búsqueda. |
 | Controlador de resultados → Modelo de resultados | Actualiza filtros | Cambia los criterios de filtro; el modelo recalcula los hits visibles desde el crudo. |
-| Controlador de búsqueda → Cliente del Backend | Envía | Carga de la secuencia, configuración, ejecución, consulta de progreso, cancelación y obtención de resultados. |
+| Controlador de búsqueda → Cliente del Backend | Envía | Carga de la secuencia, configuración, ejecución (con la configuración validada completa; la respuesta trae los resultados) y cancelación. |
 | Controlador de resultados → Cliente del Backend | Pide descarga | Pedido de descarga con el identificador de la búsqueda, el formato y los hits visibles. |
 | **Hacia actores y contenedores vecinos** | | |
 | Investigador/a → Pantallas | Usa | Interacciones de la UI mediante el navegador. |
@@ -586,7 +586,7 @@ El **Servicio BLAST de NCBI** no es un nodo de nuestra infraestructura: es un si
 | Origen → Destino | Qué se comunica | Protocolo | Dónde ocurre | Corresponde en la vista de contenedores a |
 |---|---|---|---|---|
 | Navegador web → Aplicación Web | Las pantallas que el navegador renderiza y las acciones del investigador sobre ellas | HTTPS | Red entre la PC del investigador y el servidor | Investigador/a → Aplicación Web (el investigador usa la aplicación a través del navegador) |
-| Aplicación Web → Backend | Solicitudes REST con los datos de la búsqueda, el progreso, los resultados y las descargas | JSON / HTTPS | Local, dentro del servidor (en el entorno Python 3) | Aplicación Web → Backend |
+| Aplicación Web → Backend | Solicitudes REST con los datos de la búsqueda, los resultados y las descargas | JSON / HTTPS | Local, dentro del servidor (en el entorno Python 3) | Aplicación Web → Backend |
 | Backend → Base de datos | Lectura y escritura de usuarios, catálogo e historial | SQL / TCP | Local, dentro del servidor (de Python 3 a PostgreSQL) | Backend → Base de datos |
 | Backend → BLAST+ | Invocación como subproceso con los argumentos de la búsqueda; lectura de la salida | CLI / subproceso | Local, dentro del servidor (de Python 3 a BLAST+ 2.14) | Backend → BLAST+ |
 | BLAST+ → Servicio BLAST de NCBI | Búsqueda remota, solo cuando el investigador elige el modo remoto | HTTPS | Salida del servidor hacia Internet | No figura en la vista de contenedores: la origina BLAST+, no LocalBlast (ver nota siguiente) |
@@ -702,7 +702,7 @@ Esta sección recorre, sobre las vistas, el *Given-When-Then* de cuatro historia
   - **A favor:** aislamiento natural entre búsquedas (cada subproceso tiene su propia memoria); si BLAST+ falla en una invocación, las otras no se ven afectadas; cumple EC-01 por diseño.
   - **En contra:** consumo de CPU y memoria crece linealmente con la concurrencia; cada subproceso implica el overhead de cargar BLAST+ en memoria. Aceptable para el régimen de uso previsto.
 - **Elementos afectados:** componente "Adaptador BLAST+" (en el Backend).
-- **Precisión en el diseño detallado:** la correspondencia entre subproceso y búsqueda viaja con los datos: el Adaptador etiqueta la salida de cada subproceso con el identificador de la búsqueda que lo originó, y la entidad `Busqueda` rechaza una salida que no es suya. No hay estado compartido entre ejecuciones. Ver [`diseno-detallado.md`](../design/diseno-detallado.md#52-decisiones-de-diseño), decisión D2.
+- **Precisión en el diseño detallado:** la correspondencia entre subproceso y búsqueda no necesita un registro compartido. Cada solicitud de ejecución se atiende en su propio hilo del servidor; ese hilo lanza su propio subproceso de BLAST+ y espera su salida, y los resultados vuelven por la misma llamada a la misma solicitud que los pidió. Ver [`diseno-detallado.md`](../design/diseno-detallado.md#52-decisiones-de-diseño).
 
 ### DA-05 · Validación en la Aplicación Web, además de en el servidor
 

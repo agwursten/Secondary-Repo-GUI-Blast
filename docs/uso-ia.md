@@ -467,22 +467,20 @@ Este documento registra el uso crítico de asistentes de IA generativa durante e
 
 - **Herramienta usada:** Claude.
 - **Tarea concreta:** le pasamos el repositorio completo y le pedimos dos cosas para `HU08_CU004_B` (solo el camino feliz): primero, revisar el modelo de dominio, que se había escrito al inicio del proyecto y sospechábamos inconsistente con los casos de uso y la arquitectura actuales; después, hacer el diseño detallado de la HU: ficha, análisis tridimensional, diagrama de robustez, diagramas de secuencia, modelo de clases, justificación con GRASP, verificación de coherencia con la arquitectura y trazabilidad.
-- **Qué generó:**
-  - Una revisión del modelo de dominio con siete cambios (registro en [`modelo-dominio.md`](requeriments/modelo-dominio.md#registro-de-cambios)). Los principales: la multiplicidad `Busqueda → SecuenciaQuery`, que contradecía a `CU001`; la entidad nueva `ProgramaBlast`; y el ciclo de vida de la búsqueda como diagrama de estados.
-  - El documento [`docs/design/diseno-detallado.md`](design/diseno-detallado.md), con el camino principal dibujado en tres secuencias (lanzar, completar en segundo plano, consultar) por ser asíncrono, una secuencia de rechazos y un modelo de clases único.
-  - Tres actualizaciones a documentos anteriores, detectadas al diseñar. Primera: CA-03 de `HU08` y el flujo de `CU004` pasan a persistir **antes** de mostrar la tabla, porque el orden original contradecía la garantía mínima del CU. Segunda: la relación *Ejecución y persistencia → Acceso a datos* del catálogo de la arquitectura pasa a *Lee y persiste*. Tercera: se agrega una precisión a `DA-04` sobre cómo se mantiene la correspondencia entre subproceso y búsqueda.
-- **Alternativas que la IA planteó y descartó, con su motivo (a validar por el grupo):**
-  - Modelar en clases el MVC interno de la Aplicación Web (Controlador de búsqueda, Modelos, Cliente del Backend). Se descartó y la Aplicación Web se representa como una sola frontera, porque en esta HU no aplica ninguna regla del negocio. El reparto MVC queda en una tabla.
-  - Que el Adaptador BLAST+ avise al controlador cuando BLAST+ termina, con *callback* u Observer. Es una dependencia de la capa de datos hacia el dominio, prohibida por `DA-02`. Se reemplazó por un hilo que espera al subproceso.
-  - Un registro compartido de subprocesos en el Adaptador. No hace falta para esta HU y agrega estado compartido; queda para `HU09` (cancelación).
-  - Una entidad `Historial`. No tiene datos ni reglas propias; se materializa como repositorio.
-  - Strategy para los modos local y remoto. La diferencia es un flag que resuelve BLAST+; serían dos clases idénticas.
-  - Salida tabular `-outfmt 6`. Sus columnas son posicionales y no permiten cumplir `EC-02`; se eligió XML (`-outfmt 5`).
-- **Qué aceptamos / modificamos / descartamos:** *a completar por el grupo después de revisar el diseño.*
-- **Puntos que el grupo debe revisar con especial cuidado:**
-  - Si la cantidad de clases del modelo (incluidos los objetos de valor `InvocacionBlast`, `SalidaBlast`, `HitCrudo`, `FilaResultado`) es defendible o conviene simplificar alguna.
-  - El cambio de orden en CA-03, que modifica un criterio de aceptación ya entregado.
-  - Que los casos de prueba previstos (sección 8.2 del diseño) sean los que efectivamente se implementen en la etapa de pruebas.
+- **Qué generó (primera versión):**
+  - Una revisión del modelo de dominio con siete cambios (ver el registro en [`modelo-dominio.md`](requeriments/modelo-dominio.md#registro-de-cambios)). Los principales: la multiplicidad `Busqueda → SecuenciaQuery`, que contradecía a `CU001`; la entidad nueva `ProgramaBlast`; y el ciclo de vida de la búsqueda.
+  - Un diseño con cuatro diagramas de secuencia (lanzar, completar en segundo plano, consultar el progreso y rechazos) y unas 25 clases. Incluía autenticación y sesión, objetos de valor intermedios (`InvocacionBlast`, `SalidaBlast`, `HitCrudo`, `FilaResultado`) y una búsqueda que se guardaba antes de ejecutarse y se leía del repositorio para lanzarla y para consultar el progreso.
+  - El cambio de orden en CA-03 de `HU08` y en el flujo de `CU004`: guardar en el historial **antes** de mostrar la tabla, porque el orden original contradecía la garantía mínima del CU.
+- **Qué aceptamos:** la revisión del modelo de dominio, el cambio de orden de CA-03, el uso de un adaptador para BLAST+ con salida XML (para cumplir `EC-02`) y la idea de agregado `Busqueda`–`Alineamiento`.
+- **Qué modificamos (le pedimos rehacer el diseño):**
+  - **La búsqueda no se guarda antes de ejecutarse.** La configuración validada viaja completa en la solicitud y la única escritura es la del historial, al final. Esto también cambió la arquitectura: la relación *Preparación de búsqueda → Acceso a datos* pasó de *Guarda* a *Lee catálogo*.
+  - **Sin sesión de usuario.** La autenticación no es parte de esta HU y se dejó afuera.
+  - **Uno o dos diagramas de secuencia, no cuatro.** Quedaron el camino principal y el camino de error. Para eso se reemplazó la consulta periódica del progreso por una llamada asíncrona desde la pantalla que espera la respuesta.
+  - **Cada flecha del diagrama de secuencia es una operación de la clase que la recibe**, y aparece con ese mismo nombre en el diagrama de clases.
+  - **Nombres que se entiendan solos.** Por ejemplo, `RutasEjecucion` no decía nada y se eliminó (la ruta HTTP es código del framework sin lógica); quedaron `PantallaBusqueda`, `ControladorEjecucion`, `RepositorioHistorial`, `AdaptadorBlast`.
+  - **Menos clases.** El modelo bajó a diez clases: la Aplicación Web como una sola frontera; las entidades de configuración como atributos de `Busqueda`; los hits como datos simples.
+- **Qué descartamos:** la consulta periódica del progreso y el registro de búsquedas en curso en el servidor (más piezas sin que la HU las pida), y la autenticación dentro del diseño de esta HU.
+- **Errores / imprecisiones detectadas:** la IA sobredimensionó el diseño, que es el riesgo que advertía la cátedra: más clases, interfaces y diagramas de los que la HU necesita. Algunos se justificaban con historias que no estábamos diseñando (cancelación, confidencialidad del historial).
 
 ## Reflexión sobre el uso de IA
 
