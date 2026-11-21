@@ -87,7 +87,7 @@ Más allá de esas condiciones, es **la historia que justifica la existencia del
 | **Funcionalidad** | `HU08_CU004_B`, slice básico `CU004_B` del caso de uso `CU004 · Ejecutar la búsqueda y ver sus resultados` (pasos 1 a 4). Caminos: el principal (ejecutar, guardar en el historial y mostrar la tabla) y uno de error (BLAST+ no termina bien: no se muestra tabla ni se guarda nada, como exige la garantía mínima de `CU004`). |
 | **Estructura** | Contenedor **Aplicación Web** (patrón MVC, `DA-07`): Pantallas, Controlador de búsqueda, Modelo de búsqueda, Modelo de resultados y Cliente del Backend. Contenedor **Backend** (patrón Capas, `DA-02`): **Controladores** (presentación), **Ejecución y persistencia** (dominio), **Acceso a datos** y **Adaptador BLAST+** (datos). Sistema externo **BLAST+**. Estilo base cliente-servidor (`DA-01`). **Componente principal: Ejecución y persistencia.** |
 | **Calidad** | `EC-01` · hasta cinco búsquedas concurrentes sin cruce de resultados. Tácticas: *introducir concurrencia* y *encapsular*. Decisión: `DA-04` (un subproceso de BLAST+ por búsqueda). `EC-02` · cambio menor de versión de BLAST+ sin romper la lectura de la salida. Tácticas: *adaptar la interfaz* y *encapsular*. Decisión: `DA-03` (Adaptador BLAST+ dedicado en la capa de datos). |
-| **Dominio** | Entidades del modelo de dominio que intervienen: `Busqueda` y `Alineamiento` como clases; `SecuenciaQuery`, `ParametrosPreBusqueda` (con su `ProgramaBlast` y su `ModoEjecucion`) y `BaseDeDatos` como datos de la búsqueda. No intervienen `Investigador`, `FiltroPostBusqueda`, `Reporte` ni `FormatoDescarga` (ver [3.2](#32-entidades-del-modelo-de-dominio-que-intervienen)). |
+| **Dominio** | Entidades del modelo de dominio que intervienen: `Busqueda` y `Alineamiento` como clases; `SecuenciaQuery`, `ParametrosPreBusqueda` (con su `VarianteBlast` y su `ModoEjecucion`) y `BaseDeDatos` como datos de la búsqueda. No intervienen `Investigador`, `FiltroPostBusqueda`, `Reporte` ni `FormatoDescarga` (ver [3.2](#32-entidades-del-modelo-de-dominio-que-intervienen)). |
 | **Verificación** | `EC-01`: se verificará con una prueba de cinco búsquedas lanzadas a la vez sobre un adaptador simulado con demoras distintas; cada una recibe exactamente sus propios alineamientos (cero cruces). `EC-02`: se verificará con una prueba de la lectura de una salida XML con campos desconocidos; los campos obligatorios llegan intactos y queda registrada una advertencia. Las pruebas concretas se diseñan en la etapa de pruebas, una vez aprobado este diseño. |
 
 ### 2.2 Recorrido de la HU sobre los componentes
@@ -155,7 +155,7 @@ classDiagram
     class Busqueda
     class SecuenciaQuery
     class ParametrosPreBusqueda
-    class ProgramaBlast
+    class VarianteBlast
     class ModoEjecucion
     class BaseDeDatos
     class Alineamiento
@@ -169,7 +169,7 @@ classDiagram
     Busqueda "*" --> "1" BaseDeDatos : consulta
     Busqueda "1" *-- "*" Alineamiento : produce
     Busqueda "1" --> "*" Reporte : origina
-    ParametrosPreBusqueda "*" --> "1" ProgramaBlast : usa el programa
+    ParametrosPreBusqueda "*" --> "1" VarianteBlast : usa la variante
     ParametrosPreBusqueda "*" --> "1" ModoEjecucion : se ejecuta en
     BaseDeDatos "*" --> "1" ModoEjecucion : disponible en
     FiltroPostBusqueda "*" --> "*" Alineamiento : deja visibles
@@ -178,7 +178,7 @@ classDiagram
     Reporte "*" --> "1" FormatoDescarga : exportado en
     style Busqueda fill:#dcfce7,stroke:#15803d
     style SecuenciaQuery fill:#dcfce7,stroke:#15803d
-    style ProgramaBlast fill:#dcfce7,stroke:#15803d
+    style VarianteBlast fill:#dcfce7,stroke:#15803d
     style ParametrosPreBusqueda fill:#dcfce7,stroke:#15803d
     style ModoEjecucion fill:#dcfce7,stroke:#15803d
     style BaseDeDatos fill:#dcfce7,stroke:#15803d
@@ -190,17 +190,17 @@ classDiagram
 | `Busqueda` | Sí, como clase | Su configuración, para invocar a BLAST+; los alineamientos que produce; el momento en que se ejecutó | Crea (a partir de la configuración validada) |
 | `Alineamiento` | Sí, como clase | Identificador del hit, score, E-value, % identidad y % cobertura: las cinco columnas de la tabla | Crea |
 | `SecuenciaQuery` | Sí, como dato de `Busqueda` | El texto FASTA que recibe BLAST+ y su longitud (para la cobertura) | Consulta |
-| `ParametrosPreBusqueda` | Sí, como dato de `Busqueda` | E-value máximo, tamaño de palabra, matriz y penalizaciones de gap, y el programa y el modo elegidos | Consulta |
-| `ProgramaBlast` | Sí, como dato de `ParametrosPreBusqueda` | Qué binario se invoca (`blastn`, `blastp`, …) | Consulta |
+| `ParametrosPreBusqueda` | Sí, como dato de `Busqueda` | E-value máximo, tamaño de palabra, matriz y penalizaciones de gap, y la variante y el modo elegidos | Consulta |
+| `VarianteBlast` | Sí, como dato de `ParametrosPreBusqueda` | Qué variante de BLAST+ se invoca (`blastn`, `blastp`, …) | Consulta |
 | `ModoEjecucion` | Sí, como dato de `ParametrosPreBusqueda` | Si la invocación lleva la flag `-remote` | Consulta |
 | `BaseDeDatos` | Sí, como dato de `Busqueda` | Su ubicación (ruta del índice local o nombre de la base de NCBI) | Consulta |
 | `Investigador` | No | La identificación del investigador queda afuera de esta HU (1.2) | — |
 | `FiltroPostBusqueda` | No | CA-03 exige guardar el conjunto **crudo**; filtrar es `HU11_CU005_B` | — |
 | `Reporte`, `FormatoDescarga` | No | Descargar es `HU12_CU006_B` | — |
 
-**Por qué cinco entidades intervienen solo como datos.** `SecuenciaQuery`, `ParametrosPreBusqueda`, `ProgramaBlast`, `ModoEjecucion` y `BaseDeDatos` tienen reglas propias (alfabeto, rangos, compatibilidad entre programa, query y base), pero esas reglas pertenecen a las HU de carga, configuración y validación (`HU01` a `HU07`). Esta HU solo lee sus valores para pasárselos a BLAST+ y guardarlos en el historial. Alcanza con que `Busqueda` los exponga como atributos (la configuración que recibe); convertirlas en clases acá agregaría clases sin comportamiento.
+**Por qué cinco entidades intervienen solo como datos.** `SecuenciaQuery`, `ParametrosPreBusqueda`, `VarianteBlast`, `ModoEjecucion` y `BaseDeDatos` tienen reglas propias (alfabeto, rangos, compatibilidad entre programa, query y base), pero esas reglas pertenecen a las HU de carga, configuración y validación (`HU01` a `HU07`). Esta HU solo lee sus valores para pasárselos a BLAST+ y guardarlos en el historial. Alcanza con que `Busqueda` los exponga como atributos (la configuración que recibe); convertirlas en clases acá agregaría clases sin comportamiento.
 
-**Cambios al modelo de dominio.** Al armar esta tabla se detectó que el modelo no tenía el concepto **ProgramaBlast** y que tenía multiplicidades que contradecían a `CU001` (una misma secuencia se usa en varias búsquedas). En una segunda revisión se reorganizaron las relaciones para que no pasen todas por `Busqueda`: el programa y el modo cuelgan ahora de `ParametrosPreBusqueda` (se eligen en la misma configuración previa), y `FiltroPostBusqueda` se conecta con `Alineamiento` y con `Reporte`, que es lo que realmente toca, en lugar de con `Busqueda`. Los cambios están en el *Registro de cambios* de [`modelo-dominio.md`](../requeriments/modelo-dominio.md#registro-de-cambios) (cambios 1 a 10).
+**Cambios al modelo de dominio.** Al armar esta tabla se detectó que el modelo no tenía el concepto de variante de BLAST (hoy `VarianteBlast`) y que tenía multiplicidades que contradecían a `CU001` (una misma secuencia se usa en varias búsquedas). En una segunda revisión se reorganizaron las relaciones para que no pasen todas por `Busqueda`: la variante y el modo cuelgan ahora de `ParametrosPreBusqueda` (se eligen en la misma configuración previa), y `FiltroPostBusqueda` se conecta con `Alineamiento` y con `Reporte`, que es lo que realmente toca, en lugar de con `Busqueda`. Los cambios están en el *Registro de cambios* de [`modelo-dominio.md`](../requeriments/modelo-dominio.md#registro-de-cambios) (cambios 1 a 11). También se renombró `ProgramaBlast` a `VarianteBlast`, porque el nombre anterior se confundía con BLAST+.
 
 ### 3.3 Análisis tridimensional
 
@@ -372,8 +372,8 @@ sequenceDiagram
     Note over CB,CL: llamada asíncrona: la interfaz<br/>sigue navegable mientras espera (CA-01)
     CL->>CE: ejecutar_busqueda(configuracion)
     CE->>B: Busqueda(configuracion, fecha)
-    CE->>AB: ejecutar(programa, secuencia, base_datos, remota, parametros)
-    AB->>BL: programa -query … -db … -outfmt 5 [-remote] (subproceso propio, EC-01)
+    CE->>AB: ejecutar(variante, secuencia, base_datos, remota, parametros)
+    AB->>BL: blastn/blastp/… -query … -db … -outfmt 5 [-remote] (subproceso propio, EC-01)
     BL-->>AB: salida XML
     AB->>AB: leer_salida(salida_xml)
     opt la salida trae campos desconocidos (EC-02)
@@ -435,8 +435,8 @@ sequenceDiagram
     CB-)CL: ejecutar_busqueda(configuracion)
     CL->>CE: ejecutar_busqueda(configuracion)
     CE->>B: Busqueda(configuracion, fecha)
-    CE->>AB: ejecutar(programa, secuencia, base_datos, remota, parametros)
-    AB->>BL: programa -query … -db … -outfmt 5 [-remote]
+    CE->>AB: ejecutar(variante, secuencia, base_datos, remota, parametros)
+    AB->>BL: blastn/blastp/… -query … -db … -outfmt 5 [-remote]
     BL-->>AB: código de salida distinto de 0 y mensaje de error
     AB-->>CE: ErrorBlast(mensaje)
     Note over CE,RH: el error corta el flujo: no se registran<br/>resultados ni se llama a guardar (R4)
@@ -498,7 +498,7 @@ Al bajar al diseño aparecieron diferencias con documentos anteriores. Se docume
 
 | Documento | Cambio | Motivo |
 |---|---|---|
-| [`modelo-dominio.md`](../requeriments/modelo-dominio.md#registro-de-cambios) | `ProgramaBlast` y `ModoEjecucion` cuelgan de `ParametrosPreBusqueda`; `FiltroPostBusqueda` se conecta con `Alineamiento` y `Reporte` en vez de con `Busqueda` (cambios 8 y 9) | Casi todas las relaciones pasaban por `Busqueda`, aunque varias entidades se relacionan entre sí sin pasar por ella |
+| [`modelo-dominio.md`](../requeriments/modelo-dominio.md#registro-de-cambios) | `VarianteBlast` y `ModoEjecucion` cuelgan de `ParametrosPreBusqueda`; `FiltroPostBusqueda` se conecta con `Alineamiento` y `Reporte` en vez de con `Busqueda` (cambios 8 y 9). `ProgramaBlast` se renombra `VarianteBlast` (cambio 11) | Casi todas las relaciones pasaban por `Busqueda`, aunque varias entidades se relacionan entre sí sin pasar por ella. El nombre `ProgramaBlast` se confundía con BLAST+ |
 | [`historias-usuario.md`](../requeriments/historias-usuario.md) y [`casos-de-uso.md`](../requeriments/casos-de-uso.md) | Orden de CA-03 de `HU08` y del flujo de `CU004`: primero se guarda en el historial y después se muestra la tabla | Ver la precisión de CA-03 en [3.1](#31-enunciado-y-criterios-de-aceptación) |
 
 ---
