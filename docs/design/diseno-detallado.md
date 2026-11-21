@@ -11,13 +11,6 @@ Este documento baja la arquitectura de LocalBlast ([`architecture.md`](../archit
 1. [Introducción](#1-introducción)
 2. [Relación con la arquitectura](#2-relación-con-la-arquitectura)
 3. [Diseño de la HU](#3-diseño-de-la-hu)
-4. [Modelo de clases](#4-modelo-de-clases)
-5. [Justificación del diseño](#5-justificación-del-diseño)
-6. [Implementación](#6-implementación)
-7. [Pruebas](#7-pruebas)
-8. [Trazabilidad](#8-trazabilidad)
-9. [Glosario y bibliografía](#9-glosario-y-bibliografía)
-
 ---
 
 ## 1. Introducción
