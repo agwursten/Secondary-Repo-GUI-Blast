@@ -92,7 +92,7 @@ La evaluación heurística de usabilidad, con los prompts enviados a la IA, su r
 El documento de Especificación de Arquitectura, con la elección de interoperabilidad como driver único, la derivación hasta estilo cliente-servidor, patrón de capas en el Backend y patrón MVC en la Aplicación Web, las decisiones de arquitectura (`DA-01` a `DA-08`), las vistas de contenedores, de componentes y de despliegue del modelo C4 con sus catálogos, y la trazabilidad escenario → táctica → estilo/patrón → decisión → elemento C4, está en:
 👉 [`docs/architecture/architecture.md`](docs/architecture/architecture.md)
 
-El diseño detallado de la historia `HU08_CU004_B · Ejecutar la búsqueda validada y ver sus resultados` (ficha y análisis tridimensional de la HU, diagrama de robustez, diagramas de secuencia, modelo de clases, justificación con GRASP, verificación de coherencia con la arquitectura y trazabilidad hasta las pruebas previstas) está en:
+El diseño detallado de la historia `HU08_CU004_B · Ejecutar la búsqueda validada y ver sus resultados` (ficha y análisis tridimensional de la HU, diagrama de robustez, diagramas de secuencia) está en:
 👉 [`docs/design/diseno-detallado.md`](docs/design/diseno-detallado.md)
 
 El diagrama de contexto completo del sistema está en:
