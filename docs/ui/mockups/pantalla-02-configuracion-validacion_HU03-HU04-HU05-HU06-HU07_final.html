@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>LocalBlast · Nueva búsqueda — Configuración y validación</title>
+<style>
+  :root {
+    --color-bg: #f6f8fb;
+    --color-panel: #ffffff;
+    --color-border: #e2e8f0;
+    --color-border-strong: #cbd5e0;
+    --color-text: #1a202c;
+    --color-text-muted: #4a5568;
+    --color-text-subtle: #718096;
+    --color-primary: #2c5282;
+    --color-primary-hover: #2a4e7a;
+    --color-primary-light: #ebf4ff;
+    --color-success: #276749;
+    --color-success-bg: #f0fff4;
+    --color-success-border: #9ae6b4;
+    --color-error: #9b2c2c;
+    --color-error-bg: #fff5f5;
+    --color-error-border: #feb2b2;
+    --color-warning: #9c4221;
+    --color-warning-bg: #fffaf0;
+    --color-warning-border: #fbd38d;
+    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Mono", "Roboto Mono", Consolas, monospace;
+    --radius: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-ui); background: var(--color-bg); color: var(--color-text); font-size: 14px; line-height: 1.5; }
+
+  .topbar { background: #1a365d; color: #fff; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { font-weight: 700; letter-spacing: 0.3px; font-size: 15px; }
+  .brand small { font-weight: 400; color: #a0aec0; margin-left: 8px; font-size: 12px; }
+  .user-chip { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #cbd5e0; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: #4a5568; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; }
+
+  .stepper { background: #fff; border-bottom: 1px solid var(--color-border); padding: 14px 24px; display: flex; gap: 24px; align-items: center; font-size: 13px; }
+  .step { display: flex; align-items: center; gap: 8px; color: var(--color-text-subtle); }
+  .step.active { color: var(--color-primary); font-weight: 600; }
+  .step.done { color: var(--color-success); }
+  .step .num { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: #edf2f7; color: var(--color-text-subtle); font-size: 12px; font-weight: 600; }
+  .step.active .num { background: var(--color-primary); color: #fff; }
+  .step.done .num { background: var(--color-success); color: #fff; }
+  .step-sep { color: #cbd5e0; }
+
+  .shell { max-width: 1100px; margin: 24px auto; padding: 0 24px; }
+  .page-title { font-size: 20px; font-weight: 600; margin: 0 0 4px 0; }
+  .page-subtitle { color: var(--color-text-muted); margin: 0 0 20px 0; font-size: 13px; }
+
+  .panel { background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+  .panel h2 { font-size: 15px; font-weight: 600; margin: 0 0 4px 0; color: var(--color-text); }
+  .panel .hint { color: var(--color-text-subtle); font-size: 12px; margin: 0 0 16px 0; }
+
+  /* Loaded sequence summary (readonly) */
+  .seq-summary { background: #ebf4ff; border: 1px solid #bee3f8; border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .seq-summary .info { font-size: 13px; color: var(--color-text-muted); }
+  .seq-summary .info b { color: var(--color-text); }
+  .btn-link { background: none; border: none; color: var(--color-primary); cursor: pointer; font-size: 12px; text-decoration: underline; padding: 0; }
+
+  /* Form grid */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+  @media (max-width: 760px) { .form-grid { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; }
+  .field.wide { grid-column: 1 / -1; }
+  .field label { font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--color-text-muted); }
+  .field label .req { color: var(--color-error); margin-left: 2px; }
+  .field label .hint-k { font-weight: 400; color: var(--color-text-subtle); margin-left: 8px; font-size: 12px; }
+  .field input[type="text"], .field input[type="number"], .field select {
+    font-family: inherit; font-size: 13.5px; padding: 8px 10px;
+    border: 1px solid var(--color-border-strong); border-radius: var(--radius);
+    background: #fff; color: var(--color-text);
+  }
+  .field input:focus, .field select:focus { outline: 2px solid var(--color-primary-light); border-color: var(--color-primary); }
+  .field.has-error input, .field.has-error select { border-color: var(--color-error); background: #fffafa; }
+  .field .err-msg { color: var(--color-error); font-size: 12px; margin-top: 4px; }
+
+  /* Radio pill group */
+  .radio-group { display: inline-flex; border: 1px solid var(--color-border-strong); border-radius: var(--radius); overflow: hidden; }
+  .radio-group label {
+    padding: 7px 16px; cursor: pointer; font-size: 13px; font-weight: 500;
+    background: #fff; color: var(--color-text-muted); border-right: 1px solid var(--color-border-strong); margin: 0;
+  }
+  .radio-group label:last-child { border-right: none; }
+  .radio-group input { display: none; }
+  .radio-group input:checked + span { color: var(--color-primary); }
+  .radio-group label.selected { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; }
+
+  details.params { border: 1px solid var(--color-border); border-radius: var(--radius); padding: 0; margin-top: 10px; background: #fafbfc; }
+  details.params > summary {
+    padding: 10px 14px; cursor: pointer; font-weight: 500; font-size: 13px; color: var(--color-text);
+    list-style: none; display: flex; justify-content: space-between; align-items: center;
+  }
+  details.params > summary::after { content: "▸"; color: var(--color-text-subtle); font-size: 11px; }
+  details.params[open] > summary::after { content: "▾"; }
+  details.params > summary::-webkit-details-marker { display: none; }
+  details.params .inner { padding: 0 14px 14px 14px; border-top: 1px solid var(--color-border); }
+
+  /* Buttons */
+  .btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 12px; }
+  .btn { padding: 9px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; font-family: inherit; }
+  .btn-primary { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+  .btn-primary:hover { background: var(--color-primary-hover); }
+  .btn-primary[disabled] { background: #a0aec0; border-color: #a0aec0; cursor: not-allowed; }
+  .btn-secondary { background: #fff; color: var(--color-text); border-color: var(--color-border-strong); }
+  .btn-ghost { background: transparent; color: var(--color-text-muted); border-color: transparent; }
+
+  /* Feedback banners */
+  .banner { border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; font-size: 13px; }
+  .banner .ico { font-weight: 700; flex-shrink: 0; }
+  .banner.success { background: var(--color-success-bg); border: 1px solid var(--color-success-border); color: var(--color-success); }
+  .banner.error   { background: var(--color-error-bg);   border: 1px solid var(--color-error-border);   color: var(--color-error); }
+  .banner.warning { background: var(--color-warning-bg); border: 1px solid var(--color-warning-border); color: var(--color-warning); }
+  .banner strong { font-weight: 600; }
+  .banner code { font-family: var(--font-mono); background: rgba(0,0,0,0.08); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  .banner ul { margin: 6px 0 0 20px; padding: 0; }
+  .banner ul li { margin: 2px 0; }
+
+  .state-section { margin-top: 32px; }
+  .state-section .state-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--color-text-subtle); margin-bottom: 8px; font-weight: 600; }
+  .state-section .state-tag { display: inline-block; background: #edf2f7; color: var(--color-text-muted); padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 6px; font-weight: 500; }
+
+  .mock-note { background: #fffbea; border-left: 3px solid #d69e2e; padding: 10px 14px; font-size: 12px; color: #744210; border-radius: 0 4px 4px 0; margin-top: 24px; }
+  .mock-note strong { font-weight: 600; }
+
+  .select-with-icon { position: relative; }
+  .select-with-icon select { width: 100%; appearance: none; -webkit-appearance: none; padding-right: 28px; }
+  .select-with-icon::after { content: "▾"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--color-text-subtle); pointer-events: none; font-size: 11px; }
+
+  .db-status-chip { font-size: 11px; margin-left: 6px; padding: 1px 6px; border-radius: 10px; }
+  .db-status-chip.ok { background: #c6f6d5; color: #22543d; }
+  .db-status-chip.upd { background: #feebc8; color: #7b341e; }
+  .db-status-chip.err { background: #fed7d7; color: #822727; }
+
+  /* Tooltips de ayuda inline (ciclo adicional: H10 - Ayuda y documentación) */
+  .help-icon { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: var(--color-primary-light); color: var(--color-primary); font-weight: 700; font-size: 10px; margin-left: 5px; cursor: help; vertical-align: middle; position: relative; }
+  .help-icon::after { content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); background: #1a202c; color: #fff; padding: 7px 10px; border-radius: 4px; font-size: 11.5px; font-weight: 400; line-height: 1.4; white-space: normal; width: 240px; text-align: left; opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 10; }
+  .help-icon:hover::after { opacity: 1; }
+  /* Para que el tooltip se vea en el maquetado estático (no es solo hover), lo exponemos en estados elegidos */
+  .help-icon.show-tip::after { opacity: 1; }
+
+  /* Confirmación "Restaurar defaults" (H3 - Control y libertad del usuario) */
+  .confirm-restore { background: #fffbea; border: 1px solid #fbd38d; border-radius: var(--radius); padding: 10px 14px; margin-top: 12px; font-size: 12.5px; color: #744210; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .confirm-restore .actions { display: flex; gap: 6px; }
+  .btn-warning { background: #d69e2e; color: #fff; border-color: #d69e2e; padding: 5px 12px; font-size: 12px; }
+
+  /* Pista de "qué falta para habilitar Validar" (H5 - Prevención de errores) */
+  .validate-hint { background: #ebf4ff; border: 1px solid #bee3f8; border-radius: var(--radius); padding: 8px 12px; margin-top: 10px; font-size: 12px; color: #2a4e7a; }
+  .validate-hint strong { color: var(--color-primary); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">LocalBlast <small>· GUI para BLAST+</small></div>
+  <div class="user-chip">
+    <span>m.rodriguez</span>
+    <span class="avatar">MR</span>
+  </div>
+</div>
+
+<div class="stepper">
+  <div class="step done"><span class="num">✓</span><span>Secuencia query</span></div>
+  <span class="step-sep">›</span>
+  <div class="step active"><span class="num">2</span><span>Configuración</span></div>
+  <span class="step-sep">›</span>
+  <div class="step"><span class="num">3</span><span>Ejecución</span></div>
+  <span class="step-sep">›</span>
+  <div class="step"><span class="num">4</span><span>Resultados</span></div>
+</div>
+
+<div class="shell">
+
+  <h1 class="page-title">Nueva búsqueda — paso 2 de 4</h1>
+  <p class="page-subtitle">Elegí modo, base de datos, programa BLAST y parámetros. Los valores por defecto se ajustan automáticamente según el programa.</p>
+
+  <!-- Secuencia cargada (resumen readonly, común a todos los estados) -->
+  <div class="seq-summary">
+    <div class="info">
+      Secuencia cargada: <b>sp_P0A6F5.fasta</b> &middot; alfabeto <b>proteína</b> &middot; 548 aa
+    </div>
+    <button class="btn-link">Cambiar secuencia</button>
+  </div>
+
+  <!-- =============================================================
+       ESTADO PRIMARIO · HU03_CU002_B · formulario completo
+       ============================================================= -->
+  <div class="panel">
+    <h2>Configuración de la búsqueda</h2>
+    <p class="hint">Modo local usa las bases del catálogo del laboratorio. Modo remoto invoca a BLAST+ con <code style="font-family:var(--font-mono)">-remote</code> contra NCBI.</p>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Modo de ejecución <span class="req">*</span></label>
+        <div class="radio-group">
+          <label class="selected"><input type="radio" name="modo" checked><span>Remoto (NCBI)</span></label>
+          <label><input type="radio" name="modo"><span>Local</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="db">Base de datos <span class="req">*</span></label>
+        <div class="select-with-icon">
+          <select id="db">
+            <option>nr — Non-redundant protein sequences</option>
+            <option>refseq_protein — RefSeq proteins</option>
+            <option>swissprot — UniProtKB/Swiss-Prot</option>
+            <option>pdb — PDB protein sequences</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="prog">Programa BLAST <span class="req">*</span></label>
+        <div class="select-with-icon">
+          <select id="prog">
+            <option>blastp — proteína vs. proteína</option>
+            <option>blastn — nucleótido vs. nucleótido</option>
+            <option>blastx — nucleótido traducido vs. proteína</option>
+            <option>tblastn — proteína vs. nucleótido traducido</option>
+            <option>tblastx — nucleótido traducido vs. nucleótido traducido</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field wide">
+        <details class="params" open>
+          <summary>Parámetros pre-búsqueda <span style="color: var(--color-text-subtle); font-weight: 400; font-size: 12px; margin-left: 8px;">valores por defecto para <code style="font-family:var(--font-mono)">blastp</code></span></summary>
+          <div class="inner">
+            <div class="form-grid" style="margin-top: 14px;">
+              <div class="field">
+                <label for="eval">E-value máximo <span class="hint-k">rango 0 – 10</span>
+                  <span class="help-icon show-tip" data-tip="Umbral de significancia estadística: cuánto podría ocurrir un alineamiento igual o mejor por azar. Más bajo = más estricto. Para blastp, 10 es el default; para búsquedas finas se baja a 1e-5 o menos.">?</span>
+                </label>
+                <input type="text" id="eval" value="10">
+              </div>
+              <div class="field">
+                <label for="matriz">Matriz de sustitución
+                  <span class="help-icon" data-tip="Tabla de puntuación para sustituciones de aminoácidos. BLOSUM62 es la referencia para búsquedas de proteínas con similitud media; PAM30 es útil para búsquedas muy cortas y cercanas.">?</span>
+                </label>
+                <div class="select-with-icon">
+                  <select id="matriz">
+                    <option>BLOSUM62</option>
+                    <option>BLOSUM45</option>
+                    <option>BLOSUM80</option>
+                    <option>PAM30</option>
+                    <option>PAM70</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="wsize">Tamaño de palabra <span class="hint-k">rango 2 – 7 para blastp</span>
+                  <span class="help-icon" data-tip="Longitud del fragmento mínimo que BLAST busca como punto de partida. Para blastp el default es 3; para blastn, 11 o 28 según variante.">?</span>
+                </label>
+                <input type="text" id="wsize" value="3">
+              </div>
+              <div class="field">
+                <label>Penalización de gaps
+                  <span class="help-icon" data-tip="Costos de apertura y extensión de huecos en el alineamiento. Valores más altos desalientan los gaps.">?</span>
+                </label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="text" value="11" style="flex: 1;" placeholder="apertura">
+                  <input type="text" value="1" style="flex: 1;" placeholder="extensión">
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Confirmación explícita al presionar "Restaurar defaults" (H3 - Control y libertad del usuario) -->
+    <div class="confirm-restore">
+      <span>⚠ Esto va a sobrescribir los valores que modificaste manualmente con los defaults de <code>blastp</code>. ¿Querés continuar?</span>
+      <div class="actions">
+        <button class="btn btn-secondary" style="padding:5px 12px;font-size:12px;">Mantener mis valores</button>
+        <button class="btn btn-warning">Sí, restaurar defaults</button>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost">← Volver</button>
+      <div>
+        <button class="btn btn-secondary">Restaurar defaults</button>
+        <button class="btn btn-primary">Validar búsqueda</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       ESTADO POSTERIOR · HU05_CU003_B · CA-01 (validación exitosa)
+       ============================================================= -->
+  <div class="state-section">
+    <div class="state-label">Estado posterior tras validar <span class="state-tag">HU05_CU003_B · CA-01</span></div>
+    <div class="panel">
+      <div class="banner success">
+        <span class="ico">✓</span>
+        <div>
+          <strong>Configuración válida.</strong><br>
+          Alfabeto compatible con el programa, parámetros dentro de rango y combinación programa/query/BD coherente. La búsqueda está lista para ejecutarse.
+        </div>
+      </div>
+
+      <div style="color: var(--color-text-subtle); font-size: 12px; margin-bottom: 10px;">
+        Si cambiás cualquier campo del formulario, el visto bueno se invalida y vas a tener que volver a validar.
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost">← Volver</button>
+        <div>
+          <button class="btn btn-secondary">Revalidar</button>
+          <button class="btn btn-primary">Ejecutar búsqueda ▶</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       ESTADO ALTERNATIVO · HU04_CU002_A1 · base local no disponible
+       ============================================================= -->
+  <div class="state-section">
+    <div class="state-label">Estado alternativo <span class="state-tag">HU04_CU002_A1 · CA-01 / CA-02</span></div>
+    <div class="panel">
+      <div class="banner warning">
+        <span class="ico">⚠</span>
+        <div>
+          <strong>La base de datos "<code>ecoli_K12_proteins</code>" está siendo actualizada y no puede usarse en este momento.</strong><br>
+          Se refrescó la lista de bases locales disponibles. Elegí otra base, o esperá a que termine la actualización.
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Modo de ejecución</label>
+          <div class="radio-group">
+            <label><input type="radio" name="modo2"><span>Remoto (NCBI)</span></label>
+            <label class="selected"><input type="radio" name="modo2" checked><span>Local</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="db2">Base de datos</label>
+          <div class="select-with-icon">
+            <select id="db2">
+              <option>— Elegí una base —</option>
+              <option>uniprot_lab_curated <span>&nbsp;</span> &nbsp; ✓ lista</option>
+              <option>ecoli_K12_proteins &nbsp;↻ actualizándose</option>
+              <option>viralgenomes_internal_v3 ✓ lista</option>
+              <option>legacy_markers_2019 ✗ índice con errores</option>
+            </select>
+          </div>
+          <div style="margin-top: 8px; font-size: 12px; color: var(--color-text-subtle);">
+            Estado del catálogo:
+            <span class="db-status-chip ok">✓ 2 listas</span>
+            <span class="db-status-chip upd">↻ 1 actualizándose</span>
+            <span class="db-status-chip err">✗ 1 con error</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explicitar por qué está deshabilitado (H5 - Prevención de errores) -->
+      <div class="validate-hint">
+        <strong>Validar búsqueda está deshabilitado</strong> porque falta elegir una base de datos utilizable. Elegí una marcada como <em>lista</em> en la lista de arriba.
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost">← Volver</button>
+        <button class="btn btn-primary" disabled>Validar búsqueda</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       ESTADO DE EXCEPCIÓN · HU06_CU003_E1 · parámetro fuera de rango
+       ============================================================= -->
+  <div class="state-section">
+    <div class="state-label">Estado de excepción <span class="state-tag">HU06_CU003_E1 · CA-01 / CA-02</span></div>
+    <div class="panel">
+      <div class="banner error">
+        <span class="ico">✗</span>
+        <div>
+          <strong>No se puede validar la búsqueda: hay parámetros fuera de rango.</strong><br>
+          Corregí los campos marcados y volvé a presionar <em>Validar búsqueda</em>.
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field has-error">
+          <label for="eval3">E-value máximo <span class="hint-k">rango 0 – 10</span></label>
+          <input type="text" id="eval3" value="-1">
+          <div class="err-msg">El E-value debe ser un número positivo (típicamente entre 0 y 10). No puede ser negativo.</div>
+        </div>
+        <div class="field has-error">
+          <label for="wsize3">Tamaño de palabra <span class="hint-k">para <code>blastn</code>: rango 7 – 50</span></label>
+          <input type="text" id="wsize3" value="3">
+          <div class="err-msg">Para el programa <code>blastn</code>, el tamaño de palabra mínimo es 7. Subí el valor o cambiá el programa.</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost">← Volver</button>
+        <button class="btn btn-primary">Validar búsqueda</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       ESTADO DE EXCEPCIÓN · HU07_CU003_E2 · combinación incompatible
+       ============================================================= -->
+  <div class="state-section">
+    <div class="state-label">Estado de excepción <span class="state-tag">HU07_CU003_E2 · CA-01</span></div>
+    <div class="panel">
+      <div class="banner error">
+        <span class="ico">✗</span>
+        <div>
+          <strong>Combinación programa / query / base de datos incompatible.</strong><br>
+          El programa <code>blastp</code> espera queries de proteína, pero la secuencia cargada es de nucleótidos. Opciones válidas con lo que tenés cargado:
+          <ul>
+            <li><code>blastn</code> contra una base de datos de nucleótidos</li>
+            <li><code>blastx</code> (nucleótido traducido vs. proteína)</li>
+            <li><code>tblastx</code> (traducido vs. traducido)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost">← Volver</button>
+        <button class="btn btn-primary">Validar búsqueda</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================================================
+       ESTADO DE EXCEPCIÓN · HU07_CU003_E2 · CA-02 (blastn vs base proteína)
+       ============================================================= -->
+  <div class="state-section">
+    <div class="state-label">Estado de excepción <span class="state-tag">HU07_CU003_E2 · CA-02</span></div>
+    <div class="panel">
+      <div class="banner error">
+        <span class="ico">✗</span>
+        <div>
+          <strong>El programa <code>blastn</code> requiere una base de datos de nucleótidos.</strong><br>
+          La base seleccionada (<code>swissprot</code>) es de proteínas. Elegí otra base de datos, o cambiá el programa a <code>blastx</code>.
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost">← Volver</button>
+        <button class="btn btn-primary">Validar búsqueda</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mock-note">
+    <strong>Nota del maquetado (versión final).</strong> Esta pantalla cubre <code>HU03_CU002_B</code> (configuración completa), <code>HU04_CU002_A1</code> (base local no disponible), <code>HU05_CU003_B</code> (validación semántica), <code>HU06_CU003_E1</code> (parámetros fuera de rango) y <code>HU07_CU003_E2</code> (combinación incompatible). Los defaults del formulario se recalculan al cambiar el programa (BLOSUM62/word-size 3 para blastp, otros para blastn/blastx). El botón "Ejecutar búsqueda" solo se habilita después de un <em>Validar</em> exitoso y se re-deshabilita ante cualquier cambio posterior del formulario.<br><br>
+    <strong>Cambios respecto a la versión inicial (ver <code>_inicial.html</code>).</strong> Esta versión incorpora los hallazgos aceptados de la evaluación heurística documentados en <code>docs/ui/heuristic-review/pantalla-02-configuracion-validacion_HU03-HU04-HU05-HU06-HU07.md</code>: (a) tooltips de ayuda (ícono <span class="help-icon">?</span>) junto a los parámetros pre-búsqueda (E-value, matriz, tamaño de palabra, gaps), para que el extremo menos experto del perfil del Investigador/a entienda qué controla cada campo sin tener que leer la documentación de BLAST+ por fuera (heurística 10 — <em>Ayuda y documentación</em>); (b) confirmación explícita al presionar <em>Restaurar defaults</em>, para evitar sobrescribir en silencio los valores que el investigador sénior ajustó a mano (heurística 3 — <em>Control y libertad del usuario</em>); (c) explicación visible de por qué el botón <em>Validar búsqueda</em> está deshabilitado en el estado alternativo de BD local no disponible, para que el investigador no se quede trabado sin saber qué le falta (heurística 5 — <em>Prevención de errores</em>).
+  </div>
+
+</div>
+
+</body>
+</html>
