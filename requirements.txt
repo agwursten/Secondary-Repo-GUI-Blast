@@ -1,0 +1,3 @@
+# Backend de LocalBlast (Python 3.10 o superior)
+fastapi>=0.110
+uvicorn>=0.29

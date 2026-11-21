@@ -1,0 +1,481 @@
+<?xml version="1.0"?>
+<!DOCTYPE BlastOutput PUBLIC "-//NCBI//NCBI BlastOutput/EN" "http://www.ncbi.nlm.nih.gov/dtd/NCBI_BlastOutput.dtd">
+<BlastOutput>
+  <BlastOutput_program>blastp</BlastOutput_program>
+  <BlastOutput_version>BLASTP 2.12.0+</BlastOutput_version>
+  <BlastOutput_reference>Stephen F. Altschul, Thomas L. Madden, Alejandro A. Sch&amp;auml;ffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J. Lipman (1997), &quot;Gapped BLAST and PSI-BLAST: a new generation of protein database search programs&quot;, Nucleic Acids Res. 25:3389-3402.</BlastOutput_reference>
+  <BlastOutput_db>datos/blastdb/proteinas_demo</BlastOutput_db>
+  <BlastOutput_query-ID>Query_1</BlastOutput_query-ID>
+  <BlastOutput_query-def>proteina_demo Proteina sintetica de demostracion de LocalBlast</BlastOutput_query-def>
+  <BlastOutput_query-len>420</BlastOutput_query-len>
+  <BlastOutput_param>
+    <Parameters>
+      <Parameters_matrix>BLOSUM62</Parameters_matrix>
+      <Parameters_expect>10</Parameters_expect>
+      <Parameters_gap-open>11</Parameters_gap-open>
+      <Parameters_gap-extend>1</Parameters_gap-extend>
+      <Parameters_filter>F</Parameters_filter>
+    </Parameters>
+  </BlastOutput_param>
+<BlastOutput_iterations>
+<Iteration>
+  <Iteration_iter-num>1</Iteration_iter-num>
+  <Iteration_query-ID>Query_1</Iteration_query-ID>
+  <Iteration_query-def>proteina_demo Proteina sintetica de demostracion de LocalBlast</Iteration_query-def>
+  <Iteration_query-len>420</Iteration_query-len>
+<Iteration_hits>
+<Hit>
+  <Hit_num>1</Hit_num>
+  <Hit_id>demo_var01</Hit_id>
+  <Hit_def>Variante sintetica de la proteina de demostracion (~99% identidad, ~100% cobertura)</Hit_def>
+  <Hit_accession>demo_var01</Hit_accession>
+  <Hit_len>438</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>887.1</Hsp_bit-score>
+      <Hsp_score>2291</Hsp_score>
+      <Hsp_evalue>0</Hsp_evalue>
+      <Hsp_query-from>1</Hsp_query-from>
+      <Hsp_query-to>420</Hsp_query-to>
+      <Hsp_hit-from>19</Hsp_hit-from>
+      <Hsp_hit-to>438</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>419</Hsp_identity>
+      <Hsp_positive>419</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>420</Hsp_align-len>
+      <Hsp_qseq>MEMTTEIYYVQWVSWRIAYDELERASMHPKNNPTDMDVVLLRFWLANNRQDPWVSEQTYSPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGYEECFTNYLAQWFNQPPIQIFGVAVVPKFIAAKVSQKMFWDGVCTKMTMCAISCITFPNIV</Hsp_qseq>
+      <Hsp_hseq>MEMTTEIYYVQWVSWRIAYDELEAASMHPKNNPTDMDVVLLRFWLANNRQDPWVSEQTYSPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGYEECFTNYLAQWFNQPPIQIFGVAVVPKFIAAKVSQKMFWDGVCTKMTMCAISCITFPNIV</Hsp_hseq>
+      <Hsp_midline>MEMTTEIYYVQWVSWRIAYDELE ASMHPKNNPTDMDVVLLRFWLANNRQDPWVSEQTYSPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGYEECFTNYLAQWFNQPPIQIFGVAVVPKFIAAKVSQKMFWDGVCTKMTMCAISCITFPNIV</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>2</Hit_num>
+  <Hit_id>demo_var02</Hit_id>
+  <Hit_def>Variante sintetica de la proteina de demostracion (~95% identidad, ~100% cobertura)</Hit_def>
+  <Hit_accession>demo_var02</Hit_accession>
+  <Hit_len>436</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>805.438</Hsp_bit-score>
+      <Hsp_score>2079</Hsp_score>
+      <Hsp_evalue>0</Hsp_evalue>
+      <Hsp_query-from>1</Hsp_query-from>
+      <Hsp_query-to>420</Hsp_query-to>
+      <Hsp_hit-from>17</Hsp_hit-from>
+      <Hsp_hit-to>436</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>392</Hsp_identity>
+      <Hsp_positive>394</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>420</Hsp_align-len>
+      <Hsp_qseq>MEMTTEIYYVQWVSWRIAYDELERASMHPKNNPTDMDVVLLRFWLANNRQDPWVSEQTYSPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGYEECFTNYLAQWFNQPPIQIFGVAVVPKFIAAKVSQKMFWDGVCTKMTMCAISCITFPNIV</Hsp_qseq>
+      <Hsp_hseq>MESTTEHYCVQWVSWRIAYDELERASMHPKNNPTDMDVGLLRFYLANNRQDPWVSTQTYSPTKQWSTTAGIFNTEYQSFSTERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDLSNEHQFRADARWVDYHIEYCWKNFAMWWPFVISWFYTLDQGFWLTGPFTHPAEPDFNNAATSMLRMESRWYGFWTHQQMRYIDVPCHGCVCRHSAATHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEMIADRMQVEANGNVWVHEYKVWHWLWKVFEKECGECNGETMKWDLWGKKDAQKQACEIQLEEVWNMRYYCPMYHYRQERTKPLNCQALMLELQMWAVMHVPEGYEECFTNYLAQWFNQPPIQIFGVAWVPKFIAAKVSQEMFQDGVDTKMTMCAHSCITFPNIV</Hsp_hseq>
+      <Hsp_midline>ME TTE Y VQWVSWRIAYDELERASMHPKNNPTDMDV LLRF+LANNRQDPWVS QTYSPTKQWSTTA IF TEYQSFS ERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSD SNEHQFRADARWVDYHIEYC KNFAMWW FVISWFYTLDQGFWLT PFTHPAEPD NNAATSMLRMESRWYGFWTHQ MRYIDVPCHGCVCRHSA THTFGGPKQVQDPLGNGKRSQLRGMTSRETTKE IADRMQV ANGNVWVHEYKVWHWLWKVFEKE GECNGETMKWDL GKKDAQKQACEI LEEVWNMRYYCPMYHYRQE TKPLNCQALMLELQMWAVMHV EGYEECFTNYLAQWFNQPPIQIFGVA VPKFIAAKVSQ+MF DGV TKMTMCA SCITFPNIV</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>3</Hit_num>
+  <Hit_id>demo_var03</Hit_id>
+  <Hit_def>Variante sintetica de la proteina de demostracion (~90% identidad, ~100% cobertura)</Hit_def>
+  <Hit_accession>demo_var03</Hit_accession>
+  <Hit_len>425</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>800.045</Hsp_bit-score>
+      <Hsp_score>2065</Hsp_score>
+      <Hsp_evalue>0</Hsp_evalue>
+      <Hsp_query-from>1</Hsp_query-from>
+      <Hsp_query-to>420</Hsp_query-to>
+      <Hsp_hit-from>6</Hsp_hit-from>
+      <Hsp_hit-to>425</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>383</Hsp_identity>
+      <Hsp_positive>390</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>420</Hsp_align-len>
+      <Hsp_qseq>MEMTTEIYYVQWVSWRIAYDELERASMHPKNNPTDMDVVLLRFWLANNRQDPWVSEQTYSPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGYEECFTNYLAQWFNQPPIQIFGVAVVPKFIAAKVSQKMFWDGVCTKMTMCAISCITFPNIV</Hsp_qseq>
+      <Hsp_hseq>MCMTTEIYYVQWVSWRAAYDELERASMHPKNNPTDMDVVKLIFWLANNRQDPWVSEQTLSPTKQWSTTAWIFCTEYYIFSIERTVDVPLVTNPQHLKADFYRTSNHKSRTSQVCLMRERTKPGQSDKSNECQFRMDARWVDGHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAKTSMLRNESRWYGHWTRQYMRGIDVPCHGCVCRHNAFEHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKQHIADRMQVGANGNVWVHEYKCWHWTWKVLEKEQGECNGETMKWALMGKKDAQKQACEMALEEPWNMRYFCVMYHYWQENTKPLNCQALMLELQMWAVMHVCSGYEECFTNYLAQWFNGPPIQIFGVAVVPKFIAAKVAQKMFWDGVCTIMTMCAISCTTFPNIV</Hsp_hseq>
+      <Hsp_midline>M MTTEIYYVQWVSWR AYDELERASMHPKNNPTDMDVV L FWLANNRQDPWVSEQT SPTKQWSTTAWIFCTEY  FSIER+V VPLVT+PQHLKA FYRTSNHKSRTSQVCLMRERTK GQSDKSNE QFR DARWVD HIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNA TSMLR ESRWYG WT QYMR IDVPCHGCVCRH+AF HTFGGPKQVQDPLGNGKRSQLRGMTSRETTK+HIADRMQVGANGNVWVHEYK WHW WKV EKEQGECNGETMKW LMGKKDAQKQACE+ALEE WNMRY+C MYHY QENTKPLNCQALMLELQMWAVMHVC GYEECFTNYLAQWFN PPIQIFGVAVVPKFIAAKV+QKMFWDGVCT MTMCAISC TFPNIV</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>4</Hit_num>
+  <Hit_id>demo_var04</Hit_id>
+  <Hit_def>Variante sintetica de la proteina de demostracion (~85% identidad, ~95% cobertura)</Hit_def>
+  <Hit_accession>demo_var04</Hit_accession>
+  <Hit_len>410</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>665.226</Hsp_bit-score>
+      <Hsp_score>1715</Hsp_score>
+      <Hsp_evalue>0</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>399</Hsp_query-to>
+      <Hsp_hit-from>14</Hsp_hit-from>
+      <Hsp_hit-to>410</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>333</Hsp_identity>
+      <Hsp_positive>338</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>397</Hsp_align-len>
+      <Hsp_qseq>MTTEIYYVQWVSWRIAYDELERASMHPKNNPTDMDVVLLRFWLANNRQDPWVSEQTYSPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGYEECFTNYLAQWFNQPPIQIFGVAVVPKFIAAKVSQKMFW</Hsp_qseq>
+      <Hsp_hseq>FVTEIYYVQWVSWRIAYDELERASMHLKNNPTDDDVVLLRFWLAGNRQFPWVSEQFYSPTKQWTTTAWIFCTEKQDFSMERSWKVALVTSPQHLKACFYRTSNHKSRTSQDCLNRLRTKRGQSDKSNEHQHDADARWVDYHIEYCVKNRALWWSFVIVWFYQLDQGFQLTHPFTHPAEPDCNNAATSMKRMESRWYGFWTHQYMRYIDVPRHGFHCRHPFFTPTFFLPKQAQDPLWNGKRSQLRGMTSRFTTPEHIADRMQVRANGNVWVHSYKVQHWLWKVFEKEQGECNNETMKPDLHGHKDAMKKAFEIALEEVWNMHYYLPWSHYRQANTKPLNIQILMVIEQMSAVMHVCETYEECFTNYDAQPFMQPCIQIFGVAVVPKVIAAKVSQKMFW</Hsp_hseq>
+      <Hsp_midline>  TEIYYVQWVSWRIAYDELERASMH KNNPTD DVVLLRFWLA NRQ PWVSEQ YSPTKQW+TTAWIFCTE Q FS+ERS KV LVTSPQHLKACFYRTSNHKSRTSQ CL R RTKRGQSDKSNEHQ  ADARWVDYHIEYCVKN A+WWSFVI WFY LDQGF LT PFTHPAEPDCNNAATSM RMESRWYGFWTHQYMRYIDVP HG  CRH  FT TF  PKQ QDPL NGKRSQLRGMTSR TT EHIADRMQV ANGNVWVH YKV HWLWKVFEKEQGECN ETMK DL G KDA K+A EIALEEVWNM YY P  HYRQ NTKPLN Q LM+  QM AVMHVCE YEECFTNY AQ F QP IQIFGVAVVPK IAAKVSQKMFW</Hsp_midline>
+    </Hsp>
+    <Hsp>
+      <Hsp_num>2</Hsp_num>
+      <Hsp_bit-score>17.705</Hsp_bit-score>
+      <Hsp_score>34</Hsp_score>
+      <Hsp_evalue>9.96663</Hsp_evalue>
+      <Hsp_query-from>385</Hsp_query-from>
+      <Hsp_query-to>401</Hsp_query-to>
+      <Hsp_hit-from>235</Hsp_hit-from>
+      <Hsp_hit-to>251</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>6</Hsp_identity>
+      <Hsp_positive>8</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>17</Hsp_align-len>
+      <Hsp_qseq>VPKFIAAKVSQKMFWDG</Hsp_qseq>
+      <Hsp_hseq>TPTFFLPKQAQDPLWNG</Hsp_hseq>
+      <Hsp_midline> P F   K +Q   W+G</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>5</Hit_num>
+  <Hit_id>demo_var05</Hit_id>
+  <Hit_def>Variante sintetica de la proteina de demostracion (~78% identidad, ~100% cobertura)</Hit_def>
+  <Hit_accession>demo_var05</Hit_accession>
+  <Hit_len>445</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>650.203</Hsp_bit-score>
+      <Hsp_score>1676</Hsp_score>
+      <Hsp_evalue>0</Hsp_evalue>
+      <Hsp_query-from>1</Hsp_query-from>
+      <Hsp_query-to>420</Hsp_query-to>
+      <Hsp_hit-from>26</Hsp_hit-from>
+      <Hsp_hit-to>445</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>330</Hsp_identity>
+      <Hsp_positive>340</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>420</Hsp_align-len>
+      <Hsp_qseq>MEMTTEIYYVQWVSWRIAYDELERASMHPKNNPTDMDVVLLRFWLANNRQDPWVSEQTYSPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGYEECFTNYLAQWFNQPPIQIFGVAVVPKFIAAKVSQKMFWDGVCTKMTMCAISCITFPNIV</Hsp_qseq>
+      <Hsp_hseq>MEMTTEYYYVFWVSLRIAYDELNNASMHWKNNPTDMDVVLVRFWLANNRQDPWVSHTTYSPTKQWRTTAWIFCTEYQSFSIERSEFPMLVFAPQHLKACFYYTSTHKRRTPQVCLMSEITKRSQSDKSNEYQFRADNRWVTYHIEYCVKNFMMWEIFVISWFLTLDQGFWLTHDFTHPAEPDCNRAATSMLFMQSRWYGFSTHQYMRYIDVHTHSCVCRHSAFWHWFHGNCQVKDNLGNGKMSQLRGMQIREYTEEFGADRAQSGANWNVKVHEYLMWSWLWKVFQHEPGREKGEGMKWDLMGKKSPQKQACEIALEIVWNTRSGWPGYHIRPENTKHLACQALMLELQMWAVMHVCAGYEECFTPYLAQWFNQPGIQVFGVAHVPKFGAAKVSQKMFSDGINTKMTENAISCITFPNIV</Hsp_hseq>
+      <Hsp_midline>MEMTTE YYV WVS RIAYDEL  ASMH KNNPTDMDVVL+RFWLANNRQDPWVS  TYSPTKQW TTAWIFCTEYQSFSIERS    LV +PQHLKACFY TS HK RT QVCLM E TKR QSDKSNE+QFRAD RWV YHIEYCVKNF MW  FVISWF TLDQGFWLT  FTHPAEPDCN AATSML M+SRWYGF THQYMRYIDV  H CVCRHSAF H F G  QV+D LGNGK SQLRGM  RE T+E  ADR Q GAN NV VHEY +W WLWKVF+ E G   GE MKWDLMGKK  QKQACEIALE VWN R   P YH R ENTK L CQALMLELQMWAVMHVC GYEECFT YLAQWFNQP IQ+FGVA VPKF AAKVSQKMF DG+ TKMT  AISCITFPNIV</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>6</Hit_num>
+  <Hit_id>demo_var06</Hit_id>
+  <Hit_def>Variante sintetica de la proteina de demostracion (~70% identidad, ~90% cobertura)</Hit_def>
+  <Hit_accession>demo_var06</Hit_accession>
+  <Hit_len>400</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>553.132</Hsp_bit-score>
+      <Hsp_score>1424</Hsp_score>
+      <Hsp_evalue>0</Hsp_evalue>
+      <Hsp_query-from>21</Hsp_query-from>
+      <Hsp_query-to>399</Hsp_query-to>
+      <Hsp_hit-from>22</Hsp_hit-from>
+      <Hsp_hit-to>400</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>284</Hsp_identity>
+      <Hsp_positive>299</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>379</Hsp_align-len>
+      <Hsp_qseq>ELERASMHPKNNPTDMDVVLLRFWLANNRQDPWVSEQTYSPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGYEECFTNYLAQWFNQPPIQIFGVAVVPKFIAAKVSQKMFW</Hsp_qseq>
+      <Hsp_hseq>DLERWSLHLDENPTDMDVVMMYFWLNCNRQDPWVSEQTYSPTKQWSTTAWCFCTECQSFSEERSEKVEGVYLPKHLKACFARQSNHKSRTSQVILMPEQTYRGQSDETFNNCFRKDARWVDMHIEYCVKVFAMDWCFVIAWFCTLDLGFWNRQPFTEPAEPDCNNAATSMLRMESRWYMTWPHQKMCGIQDPCHGLVCRHSAFFNMFGGGKQEQDPLASGKDGQRRGYTMPETTKPHIAVRMQVGANGNVWVHEYKDWHYQPKRWCKEQYECNVETFKWDLMAKKLAQKQGCEIELEEVWNMRYDQPMIHNRQENTKPLNCQALMLELQMWAVMHFCEGVEELFCNYLRKQPNQIPIQIFGVAVVPKFIAQKVSQKMFW</Hsp_hseq>
+      <Hsp_midline>+LER S+H   NPTDMDVV++ FWL  NRQDPWVSEQTYSPTKQWSTTAW FCTE QSFS ERS KV  V  P+HLKACF R SNHKSRTSQV LM E+T RGQSD++  + FR DARWVD HIEYCVK FAM W FVI+WF TLD GFW  QPFT PAEPDCNNAATSMLRMESRWY  W HQ M  I  PCHG VCRHSAF + FGG KQ QDPL +GK  Q RG T  ETTK HIA RMQVGANGNVWVHEYK WH+  K + KEQ ECN ET KWDLM KK AQKQ CEI LEEVWNMRY  PM H RQENTKPLNCQALMLELQMWAVMH CEG EE F NYL +  NQ PIQIFGVAVVPKFIA KVSQKMFW</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>7</Hit_num>
+  <Hit_id>demo_var07</Hit_id>
+  <Hit_def>Variante sintetica de la proteina de demostracion (~62% identidad, ~100% cobertura)</Hit_def>
+  <Hit_accession>demo_var07</Hit_accession>
+  <Hit_len>440</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>483.411</Hsp_bit-score>
+      <Hsp_score>1243</Hsp_score>
+      <Hsp_evalue>3.2551e-173</Hsp_evalue>
+      <Hsp_query-from>2</Hsp_query-from>
+      <Hsp_query-to>420</Hsp_query-to>
+      <Hsp_hit-from>22</Hsp_hit-from>
+      <Hsp_hit-to>440</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>273</Hsp_identity>
+      <Hsp_positive>287</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>419</Hsp_align-len>
+      <Hsp_qseq>EMTTEIYYVQWVSWRIAYDELERASMHPKNNPTDMDVVLLRFWLANNRQDPWVSEQTYSPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGYEECFTNYLAQWFNQPPIQIFGVAVVPKFIAAKVSQKMFWDGVCTKMTMCAISCITFPNIV</Hsp_qseq>
+      <Hsp_hseq>EYTTCIYYVQGVSWRKHTQVLEPACMNPKMTPYGMDVVCPRTYLANNWQDKHVSEQTNWLTKQWTTTAWILCEEYQCFSGERSMNVRLVFGPKHLNAMFYGTLEHKSRTSQVVHGRKRTPRGQSDKSNIHMFRNDNRWVMYHIEYCEMLFAMWWSFVISWTKTDDQGFWLTQPFTHPAEMDANHAATSNTRMEIRWYGFLTHIYMRFAIVLCFCCSKPKPAFLCTFDGPKYVNDPLGNTKKKQLRGPDQRETTKIYIADRMESGTGGNVHVTEYKPDVWLWKHRIKEQGECMTFFLKFCLMGKKWVQKQACEIALWNVWNMRYYRPMSWYRQVWTKPITCQMLMLELNMGARHHVCCGGWEFNTFYLAGVFNQTPIQIAFVDVVPKFIAAKVSSKMKWDDCSTKMQMCACSESTFPRIV</Hsp_hseq>
+      <Hsp_midline>E TT IYYVQ VSWR     LE A M+PK  P  MDVV  R +LANN QD  VSEQT   TKQW+TTAWI C EYQ FS ERS+ V LV  P+HL A FY T  HKSRTSQV   R+RT RGQSDKSN H FR D RWV YHIEYC   FAMWWSFVISW  T DQGFWLTQPFTHPAE D N+AATS  RME RWYGF TH YMR+  V C  C     AF  TF GPK V DPLGN K+ QLRG   RETTK +IADRM+ G  GNV V EYK   WLWK   KEQGEC    +K+ LMGKK  QKQACEIAL  VWNMRYY PM  YRQ  TKP+ CQ LMLEL M A  HVC G  E  T YLA  FNQ PIQI  V VVPKFIAAKVS KM WD   TKM MCA S  TFP IV</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>8</Hit_num>
+  <Hit_id>demo_var10</Hit_id>
+  <Hit_def>Variante sintetica de la proteina de demostracion (~92% identidad, ~45% cobertura)</Hit_def>
+  <Hit_accession>demo_var10</Hit_accession>
+  <Hit_len>196</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>377.481</Hsp_bit-score>
+      <Hsp_score>968</Hsp_score>
+      <Hsp_evalue>3.52685e-135</Hsp_evalue>
+      <Hsp_query-from>127</Hsp_query-from>
+      <Hsp_query-to>316</Hsp_query-to>
+      <Hsp_hit-from>7</Hsp_hit-from>
+      <Hsp_hit-to>196</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>177</Hsp_identity>
+      <Hsp_positive>182</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>190</Hsp_align-len>
+      <Hsp_qseq>KSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIAL</Hsp_qseq>
+      <Hsp_hseq>RSNEHCWRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLDQPFTHPAEIDCNNAATSMLRMESRWYGPWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGHGKRSQLRGMTSRETTKEHIADRMQVGHNGNVWVHEYEVWHWLWKVFEKECGECNGETQKWDCMGKKDAQEQACEIAL</Hsp_hseq>
+      <Hsp_midline>+SNEH +RADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWL QPFTHPAE DCNNAATSMLRMESRWYG WTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLG+GKRSQLRGMTSRETTKEHIADRMQVG NGNVWVHEY+VWHWLWKVFEKE GECNGET KWD MGKKDAQ+QACEIAL</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>9</Hit_num>
+  <Hit_id>demo_var08</Hit_id>
+  <Hit_def>Variante sintetica de la proteina de demostracion (~55% identidad, ~80% cobertura)</Hit_def>
+  <Hit_accession>demo_var08</Hit_accession>
+  <Hit_len>355</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>350.903</Hsp_bit-score>
+      <Hsp_score>899</Hsp_score>
+      <Hsp_evalue>2.07909e-122</Hsp_evalue>
+      <Hsp_query-from>52</Hsp_query-from>
+      <Hsp_query-to>388</Hsp_query-to>
+      <Hsp_hit-from>18</Hsp_hit-from>
+      <Hsp_hit-to>354</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>203</Hsp_identity>
+      <Hsp_positive>217</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>337</Hsp_align-len>
+      <Hsp_qseq>PWVSEQTYSPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGYEECFTNYLAQWFNQPPIQIFGVAVVPKF</Hsp_qseq>
+      <Hsp_hseq>PSFSKQAYNPIKQSSATAKHFVTMRQSGSIERSVKVPLVKSPQMCTACMYMESNHKSYCKQVCLRKERTKWGRSWFSSYHQTGRDARWVDCHQESPVKTTTMWYIFQPSIFYTIDQIPWLTQMCTHTAYPDPLNAPTSMLTDPFYWHNFWTHPYARYIDWPYHHCDKRHSFFTQTFGGINQRCDILCNSARSTLRNFTSREATKETIADRCTVGAKGNVWRFREEVWNWLLKVSEKETGECNGEHTKPDTMVNKDAQKGACEHELEEVWNARYFCAMYWYRQENFIMINQWALMLELQMWPQMLDTEGYFPGQTKYIAQNFATPFLQIFGVAVVGKF</Hsp_hseq>
+      <Hsp_midline>P  S+Q Y+P KQ S TA  F T  QS SIERSVKVPLV SPQ   AC Y  SNHKS   QVCL +ERTK G+S  S+ HQ   DARWVD H E  VK   MW+ F  S FYT+DQ  WLTQ  TH A PD  NA TSML     W+ FWTH Y RYID P H C  RHS FT TFGG  Q  D L N  RS LR  TSRE TKE IADR  VGA GNVW    +VW+WL KV EKE GECNGE  K D M  KDAQK ACE  LEEVWN RY+C MY YRQEN   +N  ALMLELQMW  M   EGY    T Y+AQ F  P +QIFGVAVV KF</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>10</Hit_num>
+  <Hit_id>demo_var09</Hit_id>
+  <Hit_def>Variante sintetica de la proteina de demostracion (~48% identidad, ~100% cobertura)</Hit_def>
+  <Hit_accession>demo_var09</Hit_accession>
+  <Hit_len>427</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>264.233</Hsp_bit-score>
+      <Hsp_score>674</Hsp_score>
+      <Hsp_evalue>1.25198e-87</Hsp_evalue>
+      <Hsp_query-from>1</Hsp_query-from>
+      <Hsp_query-to>414</Hsp_query-to>
+      <Hsp_hit-from>8</Hsp_hit-from>
+      <Hsp_hit-to>421</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>186</Hsp_identity>
+      <Hsp_positive>208</Hsp_positive>
+      <Hsp_gaps>4</Hsp_gaps>
+      <Hsp_align-len>416</Hsp_align-len>
+      <Hsp_qseq>MEMTTEIYYVQWVSWRIAYDELERASMHPKNNPTDMDVVLLRFWLANNRQDPWVSEQTYSPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFT--HPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGYEECFTNYLAQWFNQPPIQIFGVAVVPKFIAAKVSQKMFWDGVCTKMTMCAISCI</Hsp_qseq>
+      <Hsp_hseq>MECWTYGKYLYWWVQRIAYQEFTCASMHPKLEMTLMKVCLIREQLSNNLPDKDYFEFMDKPIMQWRPHNWPQFVYYVEFSIENSKCVKLLESAKILKIHIYPRRIHESFTSRVCLKMQMHNRFTSDDSNKEQMFARAPLREYHSTYCQYNHSMLWVDVRSWFNTSYQEPICDMIFDAMHPAHEKRKN--TSQLRMNSQNYGFWMPQYYYDIDVRCYECVLHCQMFTDTFKGPPQVMDMLGNGHRSHLRPNTSHETTKDPTALVMQKGANTNCEVHAYCVSHWDKLVLEKLYFWNDGECMYRYAMGPKITECQACDAKLEEVKGTKPSCPSYMRRQNNCVDTNCQADYRELHMEAVHQQCTGEEDWFTPTCCQLWWQPNIPHFGVADVGELNDPYCKQSMFVDGVCTKMCSVQLGCI</Hsp_hseq>
+      <Hsp_midline>ME  T   Y+ W   RIAY E   ASMHPK   T M V L+R  L+NN  D    E    P  QW    W     Y  FSIE S  V L+ S + LK   Y    H+S TS+VCL  +   R  SD SN+ Q  A A   +YH  YC  N +M W  V SWF T  Q       F   HPA     N  TS LRM S+ YGFW  QY   IDV C+ CV     FT TF GP QV D LGNG RS LR  TS ETTK+  A  MQ GAN N  VH Y V HW   V EK     +GE M    MG K  + QAC+  LEEV   +  CP Y  RQ N    NCQA   EL M AV   C G E+ FT    Q + QP I  FGVA V +       Q MF DGVCTKM    + CI</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>11</Hit_num>
+  <Hit_id>demo_var12</Hit_id>
+  <Hit_def>Variante sintetica de la proteina de demostracion (~35% identidad, ~100% cobertura)</Hit_def>
+  <Hit_accession>demo_var12</Hit_accession>
+  <Hit_len>442</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>187.578</Hsp_bit-score>
+      <Hsp_score>475</Hsp_score>
+      <Hsp_evalue>4.88585e-58</Hsp_evalue>
+      <Hsp_query-from>1</Hsp_query-from>
+      <Hsp_query-to>420</Hsp_query-to>
+      <Hsp_hit-from>23</Hsp_hit-from>
+      <Hsp_hit-to>442</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>156</Hsp_identity>
+      <Hsp_positive>185</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>420</Hsp_align-len>
+      <Hsp_qseq>MEMTTEIYYVQWVSWRIAYDELERASMHPKNNPTDMDVVLLRFWLANNRQDPWVSEQTYSPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGYEECFTNYLAQWFNQPPIQIFGVAVVPKFIAAKVSQKMFWDGVCTKMTMCAISCITFPNIV</Hsp_qseq>
+      <Hsp_hseq>MKFMTQAVNKHWWNWLIAFKNSIRNSMTQKNNPTDGDYVDFNFNCAKMRQDRNHWCQDESKTKTDFTTHQADCTEVQSRSVWGDVDEPHVTSRQHGHSCINHTENLESVHSTVTKNERRTYCGQEHITDDHLNILFALIPKYHIEKFVLDFSTPVEFVASPDYWLPRGFELTYCRMDPATYHKNLGDITMNRMEDRQYIMNTHYYWRAIDTWCHWCVTTKTAMTHAWCGGLHVQQPLPSCKRCPTWGNTYPEGPFWHEMDDLQAMANPFSWVHQGNFWHDHWQQFEKPGSPSFGETMKWNLFRCKWHQGWKHGSAFEEVPTYWYDQHTCHAGGENSYPCNDRHNFYHEPVIFHFYVAPYFEHCAMNYIALLNNQEMINSFLQHVPLKFSRPRVSQTWFTAGSCHFTVKLPTSAIIRVNII</Hsp_hseq>
+      <Hsp_midline>M+  T+     W +W IA+    R SM  KNNPTD D V   F  A  RQD     Q  S TK   TT    CTE QS S+   V  P VTS QH  +C   T N +S  S V     RT  GQ   +++H     A    YHIE  V +F+    FV S  Y L +GF LT     PA    N    +M RME R Y   TH Y R ID  CH CV   +A TH + G   VQ PL + KR    G T  E    H  D +Q  AN   WVH+   WH  W+ FEK      GETMKW+L   K  Q      A EEV    Y     H   EN+ P N +       +    +V   +E C  NY+A   NQ  I  F   V  KF   +VSQ  F  G C        S I   NI+</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>12</Hit_num>
+  <Hit_id>demo_var11</Hit_id>
+  <Hit_def>Variante sintetica de la proteina de demostracion (~40% identidad, ~70% cobertura)</Hit_def>
+  <Hit_accession>demo_var11</Hit_accession>
+  <Hit_len>322</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>160.999</Hsp_bit-score>
+      <Hsp_score>406</Hsp_score>
+      <Hsp_evalue>3.46278e-49</Hsp_evalue>
+      <Hsp_query-from>44</Hsp_query-from>
+      <Hsp_query-to>326</Hsp_query-to>
+      <Hsp_hit-from>38</Hsp_hit-from>
+      <Hsp_hit-to>320</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>115</Hsp_identity>
+      <Hsp_positive>131</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>283</Hsp_align-len>
+      <Hsp_qseq>WLANNRQDPWVSEQTYSPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERTKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAEPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNGKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVWNMRYYC</Hsp_qseq>
+      <Hsp_hseq>WSAKMSQREMVSEQTYSNTPQCFLTMWIAETEYGIFSYRISVKPPIVLSVQNLFSCFNRGHCHGPPIKYCMMEIEYSCQGGRPCVNCRNARPDARLHDYHHAYCNKNHAMHPSAEIAHSEPQDPKAWLKCPSEYPLERDCPNFAWPWRRHEFIWFGFNIHNYMWNNDGPESLCVCNHLDVCCTFPGKRHISDPPEWLPHIKACRETERMPFAEPPRDRMQRDAEINVYVVTEVKTHQVWKVPEMEGHEKYGHTMFQDYFGKSDEHFQACEITMEEVWSAPAYC</Hsp_hseq>
+      <Hsp_midline>W A   Q   VSEQTYS T Q   T WI  TEY  FS   SVK P+V S Q+L +CF R   H        +  E + +G     N    R DAR  DYH  YC KN AM  S  I+     D   WL  P  +P E DC N A    R E  W+GF  H YM   D P   CVC H     TF G + + DP       +    T R    E   DRMQ  A  NV+V      H +WKV E E  E  G TM  D  GK D   QACEI +EEVW+   YC</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>13</Hit_num>
+  <Hit_id>demo_otra05</Hit_id>
+  <Hit_def>Proteina sintetica sin relacion con la query</Hit_def>
+  <Hit_accession>demo_otra05</Hit_accession>
+  <Hit_len>259</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>20.0162</Hsp_bit-score>
+      <Hsp_score>40</Hsp_score>
+      <Hsp_evalue>2.15493</Hsp_evalue>
+      <Hsp_query-from>259</Hsp_query-from>
+      <Hsp_query-to>279</Hsp_query-to>
+      <Hsp_hit-from>158</Hsp_hit-from>
+      <Hsp_hit-to>178</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>7</Hsp_identity>
+      <Hsp_positive>12</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>21</Hsp_align-len>
+      <Hsp_qseq>ADRMQVGANGNVWVHEYKVWH</Hsp_qseq>
+      <Hsp_hseq>APKIDIGYHVSAKVHYYSAWH</Hsp_hseq>
+      <Hsp_midline>A ++ +G + +  VH Y  WH</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>14</Hit_num>
+  <Hit_id>demo_otra02</Hit_id>
+  <Hit_def>Proteina sintetica sin relacion con la query</Hit_def>
+  <Hit_accession>demo_otra02</Hit_accession>
+  <Hit_len>451</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>18.4754</Hsp_bit-score>
+      <Hsp_score>36</Hsp_score>
+      <Hsp_evalue>6.70253</Hsp_evalue>
+      <Hsp_query-from>310</Hsp_query-from>
+      <Hsp_query-to>334</Hsp_query-to>
+      <Hsp_hit-from>400</Hsp_hit-from>
+      <Hsp_hit-to>430</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>11</Hsp_identity>
+      <Hsp_positive>16</Hsp_positive>
+      <Hsp_gaps>6</Hsp_gaps>
+      <Hsp_align-len>31</Hsp_align-len>
+      <Hsp_qseq>QACEIALEEVWNMRYYC------PMYHYRQE</Hsp_qseq>
+      <Hsp_hseq>EKCKIAWQEVIWVSYYSRTQQCFPQFHVRME</Hsp_hseq>
+      <Hsp_midline>+ C+IA +EV  + YY       P +H R E</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>15</Hit_num>
+  <Hit_id>demo_otra03</Hit_id>
+  <Hit_def>Proteina sintetica sin relacion con la query</Hit_def>
+  <Hit_accession>demo_otra03</Hit_accession>
+  <Hit_len>318</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>18.0902</Hsp_bit-score>
+      <Hsp_score>35</Hsp_score>
+      <Hsp_evalue>7.92271</Hsp_evalue>
+      <Hsp_query-from>265</Hsp_query-from>
+      <Hsp_query-to>320</Hsp_query-to>
+      <Hsp_hit-from>212</Hsp_hit-from>
+      <Hsp_hit-to>267</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      <Hsp_hit-frame>0</Hsp_hit-frame>
+      <Hsp_identity>13</Hsp_identity>
+      <Hsp_positive>20</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>56</Hsp_align-len>
+      <Hsp_qseq>GANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWDLMGKKDAQKQACEIALEEVW</Hsp_qseq>
+      <Hsp_hseq>GIHGYIEDRHYQSDHWNQTLVNHHIKFCLGYESAFPLMGTHQIIHRAQMPDTQEHW</Hsp_hseq>
+      <Hsp_midline>G +G +    Y+  HW   +       C G    + LMG      +A     +E W</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+</Iteration_hits>
+  <Iteration_stat>
+    <Statistics>
+      <Statistics_db-num>18</Statistics_db-num>
+      <Statistics_db-len>6968</Statistics_db-len>
+      <Statistics_hsp-len>51</Statistics_hsp-len>
+      <Statistics_eff-space>2232450</Statistics_eff-space>
+      <Statistics_kappa>0.041</Statistics_kappa>
+      <Statistics_lambda>0.267</Statistics_lambda>
+      <Statistics_entropy>0.14</Statistics_entropy>
+    </Statistics>
+  </Iteration_stat>
+</Iteration>
+</BlastOutput_iterations>
+</BlastOutput>
+

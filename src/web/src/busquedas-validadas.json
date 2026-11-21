@@ -1,0 +1,44 @@
+{
+  "demostracion": {
+    "titulo": "Búsqueda de demostración",
+    "descripcion": "proteína sintética contra la base local de demostración. Funciona con BLAST+ real (después de crear la base) y con el simulado.",
+    "configuracion": {
+      "query_nombre": "proteina_demo.fasta",
+      "query_longitud": 420,
+      "query_unidad": "aa",
+      "secuencia": ">proteina_demo Proteina sintetica de demostracion de LocalBlast\nMEMTTEIYYVQWVSWRIAYDELERASMHPKNNPTDMDVVLLRFWLANNRQDPWVSEQTYS\nPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERT\nKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAE\nPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNG\nKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWD\nLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGY\nEECFTNYLAQWFNQPPIQIFGVAVVPKFIAAKVSQKMFWDGVCTKMTMCAISCITFPNIV\n",
+      "variante": "blastp",
+      "modo": "local",
+      "parametros": {
+        "evalue": 10,
+        "word_size": 3,
+        "matrix": "BLOSUM62",
+        "gapopen": 11,
+        "gapextend": 1
+      },
+      "base_datos": "datos/blastdb/proteinas_demo",
+      "base_datos_nombre": "Proteínas de demostración"
+    }
+  },
+  "base-inexistente": {
+    "titulo": "Búsqueda con una base que no existe",
+    "descripcion": "muestra el camino de error: BLAST+ no encuentra la base, no se muestra tabla y no se guarda nada.",
+    "configuracion": {
+      "query_nombre": "proteina_demo.fasta",
+      "query_longitud": 420,
+      "query_unidad": "aa",
+      "secuencia": ">proteina_demo Proteina sintetica de demostracion de LocalBlast\nMEMTTEIYYVQWVSWRIAYDELERASMHPKNNPTDMDVVLLRFWLANNRQDPWVSEQTYS\nPTKQWSTTAWIFCTEYQSFSIERSVKVPLVTSPQHLKACFYRTSNHKSRTSQVCLMRERT\nKRGQSDKSNEHQFRADARWVDYHIEYCVKNFAMWWSFVISWFYTLDQGFWLTQPFTHPAE\nPDCNNAATSMLRMESRWYGFWTHQYMRYIDVPCHGCVCRHSAFTHTFGGPKQVQDPLGNG\nKRSQLRGMTSRETTKEHIADRMQVGANGNVWVHEYKVWHWLWKVFEKEQGECNGETMKWD\nLMGKKDAQKQACEIALEEVWNMRYYCPMYHYRQENTKPLNCQALMLELQMWAVMHVCEGY\nEECFTNYLAQWFNQPPIQIFGVAVVPKFIAAKVSQKMFWDGVCTKMTMCAISCITFPNIV\n",
+      "variante": "blastp",
+      "modo": "local",
+      "parametros": {
+        "evalue": 10,
+        "word_size": 3,
+        "matrix": "BLOSUM62",
+        "gapopen": 11,
+        "gapextend": 1
+      },
+      "base_datos": "datos/blastdb/base_inexistente",
+      "base_datos_nombre": "Base inexistente (para mostrar el error)"
+    }
+  }
+}

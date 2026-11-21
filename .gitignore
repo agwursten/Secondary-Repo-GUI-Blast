@@ -22,3 +22,9 @@ __pycache__/
 
 # Ignorar archivos temporales y logs
 *.log
+
+# LocalBlast: dependencias y archivos generados
+node_modules/
+src/web/dist/
+datos/blastdb/
+datos/*.sqlite3*

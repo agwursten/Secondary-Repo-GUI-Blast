@@ -4,7 +4,7 @@
 
 Este documento baja la arquitectura de LocalBlast ([`architecture.md`](../architecture/architecture.md)) al nivel de clases para una historia de usuario. Parte de la HU y de sus criterios de aceptación, la analiza en sus tres dimensiones (funcionalidad, estructura y calidad) y deriva, en ese orden, el diagrama de robustez y los diagramas de secuencia. Cada diagrama sale del anterior: lo que no figura en la robustez no se invoca en las secuencias, y lo que no figura en las secuencias no se programa.
 
-Las secciones 4 a 8 (modelo de clases, justificación del diseño, implementación, pruebas y trazabilidad) se agregan una vez implementada la HU, porque el modelo de clases se obtiene del código y se valida contra estos diagramas.
+La sección 6 describe la implementación. Las secciones 4, 5, 7 y 8 (modelo de clases, justificación del diseño, pruebas y trazabilidad) se agregan a partir del código implementado, porque el modelo de clases se obtiene de él y se valida contra estos diagramas.
 
 ---
 
@@ -20,6 +20,7 @@ Las secciones 4 a 8 (modelo de clases, justificación del diseño, implementaci�
    - 3.5 [Diagramas de secuencia](#35-diagramas-de-secuencia)
    - 3.6 [Verificación de coherencia con la arquitectura](#36-verificación-de-coherencia-con-la-arquitectura)
    - 3.7 [Cambios en los documentos anteriores](#37-cambios-en-los-documentos-anteriores)
+6. [Implementación](#6-implementación)
 9. [Glosario y bibliografía](#9-glosario-y-bibliografía)
 
 ---
@@ -500,6 +501,66 @@ Al bajar al diseño aparecieron diferencias con documentos anteriores. Se docume
 |---|---|---|
 | [`modelo-dominio.md`](../requeriments/modelo-dominio.md#registro-de-cambios) | `VarianteBlast` y `ModoEjecucion` cuelgan de `ParametrosPreBusqueda`; `FiltroPostBusqueda` se conecta con `Alineamiento` y `Reporte` en vez de con `Busqueda` (cambios 8 y 9). `ProgramaBlast` se renombra `VarianteBlast` (cambio 11) | Casi todas las relaciones pasaban por `Busqueda`, aunque varias entidades se relacionan entre sí sin pasar por ella. El nombre `ProgramaBlast` se confundía con BLAST+ |
 | [`historias-usuario.md`](../requeriments/historias-usuario.md) y [`casos-de-uso.md`](../requeriments/casos-de-uso.md) | Orden de CA-03 de `HU08` y del flujo de `CU004`: primero se guarda en el historial y después se muestra la tabla | Ver la precisión de CA-03 en [3.1](#31-enunciado-y-criterios-de-aceptación) |
+
+---
+
+## 6. Implementación
+
+La HU está implementada en `src/`: el Backend en Python (FastAPI) y la Aplicación Web en React (Vite). La persistencia usa SQLite, y BLAST+ puede ser el real de la máquina o uno simulado. Las instrucciones para instalar y ejecutar están en la [sección 3 del README](../../README.md#3-cómo-instalar-y-ejecutar).
+
+### 6.1 Estructura del código
+
+Cada carpeta corresponde a un componente C4 del documento de arquitectura, de modo que la estructura deja ver las capas del Backend y la tríada MVC de la Aplicación Web.
+
+| Elemento del diseño | Componente C4 (capa o rol) | Archivo |
+|---|---|---|
+| `PantallaBusqueda` | Pantallas (Vista) | `src/web/src/pantallas/PantallaBusqueda.jsx` |
+| `ControladorBusqueda` | Controlador de búsqueda (Controlador) | `src/web/src/controladores/ControladorBusqueda.js` |
+| `ModeloBusqueda` | Modelo de búsqueda (Modelo) | `src/web/src/modelos/ModeloBusqueda.js` |
+| `ModeloResultados` | Modelo de resultados (Modelo) | `src/web/src/modelos/ModeloResultados.js` |
+| `ClienteBackend`, `ErrorBlast` del cliente | Cliente del Backend (apoyo) | `src/web/src/cliente/ClienteBackend.js` |
+| Ruta `POST /api/busquedas/ejecucion` | Controladores (presentación) | `src/backend/controladores/rutas.py` |
+| `ControladorEjecucion` | Ejecución y persistencia (dominio) | `src/backend/ejecucion/controlador_ejecucion.py` |
+| `Busqueda` | Ejecución y persistencia (dominio) | `src/backend/ejecucion/busqueda.py` |
+| `Alineamiento` | Ejecución y persistencia (dominio) | `src/backend/ejecucion/alineamiento.py` |
+| `RepositorioHistorial` (interfaz) | Acceso a datos (datos) | `src/backend/acceso_datos/repositorio_historial.py` |
+| `RepositorioHistorialSqlite`, `RepositorioHistorialEnMemoria` | Acceso a datos (datos) | `src/backend/acceso_datos/repositorio_historial_sqlite.py`, `repositorio_historial_memoria.py` |
+| `ConexionBD` y esquema del historial | Acceso a datos (datos) | `src/backend/acceso_datos/conexion_bd.py`, `esquema.sql` |
+| `AdaptadorBlast` (interfaz), `ErrorBlast` | Adaptador BLAST+ (datos) | `src/backend/adaptador_blast/adaptador_blast.py` |
+| `AdaptadorBlastCli` | Adaptador BLAST+ (datos) | `src/backend/adaptador_blast/adaptador_blast_cli.py` |
+| BLAST+ simulado | Reemplaza al sistema externo BLAST+ | `src/backend/adaptador_blast/blast_simulado.py` |
+| Armado de los objetos | Punto de arranque | `src/backend/arranque.py`, `src/web/src/main.jsx` |
+
+Las operaciones conservan los nombres de los diagramas de secuencia, también en JavaScript (`marcar_en_ejecucion`, `ejecutar_busqueda`, `registrar_error`), para que cada mensaje se pueda encontrar en el código.
+
+### 6.2 Cómo se reemplazan la persistencia y BLAST+
+
+Los colaboradores se reciben por el constructor y se arman en un solo lugar, `arranque.py`, que los elige según variables de entorno. `ControladorEjecucion` conoce solo las interfaces `RepositorioHistorial` y `AdaptadorBlast`, así que no cambia con ninguna de estas variantes.
+
+| Qué se reemplaza | Opciones | Cómo se elige |
+|---|---|---|
+| Persistencia del historial | `RepositorioHistorialSqlite` (con `ConexionBD`, archivo SQLite) o `RepositorioHistorialEnMemoria` | `LOCALBLAST_PERSISTENCIA=sqlite` o `memoria` |
+| BLAST+ | El programa real de la máquina (`ejecutar_subproceso`) o `BlastSimulado` | `LOCALBLAST_BLAST=real` o `simulado` |
+
+**El simulado reemplaza a BLAST+, no al adaptador.** `AdaptadorBlastCli` recibe por el constructor quién ejecuta el comando. Con BLAST+ simulado, el adaptador arma la misma línea de comandos y lee la salida con el mismo `leer_salida`. Lo único que cambia es que, en lugar de lanzar el programa, se devuelve la salida grabada de una ejecución real de `blastp` sobre la base de demostración, o el mismo error de BLAST+ si la base no existe. Así la lectura de la salida (`EC-02`) se ejercita en todos los modos. Para las pruebas del controlador, en cambio, alcanza con un doble de `AdaptadorBlast` que devuelva hits o lance `ErrorBlast`.
+
+**Datos de demostración.** La query y la base son proteínas sintéticas (`datos/ejemplo/`), generadas por `scripts/generar_datos_demo.py`: doce variantes de la query a distintos porcentajes de identidad y de cobertura, y seis proteínas sin relación. La base BLAST se construye con `scripts/crear_base_demo.sh` (`makeblastdb`). Con BLAST+ real y con el simulado se obtienen los mismos 15 alineamientos.
+
+### 6.3 Decisiones tomadas al implementar
+
+Estas decisiones no estaban en los diagramas. Se revisan en la validación del modelo de clases (paso 5).
+
+| # | Decisión | Motivo |
+|---|---|---|
+| I1 | `RepositorioHistorial` y `AdaptadorBlast` son interfaces con sus implementaciones aparte | Persistencia y servicio externo detrás de interfaces, como pide la implementación; en la robustez y las secuencias figuran sin estereotipo |
+| I2 | La query se le pasa a BLAST+ por la entrada estándar | Evita archivos temporales; cada subproceso recibe solo su propia query (`EC-01`) |
+| I3 | De cada hit se toma el primer HSP (el de mejor score) | La tabla muestra una fila por hit (CA-02) |
+| I4 | La cobertura usa el tramo absoluto de la query y se limita a 100 % | BLAST+ puede informar el tramo invertido en marcos negativos (`blastx`) |
+| I5 | `Busqueda.registrar_resultados` solo se puede llamar una vez | Protege R2: el conjunto de alineamientos es el que devolvió BLAST+, sin agregados posteriores |
+| I6 | `ModeloBusqueda.marcar_en_ejecucion` solo acepta una búsqueda validada o con error | Regla del ciclo de vida (solo se ejecuta una búsqueda validada); la pantalla además deshabilita la acción |
+| I7 | `ConexionBD` crea el esquema al construirse, y SQLite trabaja en modo WAL | Instalación sin pasos manuales; varias búsquedas pueden escribir a la vez (`EC-01`) |
+| I8 | La ruta HTTP responde 502 con `{"tipo": "ErrorBlast", "mensaje": …}` y 422 si la solicitud está mal formada | `ClienteBackend` distingue el error de BLAST+ (que muestra literal) de un error de comunicación |
+| I9 | `PantallaBusqueda` dibuja además el estado previo a ejecutar y una sección de ayuda | El estado previo es el punto de partida de las secuencias; la sección de ayuda permite comprobar que se puede navegar sin interrumpir la ejecución (CA-01) |
 
 ---
 

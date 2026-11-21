@@ -12,6 +12,25 @@
 LocalBlast_2026/
 ├── .gitignore
 ├── README.md
+├── requirements.txt              # dependencias del Backend (Python)
+├── datos/
+│   └── ejemplo/                  # query y base de proteínas sintéticas de demostración (FASTA)
+├── scripts/
+│   ├── crear_base_demo.sh        # construye la base BLAST de demostración (makeblastdb)
+│   └── generar_datos_demo.py     # regenera los FASTA de demostración
+├── src/
+│   ├── backend/                  # Backend (Python / FastAPI), una carpeta por componente C4
+│   │   ├── arranque.py           # punto de arranque: elige BLAST+ real o simulado y la persistencia
+│   │   ├── controladores/        # Controladores (presentación): ruta HTTP
+│   │   ├── ejecucion/            # Ejecución y persistencia (dominio): ControladorEjecucion, Busqueda, Alineamiento
+│   │   ├── acceso_datos/         # Acceso a datos: RepositorioHistorial (SQLite y memoria), ConexionBD
+│   │   └── adaptador_blast/      # Adaptador BLAST+: AdaptadorBlastCli y BLAST+ simulado
+│   └── web/                      # Aplicación Web (React + Vite, patrón MVC)
+│       └── src/
+│           ├── pantallas/        # Vista: PantallaBusqueda
+│           ├── controladores/    # ControladorBusqueda
+│           ├── modelos/          # ModeloBusqueda, ModeloResultados
+│           └── cliente/          # ClienteBackend
 └── docs/
     ├── architecture/
     │   ├── architecture.md
@@ -100,7 +119,77 @@ El diagrama de contexto completo del sistema está en:
 
 ---
 
-## 3. Modelo de Ciclo de Vida Específico
+## 3. Cómo instalar y ejecutar
+
+Lo implementado es la historia `HU08_CU004_B · Ejecutar la búsqueda validada y ver sus resultados`. La pantalla arranca con una búsqueda ya validada, porque la carga y la validación son otras historias.
+
+### 3.1 Requisitos
+
+* Python 3.10 o superior.
+* Node.js 18 o superior, con npm.
+* BLAST+ (opcional). Sin BLAST+, el sistema usa un BLAST+ simulado. Para usar el real: `sudo apt install ncbi-blast+`, o la instalación que ya tengan.
+
+### 3.2 Instalación (una sola vez)
+
+Desde la raíz del repositorio:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+cd src/web
+npm install
+npm run build        # compila la interfaz; el Backend la sirve en el puerto 8000
+cd ../..
+
+bash scripts/crear_base_demo.sh   # solo para BLAST+ real: crea datos/blastdb/proteinas_demo
+```
+
+### 3.3 Ejecutar la aplicación
+
+Con el entorno virtual activado y desde la raíz del repositorio:
+
+```bash
+# BLAST+ simulado (no necesita BLAST+ instalado)
+uvicorn backend.arranque:app --app-dir src --port 8000
+
+# BLAST+ real de la máquina
+LOCALBLAST_BLAST=real uvicorn backend.arranque:app --app-dir src --port 8000
+```
+
+Abrir <http://localhost:8000>.
+
+* **Camino principal:** presionar *Ejecutar búsqueda*. Mientras corre se puede pasar a *Cómo leer los resultados* y volver; la ejecución no se interrumpe.
+* **Camino de error:** abrir <http://localhost:8000/?ejemplo=base-inexistente>. BLAST+ no encuentra la base, se muestra su mensaje literal, no aparece ninguna tabla y no se guarda nada.
+
+El historial queda en `datos/historial.sqlite3`. Para consultarlo: `sqlite3 datos/historial.sqlite3 "SELECT fecha, variante, base_datos FROM busqueda;"`.
+
+**Modo desarrollo de la interfaz** (recarga al guardar cambios). Con el Backend corriendo en el puerto 8000, en otra terminal:
+
+```bash
+cd src/web && npm run dev     # abrir http://localhost:5173
+```
+
+### 3.4 Configuración
+
+El Backend se configura con variables de entorno, todas opcionales:
+
+| Variable | Valores | Para qué |
+|---|---|---|
+| `LOCALBLAST_BLAST` | `simulado` (por defecto) · `real` | BLAST+ simulado o el instalado en la máquina |
+| `LOCALBLAST_BLAST_DIR` | carpeta | Dónde están `blastp`, `blastn`, etc., si no están en el `PATH` |
+| `LOCALBLAST_LIMITE_SEGUNDOS` | número (por defecto 1800) | Tiempo máximo de una ejecución de BLAST+ |
+| `LOCALBLAST_SIMULADO_DEMORA` | segundos (por defecto 3) | Cuánto tarda el simulado, para ver el indicador de progreso |
+| `LOCALBLAST_SIMULADO_CAMPO_NUEVO` | `1` | El simulado agrega un campo desconocido a la salida (escenario `EC-02`; la advertencia aparece en la consola) |
+| `LOCALBLAST_PERSISTENCIA` | `sqlite` (por defecto) · `memoria` | Historial en SQLite o en memoria; el controlador no cambia |
+| `LOCALBLAST_BD` | archivo | Ubicación del archivo SQLite (por defecto `datos/historial.sqlite3`) |
+
+**Usar otra secuencia u otra base.** Las búsquedas validadas de ejemplo están en `src/web/src/busquedas-validadas.json`. Se puede agregar una entrada con otra secuencia FASTA y la ruta de una base local propia (`base_datos`, relativa a la raíz del repositorio o absoluta), o una base de NCBI con `"modo": "remoto"`. Después se abre `http://localhost:8000/?ejemplo=<clave>`, previa recompilación con `npm run build`, o directamente en modo desarrollo. El BLAST+ simulado siempre devuelve la salida grabada de la búsqueda de demostración.
+
+---
+
+## 4. Modelo de Ciclo de Vida Específico
 
 El grupo se decanta por una **metodologia incremental con practicas agiles**. 
 
